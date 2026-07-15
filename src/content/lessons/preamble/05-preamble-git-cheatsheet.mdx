@@ -1,0 +1,176 @@
+---
+title: "Git cheat sheet: 10 commands to know"
+section: "Preamble · Git Reference"
+order: 5
+estimatedTime: "15 minutes"
+mentalModel: "Git is a set of local save-point tools: inspect what changed, choose what to save, and record it clearly."
+verificationFocus: "Predict what each command will change, then check the output and the files rather than guessing."
+description: "A beginner-friendly reference for the ten local Git commands used most often in this course."
+---
+
+This is a reference page, not a command-memorization test. You can return here whenever a Git command feels unfamiliar.
+
+Git works locally on your computer. In this course, we use it to inspect changes and create understandable save points. These commands do not upload your project anywhere.
+
+Before using a command, ask:
+
+1. What do I expect this command to do?
+2. Will it change a file, Git's memory, or neither?
+3. What evidence should I see afterward?
+
+<details>
+  <summary>Important safety habit</summary>
+
+If a command would remove or overwrite something, stop and ask Codex to explain it before running it. A save point is useful only when you understand what it contains.
+</details>
+
+## The ten commands
+
+### 1. Start Git in a folder
+
+```bash
+git init
+```
+
+Use this once when you want Git to start keeping track of a project folder. It creates Git's local record-keeping area inside that folder. It does not change your project files.
+
+Check the result with:
+
+```bash
+git status
+```
+
+### 2. See what Git notices
+
+```bash
+git status
+```
+
+This is the command to use when you are unsure what is happening. It tells you which files are new, changed, selected for the next save point, or already saved.
+
+The output is information; it does not change your files.
+
+### 3. Select a file for the next save point
+
+```bash
+git add path/to/file
+```
+
+Replace `path/to/file` with the file you want to include. For example:
+
+```bash
+git add notes.txt
+```
+
+This does not create the save point yet. It tells Git, “include this file in the next commit.”
+
+To select all changed files in the current folder, you may see:
+
+```bash
+git add .
+```
+
+Use that only after checking `git status` and making sure you understand which files will be included.
+
+### 4. Create a clear save point
+
+```bash
+git commit -m "Describe the checked change"
+```
+
+Replace the message with a short description of the change you verified. For example:
+
+```bash
+git commit -m "Add first notes file"
+```
+
+A commit records the files selected by `git add` at that moment. It does not automatically include every changed file.
+
+### 5. See the project history
+
+```bash
+git log --oneline
+```
+
+This shows a compact list of previous commits, newest first. It helps you answer, “What save points have I made?”
+
+Press `q` to leave the history view if Git opens it in a scrolling screen.
+
+### 6. See changes that are not selected yet
+
+```bash
+git diff
+```
+
+This shows the differences between your last commit and changes that are still in the working files. Use it before `git add` when you want to inspect exactly what you are about to select.
+
+### 7. See changes already selected
+
+```bash
+git diff --staged
+```
+
+This shows the differences that will go into the next commit. It is the check to use after `git add` and before `git commit`.
+
+### 8. See what a saved commit contains
+
+```bash
+git show --stat
+```
+
+This shows the most recent commit and a summary of the files it changed. It is useful when you want evidence that the save point contains the change you intended.
+
+For a more detailed view of the most recent commit, use:
+
+```bash
+git show
+```
+
+### 9. Restore a file's unsaved changes
+
+```bash
+git restore path/to/file
+```
+
+This throws away changes in the named file that have not been committed. It restores the file to its last committed version.
+
+This can remove work, so do not run it casually. First inspect the file with `git diff`, and ask for an explanation if you are unsure.
+
+### 10. Ask Git for help
+
+```bash
+git help <command>
+```
+
+For example:
+
+```bash
+git help status
+```
+
+This opens Git's documentation for a command. You do not need to understand every option. Ask Codex to explain the small part you need, then use the simplest command that fits.
+
+## A small, safe everyday sequence
+
+After making and checking one understandable change, this is a useful sequence:
+
+```bash
+git status
+git diff
+git add path/to/file
+git diff --staged
+git commit -m "Describe the checked change"
+git status
+```
+
+The final `git status` should show that no intended changes are waiting to be saved. If it does not, read the output before doing anything else.
+
+<Response id="preamble-git-cheatsheet-prediction" prompt="Choose three commands from this page. Before running them, predict what each will change, what it will not change, and what evidence you expect." rows={9} />
+
+<Response id="preamble-git-cheatsheet-explain-back" prompt="Explain back the difference between git add, git commit, git diff, and git status. Which command would you use first if you were unsure what had changed?" rows={8} />
+
+<Checkpoint id="preamble-git-cheatsheet-verified">I used the cheat sheet to inspect a change, selected the intended file, created a clear local commit, and checked the final status.</Checkpoint>
+
+<p><strong>Mentor pause:</strong> Point to one command that changes Git's record and one command that only reports information. Explain the difference before moving on.</p>
+
+<Checkpoint id="preamble-git-cheatsheet-complete">I can return to this page and choose a suitable local Git command without treating Git as unexplained magic.</Checkpoint>

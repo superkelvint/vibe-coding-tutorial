@@ -1,0 +1,140 @@
+---
+title: "Preamble Hour 2: Make a tiny webpage"
+section: "Preamble · Hour 2"
+order: 2
+estimatedTime: "60 minutes"
+mentalModel: "HTML says what exists; CSS says how it looks; the browser reads both and draws the page."
+verificationFocus: "Predict the visible result, inspect it manually, and re-check unchanged content after editing."
+description: "Create a tiny page with HTML and CSS while learning to predict before opening the browser."
+---
+
+The goal is a page small enough to understand. Do not add JavaScript, React, npm, a framework, a database, or a deployment step.
+
+<Track type="product" title="Product Judgment">
+
+This is a small lesson in product clarity. Ask:
+
+```text
+Can someone understand what this page is about by looking at it?
+```
+
+Do not judge success by how impressive it looks. Judge whether the heading, paragraph, list, and button communicate clearly.
+
+<Response id="preamble-hour2-product-judgment" prompt="What should a visitor understand from this tiny page after looking at it for a few seconds? Write one clear success signal and one thing you are deliberately not optimizing." rows={6} />
+
+<Response id="preamble-hour2-acceptance-criteria" prompt="Write observable acceptance criteria for the page. Include the heading, paragraph, three list items, styling, and the intentionally inactive button." rows={8} />
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Use this prompt:
+
+```text
+I am a beginner.
+
+Create one very small HTML file.
+
+The page should include:
+- a heading
+- a paragraph
+- a list of three favorite things
+- a button that does not work yet
+- a little CSS for the background, text, and button
+
+Use only HTML and CSS.
+Do not use JavaScript.
+Do not use React.
+Do not use npm.
+
+Before the code, tell me what I should expect to see.
+
+After the code, explain:
+1. what the HTML does
+2. what the CSS does
+3. why the button does nothing yet
+```
+
+Before using the result, compare it with your constraints. A button that does nothing is correct for this hour.
+
+<Response id="preamble-hour2-prompt-prediction" prompt="Predict what the generated page should look like and what Codex must not add. What evidence would show that the button is intentionally inactive?" rows={8} />
+
+<details>
+  <summary>Hint: separate structure from appearance</summary>
+
+  Look for the elements that create visible things, then look for rules that change colors, spacing, or typography. Do not infer behavior from appearance.
+</details>
+
+<Response id="preamble-hour2-evidence-review" prompt="After opening the page, review the evidence: what matched your prediction, what differed, and what remains unverified?" rows={8} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+Create:
+
+```text
+index.html
+```
+
+Paste the generated code. Before opening it, predict:
+
+```text
+How many visible things will appear?
+
+Which part will be largest?
+
+What color do you expect?
+
+Will the button work? Why not?
+```
+
+<Response id="preamble-hour2-visible-prediction" prompt="Write your prediction before opening index.html. Count the visible content, identify the largest part, name an expected color, and explain the button's behavior." rows={8} />
+
+Open the file in the browser. Then manually change only these small things:
+
+```text
+1. The heading
+2. The paragraph
+3. The three list items
+4. One color
+5. The button text
+```
+
+After each change, reload and observe. Use the cheapest meaningful checks: read the changed file, open the page, and compare the visible result with your acceptance criteria.
+
+<Checkpoint id="preamble-hour2-page-opened">I opened `index.html` in a browser and compared the visible page with my prediction.</Checkpoint>
+
+<Checkpoint id="preamble-hour2-manual-edits">I changed the five requested pieces and observed each change in the browser.</Checkpoint>
+
+### Explain back
+
+Complete these sentences:
+
+```text
+HTML does ______.
+
+CSS does ______.
+
+The browser does ______.
+
+The button does nothing because ______.
+```
+
+<Response id="preamble-hour2-explain-back" prompt="Explain back HTML, CSS, the browser, and the inactive button in plain English. Include the evidence you used." rows={8} />
+
+### Regression or unchanged-behavior check
+
+After your edits, confirm that all three list items still exist, the page still opens, and the button is still inactive. Those are existing behaviors that should not have changed.
+
+<Checkpoint id="preamble-hour2-regression-check">I re-tested that the page opens, all three list items remain, and the button still does not perform an action.</Checkpoint>
+
+<p><strong>Mentor pause:</strong> Point at one HTML element and one CSS rule, then explain what each contributes to the browser result.</p>
+
+<Checkpoint id="preamble-hour2-mentor-pause">I explained one HTML contribution and one CSS contribution to a mentor.</Checkpoint>
+
+Save the understandable change in Git before moving on.
+
+</Track>
+
+<Checkpoint id="preamble-hour2-complete">I completed Hour 2 and can explain the difference between structure, appearance, and behavior.</Checkpoint>

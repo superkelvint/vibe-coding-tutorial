@@ -1,0 +1,20 @@
+---
+import CourseLayout from './CourseLayout.astro';
+const { lesson, previous, next } = Astro.props;
+---
+<CourseLayout title={`${lesson.data.title} · Vibe Coding Foundations`}>
+  <article class="lesson">
+    <a class="back-link" href={import.meta.env.BASE_URL}>← Course home</a>
+    <header class="lesson-header">
+      <p class="eyebrow">{lesson.data.section} · {lesson.data.estimatedTime}</p>
+      <h1>{lesson.data.title}</h1>
+      <p class="lede">{lesson.data.description}</p>
+      <dl class="lesson-meta"><div><dt>Mental model</dt><dd>{lesson.data.mentalModel}</dd></div><div><dt>Verification focus</dt><dd>{lesson.data.verificationFocus}</dd></div></dl>
+    </header>
+    <div class="lesson-content"><slot /></div>
+    <nav class="lesson-nav" aria-label="Lesson navigation">
+      {previous ? <a href={`${import.meta.env.BASE_URL}lessons/${previous.id}/`}>← {previous.data.title}</a> : <span />}
+      {next ? <a href={`${import.meta.env.BASE_URL}lessons/${next.id}/`}>{next.data.title} →</a> : <a href={import.meta.env.BASE_URL}>Back to course home →</a>}
+    </nav>
+  </article>
+</CourseLayout>

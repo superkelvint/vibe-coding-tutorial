@@ -1,0 +1,551 @@
+---
+title: "Day 1: How apps work (using the ones you already know)"
+section: "Week 1 · Day 1"
+order: 6
+estimatedTime: "120 minutes"
+mentalModel: "An app connects people, data, actions, rules, and feedback. Some of what you see is temporary; some of it is saved."
+verificationFocus: "Make a prediction, observe a real interaction, check an edge case, re-run the normal path, and be honest about what the evidence does not prove."
+description: "Build your first useful mental model of web apps by taking apart familiar apps such as WhatsApp, Instagram, Amazon, or Uber."
+---
+
+You already know how to use apps. Today you get to look at them slightly differently.
+
+Pick three apps you actually use—or know well enough to talk about. WhatsApp, Instagram, YouTube, Amazon, Uber, Gmail, Google Maps, online banking, and Facebook are all fine. The specific apps do not matter. Familiarity does.
+
+We are going to follow one simple question:
+
+> When a person does something in an app, what does the app remember, what rules does it check, and how does it show the result?
+
+This is not a coding day. You are not expected to build anything, understand an unfamiliar repository, or memorize framework vocabulary. You are learning to see the machinery behind screens you already use.
+
+
+## First, know what is—and is not—on the agenda
+
+Today is about getting a mental map that will make the later build feel less mysterious.
+
+By the end of the course, the bigger story will look like this:
+
+<ol class="mental-model-steps">
+<li>A user sees a screen.</li>
+<li>The user takes an action.</li>
+<li>The app notices the action.</li>
+<li>The app changes what it remembers.</li>
+<li>Rules decide what should happen next.</li>
+<li>The screen updates.</li>
+<li>Sometimes the app asks another computer for data.</li>
+<li>Sometimes that data is saved in a shared database.</li>
+<li>Deployment lets another person use the app from a real URL.</li>
+</ol>
+
+Today we are starting with the first five pieces:
+
+```text
+users → data → actions → rules → feedback
+```
+
+### What counts as a good day?
+
+These are today’s acceptance criteria—not a test you can fail, just a clear picture of where we are trying to get:
+
+<ul class="observation-checklist">
+<li>I can use the five-part model with three familiar apps.</li>
+<li>I can tell temporary data from saved data.</li>
+<li>I can trace one action from the user’s intention to the app’s feedback.</li>
+<li>I can check a safe edge case, re-run the normal path, and say what remains uncertain.</li>
+<li>I can explain what my evidence shows without pretending it proves more than it does.</li>
+</ul>
+
+<Response id="week1-day1-acceptance-criteria" prompt="Put today’s acceptance criteria into your own words. For each one, what would you actually see or hear that tells you it is true?" rows={7} />
+
+### Your first prediction
+
+Before you click around, choose one familiar action—sending a message, liking a post, adding something to a cart, requesting a ride, or submitting a form.
+
+Predict what will happen. For example:
+
+<ul class="prediction-list">
+<li>I think the app will show a waiting state first.</li>
+<li>I think the result will still be there if I come back later.</li>
+<li>I think an empty or invalid input will be rejected.</li>
+</ul>
+
+You are not trying to sound certain. You are making something you can compare with what really happens.
+
+<Response id="week1-day1-prediction" prompt="Choose one familiar action. Before trying it, predict what will happen before, during, and after the action. What evidence would convince you that your prediction was right?" rows={7} />
+
+## The five ideas hiding inside almost every app
+
+Here is the whole mental model:
+
+<ol class="mental-model-steps">
+<li>The app displays some data to the user.</li>
+<li>The user takes an action.</li>
+<li>The app checks a rule.</li>
+<li>The app reads or changes data.</li>
+<li>The app gives feedback.</li>
+</ol>
+
+<aside class="model-purpose">
+<p><strong>Why are we learning this model?</strong></p>
+<p>Because it gives us a first mental model for <em>how the app is going to be implemented</em>. Later, when we look at a browser, React, a server, a database, or deployment, we can ask which part of this story we are looking at. We do not need to memorize every technical detail yet—we just need a map for where each detail belongs.</p>
+<p>It also gives us a framework to systematically identify the <b>root cause</b> of application bugs. If something looks wrong, we can ask where the story stopped matching reality: did the action happen, did a rule reject it, was the data saved, is the server returning an old result, or is the screen showing stale feedback? That helps us isolate the root cause instead of guessing.</p>
+</aside>
+
+A user might be a customer, a friend, a driver, a student, or an employee. Data might be a message, photo, order, location, bank balance, or chore. An action might create, read, change, or delete something. A rule decides whether that action is allowed. Feedback tells the user what happened.
+
+Here are a few more versions of the same story. Read one, look at its image, and notice how the user, data, action, rule, feedback, and possible failure fit together.
+
+#### Instagram like
+
+<div class="app-example">
+<p><strong>User:</strong> someone reacting to a post.</p>
+<p><strong>Data:</strong> the post, the user's like, and the like count.</p>
+<p><strong>Action:</strong> tap the heart.</p>
+<p><strong>Rule:</strong> one user should not create five likes by accident.</p>
+<p><strong>Feedback:</strong> the heart changes and the count may update.</p>
+<p><strong>Possible failure:</strong> the heart looks selected, but a refresh shows the like was never saved.</p>
+</div>
+
+<img src={`${import.meta.env.BASE_URL}images/day1-instagram-like.png`} alt="A fictional social post showing a like changing from 24 to 25 and then appearing inconsistent after refresh." />
+
+*Notice the disagreement in the final panel: the heart still looks selected, but the count has returned to 24. That is evidence worth investigating.*
+
+#### Google Maps search
+
+<div class="app-example">
+<p><strong>User:</strong> someone trying to get somewhere.</p>
+<p><strong>Data:</strong> a starting point, destination, route, traffic, and map position.</p>
+<p><strong>Action:</strong> search for a place or request directions.</p>
+<p><strong>Rule:</strong> the destination needs to be understood well enough to find a route.</p>
+<p><strong>Feedback:</strong> searching, a route, travel time, or “no route found.”</p>
+<p><strong>Possible failure:</strong> the route is based on an old location or stale traffic data.</p>
+</div>
+
+<img src={`${import.meta.env.BASE_URL}images/day1-maps-search.png`} alt="A fictional map search showing a place search, a loading state, a route, and an old-location warning." />
+
+*The route is not just a line on a map. It is a claim about a destination, a starting point, and information that may become stale.*
+
+#### Online banking transfer
+
+<div class="app-example">
+<p><strong>User:</strong> someone moving money.</p>
+<p><strong>Data:</strong> accounts, amount, recipient, balance, and transaction history.</p>
+<p><strong>Action:</strong> submit a transfer.</p>
+<p><strong>Rule:</strong> the user must be allowed to use the account and have enough money.</p>
+<p><strong>Feedback:</strong> review, processing, completed, or failed.</p>
+<p><strong>Possible failure:</strong> the screen says failed even though the balance changed.</p>
+</div>
+
+<img src={`${import.meta.env.BASE_URL}images/day1-bank-transfer.png`} alt="A fictional banking transfer showing review, processing, completed, and a failed message with a changed balance." />
+
+*This is a high-stakes example of why feedback and saved data need to agree. If the message says “failed,” checking the balance and activity history matters.*
+
+#### YouTube upload
+
+<div class="app-example">
+<p><strong>User:</strong> someone sharing a video.</p>
+<p><strong>Data:</strong> the video file, title, visibility, processing status, and comments.</p>
+<p><strong>Action:</strong> choose a file and upload it.</p>
+<p><strong>Rule:</strong> the file must be accepted and the user must choose who can see it.</p>
+<p><strong>Feedback:</strong> uploading, processing, published, or rejected.</p>
+<p><strong>Possible failure:</strong> the video is published but still cannot be played.</p>
+</div>
+
+<img src={`${import.meta.env.BASE_URL}images/day1-youtube-upload.png`} alt="A fictional video upload showing choosing a video, uploading, processing, publishing, and playback unavailable." />
+
+*“Published” and “playable” are different claims. The first status does not automatically prove the second.*
+
+#### Gmail search
+
+<div class="app-example">
+<p><strong>User:</strong> someone trying to find information.</p>
+<p><strong>Data:</strong> messages, senders, dates, labels, and search terms.</p>
+<p><strong>Action:</strong> type a search and press Enter.</p>
+<p><strong>Rule:</strong> the search should match the right messages, not just any visible text.</p>
+<p><strong>Feedback:</strong> results, no results, loading, or an error.</p>
+<p><strong>Possible failure:</strong> the result list is old and misses a message that just arrived.</p>
+</div>
+
+<img src={`${import.meta.env.BASE_URL}images/day1-gmail-search.png`} alt="A fictional email search showing search, loading, results, and a new message missing until refresh." />
+
+*Search results can be useful and still be stale. “I got results” is not exactly the same claim as “I got every current result.”*
+
+The names change, but the shape keeps repeating: a person wants something, the app handles data, rules limit what can happen, and feedback helps the person decide what to do next.
+
+<img src={`${import.meta.env.BASE_URL}images/day1-action-storyboard.png`} alt="A fictional message app storyboard showing user, action, sending, sent, and the flow from user to feedback." />
+
+*Figure 1. A fictional example of one action moving through an app. Notice that “sending” is useful feedback before the final result exists.*
+
+For example:
+
+```text
+User types a WhatsApp message
+→ the unfinished text exists temporarily
+→ the user presses Send
+→ the app checks and sends the action
+→ the message is saved
+→ the screen shows sending
+→ the message later shows sent, delivered, or failed
+```
+
+That same shape appears in apps that look completely different.
+
+### Temporary versus saved
+
+Two words are useful here:
+
+<dl class="definition-list">
+<div><dt><b>Ephemeral data</b></dt><dd>Temporary information used during an interaction.</dd></div>
+<div><dt><b>Persistent data</b></dt><dd>Information saved so it can be available later.</dd></div>
+</dl>
+
+Examples:
+
+| Example | Type |
+| --- | --- |
+| WhatsApp message being typed | Ephemeral |
+| WhatsApp message after Send succeeds | Persistent |
+| Instagram caption before publishing | Ephemeral |
+| Published Instagram post | Persistent |
+| Amazon filter currently selected | Often ephemeral |
+| Completed Amazon order | Persistent |
+
+One important warning: visible does not automatically mean saved. A filter can be visible while you are using it and disappear when you refresh. A sent message can remain visible because the app saved it and can retrieve it later.
+
+<img src={`${import.meta.env.BASE_URL}images/day1-temporary-vs-saved.png`} alt="A fictional shopping app comparison showing a temporary size filter disappearing after refresh and a saved order remaining visible." />
+
+*Figure 2. “Visible now” and “saved for later” are different claims. A refresh is a simple way to learn which claim you are actually seeing.*
+
+Try these examples:
+
+| Example | What to expect |
+| --- | --- |
+| Typing a comment before posting | Temporary |
+| The posted comment | Expected to be saved |
+| A selected song in a music queue | Often temporary |
+| A playlist you created | Expected to be saved |
+| A hotel date picker before you search | Temporary |
+| A confirmed reservation | Expected to be saved |
+| A map zoom level | Often temporary |
+| A saved place or starred address | Expected to be saved |
+| A form with an unsent draft | May be temporary—or may be saved as a draft |
+
+<aside class="model-purpose">
+<p><strong>The useful question:</strong> What happens after you refresh or return later?</p>
+</aside>
+
+### Feedback is not decoration
+
+Good feedback answers questions the user is already asking:
+
+<ul class="question-list">
+<li>Did the app notice what I did?</li>
+<li>Is it still working?</li>
+<li>Did it succeed?</li>
+<li>Did it fail?</li>
+<li>What changed?</li>
+<li>What should I do next?</li>
+</ul>
+
+Some familiar examples:
+
+<ul class="example-list">
+<li><strong>Instagram:</strong> the heart changes and the count may increase.</li>
+<li><strong>WhatsApp:</strong> a message shows sending, sent, delivered, or failed.</li>
+<li><strong>Amazon:</strong> the cart count changes, or an error explains what went wrong.</li>
+<li><strong>Uber:</strong> the app shows searching, driver assigned, arrival time, or no driver available.</li>
+</ul>
+
+Here are some less obvious examples of feedback:
+
+<ul class="example-list">
+<li>An upload progress bar says the app is still working.</li>
+<li>A disabled button says an action is not available yet.</li>
+<li>A confirmation screen gives you a chance to catch a wrong bank account.</li>
+<li>A badge shows that a notification is new.</li>
+<li>A timestamp tells you whether the data is fresh.</li>
+<li>A “try again” message tells you the failure may be temporary.</li>
+</ul>
+
+Good feedback is especially important when the action takes time. Without it, people click again, refresh repeatedly, or assume the app ignored them. Those extra actions can create duplicate orders, duplicate messages, or other confusing states.
+
+<details>
+  <summary>Quick check: can you separate the layers?</summary>
+
+  Take any action and say it out loud in this order: “The user did ___. The important data was ___. The rule might be ___. The feedback was ___.” If you cannot fill in one part, that is a useful question—not a failure.
+</details>
+
+<Track type="product" title="Product Judgment">
+
+Repeat after me:
+
+<aside class="mantra-callout">
+<p>You are not here to create software. </p>
+<p>You are here to solve user problems.</p>
+<p>Users usually tell you the solution they think they need, not the problems they have.</p>
+<p>Investigate and understand their pain before you build because users are rarely right about the solutions but they are ALWAYS right about their problems.</p>
+</aside>
+
+<p>They are the experts of the problem space. You are the expert of the solution space.</p>
+<p>Your job is to find the optimal solution that matches their problem.</p>
+
+### Why product thinking matters
+
+Product thinking means understanding **the problem we are solving and who has it** before we decide what to build. The goal is not to collect feature requests or make a screen that sounds useful in the abstract. The goal is to reduce a real user pain in a real situation.
+
+People often describe a solution because that is easier than describing the problem:
+
+<div class="app-example">
+<p><strong>Request:</strong> “Add a button that sends me a reminder every morning.”</p>
+<p><strong>Possible problem:</strong> “I keep forgetting one important responsibility until it is too late.”</p>
+</div>
+
+Questions worth asking:
+
+<ul class="question-list">
+<li>Who is forgetting?</li>
+<li>When does it happen?</li>
+<li>What do they do today?</li>
+<li>What would be good enough?</li>
+<li>What is the smallest useful thing to try?</li>
+</ul>
+
+Traditional product discovery gives us a more complete picture:
+
+<div class="app-example">
+<p><strong>User:</strong> who experiences the problem?</p>
+<p><strong>Situation:</strong> when and where does it happen?</p>
+<p><strong>Current workaround:</strong> what do they do today instead?</p>
+<p><strong>Pain:</strong> what is frustrating, costly, slow, risky, or repeatedly forgotten?</p>
+<p><strong>Smallest useful intervention:</strong> what is the smallest change that could reduce that pain?</p>
+<p><strong>Success signal:</strong> what would we observe if the pain actually became smaller?</p>
+<p><strong>Not building yet:</strong> what attractive ideas are outside this first test?</p>
+</div>
+
+For the reminder example, “a morning reminder button” is only a proposed solution. The product questions are: whose responsibility is being forgotten, at what point does the failure matter, what reminder or coordination system exists today, and what specifically is painful about it? A successful first version might not be a reminder at all—it might make ownership visible, show one upcoming responsibility, or make it easy to confirm that a task was handled.
+
+If we implement the request word for word, we might build a polished reminder button that does not help. Maybe the real problem is that the person does not know who owns the responsibility, or that the reminder arrives at the wrong time, or that there are too many reminders already.
+
+This is why product judgment matters for developers. A developer who only translates user requests literally can produce exactly what was asked for and still miss the problem. Your job is not to reject requests or make every decision alone. Your job is to understand the situation well enough to ask a better question before building.
+
+<aside class="model-purpose">
+<p><strong>Product thinking in one sentence:</strong> Do not jump straight from “What should we build?” to code. First ask, “Whose pain are we reducing, in what situation, and what evidence would show that the pain actually became smaller?”</p>
+</aside>
+
+<Response id="week1-day1-product-thinking" prompt="In your own words, explain why a developer should understand the user and problem before implementing a feature request. Use one example of a request that might hide a different underlying problem, then identify the user, situation, current workaround, pain, smallest useful intervention, success signal, and what you would not build yet." rows={11} />
+
+Choose three familiar apps. For each one, jot down:
+
+<ul class="observation-checklist">
+<li>Who is using it?</li>
+<li>What are they trying to accomplish?</li>
+<li>What data matters to them?</li>
+<li>What is the most important action?</li>
+<li>What feedback gives them confidence?</li>
+<li>What would make the app confusing or untrustworthy?</li>
+</ul>
+
+Here is a filled-in starting point for WhatsApp:
+
+<div class="app-example">
+<p><strong>User:</strong> someone trying to communicate with another person.</p>
+<p><strong>Data:</strong> the message, the conversation, and delivery status.</p>
+<p><strong>Action:</strong> type a message and press Send.</p>
+<p><strong>Rule:</strong> the message needs a recipient and the service needs to accept it.</p>
+<p><strong>Feedback:</strong> sending, sent, delivered, or failed.</p>
+<p><strong>Trust problem:</strong> the screen says “sent,” but the message never arrives.</p>
+</div>
+
+Do not turn this into a feature pitch. You are studying a workflow that already exists.
+
+<Response id="week1-day1-product-observations" prompt="Describe three familiar apps in your own words. For each, include the user, goal, important data, key action, rule, useful feedback, and one thing that could make the app feel confusing or untrustworthy." rows={16} />
+
+<Response id="week1-day1-product-success" prompt="What would ‘working well’ mean for one of those apps from the user’s point of view? Give one observable success signal and one thing the app should make clear when it fails." rows={7} />
+
+<details>
+  <summary>Hint if you start inventing features</summary>
+
+  Come back to the real situation. What was the person trying to do? What do they do today? What signal would tell them that the existing action worked? A feature idea is a hypothesis, not proof that it solves a real problem.
+</details>
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Today, Codex is your conversation partner. Do not ask it to build anything. Ask it to help you inspect one app using the model.
+
+Try this:
+
+```text
+I am learning how web applications work.
+
+Do not write code. Help me analyze [app name] using:
+
+1. the users
+2. the important data
+3. temporary data
+4. saved data
+5. user actions
+6. rules that might allow or reject an action
+7. feedback while the action is happening
+8. feedback after success
+9. feedback after failure
+
+Use plain English and use one concrete workflow.
+Afterward, ask me five questions to check whether I understand it.
+```
+
+Before you send it, predict what a useful answer will look like. It should help you think more clearly, not bury you in technical terms or pretend to know internal details you could not observe.
+
+<Response id="week1-day1-codex-prediction" prompt="What should a useful Codex answer contain? What would make it too broad, too technical, unsupported by your observations, or missing the failure state?" rows={7} />
+
+When Codex gives you a vague answer, push back with questions like:
+
+<ul class="question-list">
+<li>What exactly changed?</li>
+<li>Was that change temporary or saved?</li>
+<li>Which user performed the action?</li>
+<li>What feedback proves it worked?</li>
+<li>What could cause it to fail?</li>
+</ul>
+
+If something seems broken, collect evidence before asking for a diagnosis. Write what you expected, what actually happened, the steps that reproduced it, and what you could see on screen. “The app is broken” is a conclusion, not evidence.
+
+<Response id="week1-day1-evidence-before-debugging" prompt="Describe one confusing or surprising behavior using: app, action, expected result, actual result, steps to reproduce, visible feedback or error, and what you still do not know. Do not propose a fix yet." rows={11} />
+
+After Codex answers, treat its explanation as a suggestion to review—not as proof. Compare it with what you actually observed.
+
+<Response id="week1-day1-codex-review" prompt="Which parts of Codex’s answer matched your observations? Which parts were assumptions? What did you check, what did you not check, and what remains unverified?" rows={8} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+There is no code to write today. Your technical task is to trace one complete action in each of your three apps.
+
+Use this sentence shape:
+
+```text
+The user ___
+→ the app had or received ___
+→ it checked ___
+→ it read, created, changed, or rejected ___
+→ it showed ___ while waiting
+→ it showed ___ after success or failure
+→ later, ___ was or was not still available
+```
+
+<Response id="week1-day1-action-traces" prompt="Trace one complete action in each of your three apps. Include the user, data, action, rule, change or rejection, waiting feedback, final feedback, and whether the result was still available later." rows={16} />
+
+### Check what you can actually check
+
+Since you are not changing code, there is no useful unit-test, lint, build, or end-to-end command to run for this lesson. That is okay. Match the check to the claim.
+
+For one action, write:
+
+<div class="app-example">
+<p><strong>Claim:</strong> what I want to know.</p>
+<p><strong>Check:</strong> what I can actually do or observe.</p>
+<p><strong>Evidence:</strong> what I would expect to see.</p>
+<p><strong>Limit:</strong> what this check cannot prove.</p>
+</div>
+
+For example, seeing a WhatsApp message marked “sent” is evidence about the visible status. It does not prove every device has received it or reveal exactly how the service stores it.
+
+<Response id="week1-day1-verification-plan" prompt="Choose one action. Write the claim, the cheapest meaningful check, the evidence you expect, and what remains outside that check. Explain why a code test is not the right check for this no-code lesson." rows={9} />
+
+### Try one safe edge case
+
+Now deliberately make the normal path slightly awkward. Depending on the app, you might cancel, repeat the action, use an empty or invalid input, refresh, or briefly lose connectivity. Do not risk a purchase, a real message, or any irreversible action.
+
+Watch for the difference between:
+
+<ul class="question-list">
+<li>the app refusing the action;</li>
+<li>the app still working;</li>
+<li>the app succeeding but showing weak feedback;</li>
+<li>the app showing success when the saved result is not there.</li>
+</ul>
+
+<Checkpoint id="week1-day1-focused-check">I tried one safe edge case, observed what happened, and wrote down the evidence instead of relying on memory.</Checkpoint>
+
+Then re-run the ordinary action. This is your regression check:
+
+> After the unusual case, does the normal action still work, and is the result still understandable?
+
+<Response id="week1-day1-regression" prompt="What did you re-test after the edge case? Did the ordinary action still work? If you found a difference, describe it without guessing at the cause." rows={7} />
+
+<Checkpoint id="week1-day1-regression-checked">I re-ran the normal path after the edge case and recorded whether the expected behavior still held.</Checkpoint>
+
+### Look for things that disagree
+
+A lot of app bugs are consistency problems: two parts of the story do not agree.
+
+<ul class="example-list">
+<li>The heart looks selected, but the like was not saved.</li>
+<li>The message says sent, but the recipient never receives it.</li>
+<li>The cart count stays unchanged after an item was added.</li>
+<li>The map shows an old location after the user moved.</li>
+<li>The app reports failure even though the action succeeded.</li>
+</ul>
+
+<Response id="week1-day1-consistency" prompt="Give three possible consistency bugs from the apps you studied. For each, say what disagrees and what evidence would help distinguish a display problem from a saved-data problem." rows={9} />
+
+### Your short takeaway
+
+Save a short note containing:
+
+1. Your definition of a web application.
+2. This diagram: `user → action → rule → data change → feedback`.
+3. The difference between ephemeral and persistent data.
+4. One action lifecycle from each of your three apps.
+5. Three examples of useful feedback.
+6. Three possible consistency bugs.
+7. Two questions you still have.
+
+Label what you directly observed and what you inferred. That small distinction is one of the most useful habits you can build with AI.
+
+<Response id="week1-day1-takeaway" prompt="Write your short takeaway. Include the seven requested parts, and mark each important claim as observed or inferred." rows={15} />
+
+<Checkpoint id="week1-day1-evidence-recorded">I saved my takeaway with my observations, predictions, edge-case evidence, regression result, and checks I did not run.</Checkpoint>
+
+<Response id="week1-day1-remaining-uncertainty" prompt="What is still unverified? Name two limits of today’s observations and one question you want to carry into Day 2." rows={6} />
+
+</Track>
+
+## Explain it back
+
+Close your notes and try to explain this in your own words:
+
+<aside class="mantra-callout">
+<p>You are not here to create software. You are here to solve user problems.</p>
+<p>Users usually tell you the solution they want, not the problem they have. Investigate the pain before you build.</p>
+</aside>
+
+<div class="explain-summary">
+<p>A web application keeps track of users and data.</p>
+<p>Users take actions that read, create, change, or delete data.</p>
+<p>Some data is temporary and some is saved.</p>
+<p>Rules decide what is allowed.</p>
+<p>The app gives feedback while an action is happening and after it succeeds or fails.</p>
+<p>Many bugs happen when the user, action, data, saved result, and visible feedback disagree.</p>
+</div>
+
+<Response id="week1-day1-explain-back" prompt="Explain the model as if you were explaining it to a friend. Trace one action from the user’s intent through the rule, data, feedback, evidence, and remaining uncertainty." rows={10} />
+
+> **Mentor pause:** Tell your mentor about one of your three apps. Ask them to interrupt and ask, “What was temporary? What was saved? What rule applied? What evidence convinced you?”
+
+<Checkpoint id="week1-day1-mentor-pause">I explained one app interaction to my mentor, showed what I checked, described what happened, and said what I still do not know.</Checkpoint>
+
+## Done for today
+
+You do not need to sound like a developer yet. You are ready for Day 2 if you can:
+
+- describe a familiar app in terms of users, data, actions, rules, and feedback;
+- tell temporary data from saved data;
+- explain what a manual observation proves—and what it does not;
+- describe a useful failure or consistency check;
+- re-test the normal path after an edge case; and
+- explain the model without needing an unfamiliar codebase.
+
+<Checkpoint id="week1-day1-complete">I completed Day 1 and can explain how a familiar app connects users, data, actions, rules, feedback, evidence, and uncertainty.</Checkpoint>

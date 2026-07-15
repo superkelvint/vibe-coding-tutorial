@@ -1,0 +1,321 @@
+---
+title: "Day 2: The browser"
+section: "Week 1 · Day 2"
+order: 7
+estimatedTime: "120 minutes"
+mentalModel: "The application runs in the user's browser; it can notice actions, keep temporary data, apply local rules, and update the screen without contacting another computer."
+verificationFocus: "Predict the browser-only loop, inspect the visible state before and after a click, check refresh and Network behavior, deliberately break one connection, and debug from evidence."
+description: "Build one tiny browser-only interaction and learn what the browser can do locally before another computer is involved."
+---
+
+Yesterday you learned to look behind an app’s screen. Today you will zoom in on one part of the story: the browser.
+
+You will build one tiny interaction—a Like button is a good choice—and watch what happens when the browser handles everything locally. The change should feel immediate. Then you will refresh the page and discover an important fact:
+
+> A screen can change without the change being saved for later.
+
+This is a learning task. You are not here to create software. You are here to solve user problems, and today’s problem is a small learning problem: understanding what the browser can do by itself.
+
+<aside class="mantra-callout">
+<p>You are not here to create software.</p>
+<p>You are here to solve user problems.</p>
+<p>Users usually tell you the solution they want, not the problem they have. Investigate the pain before you build.</p>
+</aside>
+
+Here’s all we’re doing today: one page, one browser, one temporary change, and one piece of feedback. Keeping the exercise this small lets us see exactly what the browser is doing.
+
+## The browser-only idea
+
+The application runs in the user’s browser.
+
+The browser can:
+
+<ul class="example-list">
+<li>download HTML, CSS, and JavaScript files;</li>
+<li>show a screen;</li>
+<li>notice clicks and typing;</li>
+<li>keep temporary data in memory;</li>
+<li>apply rules locally; and</li>
+<li>update the screen immediately.</li>
+</ul>
+
+The browser-only loop is:
+
+<ol class="mental-model-steps">
+<li>The user sees some data.</li>
+<li>The user takes an action.</li>
+<li>Browser code notices the action.</li>
+<li>Temporary data changes in the browser.</li>
+<li>The browser updates the screen.</li>
+<li>The user receives feedback.</li>
+</ol>
+
+<aside class="model-purpose">
+<p><strong>Why this matters:</strong> first learn to recognize the interactions that the browser can handle on its own. That makes the system smaller, easier to understand, and easier to debug.</p>
+</aside>
+
+Not every interaction needs another computer. A menu can open, a counter can increase, a tab can become selected, and a temporary note can appear entirely inside this page.
+
+### Make a prediction before you run anything
+
+Imagine a page with this starting state:
+
+<div class="app-example">
+<p><strong>Visible value:</strong> Liked: false</p>
+<p><strong>Button:</strong> Like</p>
+<p><strong>Expected action:</strong> the user clicks Like once</p>
+<p><strong>Expected feedback:</strong> the page shows Liked: true and the button looks selected</p>
+<p><strong>After refresh:</strong> the page returns to Liked: false because nothing was saved persistently</p>
+</div>
+
+<Response id="week1-day2-prediction" prompt="Before opening or building the page, predict what you expect before the click, immediately after the click, after a refresh, and in a second browser window. What evidence would support each prediction?" rows={9} />
+
+<img src={`${import.meta.env.BASE_URL}images/day2-browser-only-like.png`} alt="A fictional browser-only Like interaction showing the initial state, click, immediate feedback, and the value resetting after refresh." />
+
+*Figure 1. The browser can provide immediate feedback, but browser memory is not automatically shared or persistent.*
+
+## What counts as a good day?
+
+These are today’s acceptance criteria:
+
+<ul class="observation-checklist">
+<li>The initial value and button are visible before the action.</li>
+<li>One click is noticed by the browser.</li>
+<li>One temporary value changes.</li>
+<li>The screen reflects the changed value immediately.</li>
+<li>The feedback makes the result understandable.</li>
+<li>A refresh restores the initial state.</li>
+<li>The click does not need to contact another computer.</li>
+<li>I can explain the difference between changing the screen and saving shared data.</li>
+</ul>
+
+<Response id="week1-day2-acceptance-criteria" prompt="Rewrite today’s acceptance criteria in your own words. For each one, say what you would see or inspect to know it happened." rows={10} />
+
+<Track type="product" title="Product Judgment">
+
+This is a learning task, so use a short product gate:
+
+<div class="app-example">
+<p><strong>What are we learning?</strong> What the browser can do locally.</p>
+<p><strong>What should happen?</strong> One user action changes one temporary value and produces understandable feedback.</p>
+<p><strong>How will we test it?</strong> Take the action, observe the change, refresh, and compare.</p>
+<p><strong>What are we doing today?</strong> One small interaction in one browser.</p>
+</div>
+
+The product question is still important, even for a tiny exercise:
+
+<ul class="question-list">
+<li>What should the user understand after clicking?</li>
+<li>What feedback would make the action clear?</li>
+<li>What would confuse the user?</li>
+<li>Should this particular change survive a refresh?</li>
+<li>Would another user need to see it?</li>
+</ul>
+
+For a private visual preference, such as opening a menu or changing a display toggle, temporary browser state may be exactly right. For a Like that is supposed to represent a shared reaction, browser-only state is not enough. The product need tells us whether local state is appropriate; the technical model tells us what local state can actually provide.
+
+<Response id="week1-day2-product-judgment" prompt="Choose one tiny interaction. Explain what the user should understand after the action, whether the change should survive refresh, whether another user should see it, and why browser-only state is or is not enough for that product need." rows={9} />
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Today, Codex helps you plan and explain a small experiment. It should keep the page simple enough that you can see what the browser is doing.
+
+### Ask for a plan before asking for code
+
+Use this planning prompt:
+
+```text
+Do not write code yet.
+
+I want to build one tiny browser-only interaction.
+
+The user will [action].
+The browser should temporarily remember [data].
+The screen should show [feedback].
+
+Explain:
+1. what the user sees before the action
+2. what data the browser remembers
+3. what changes after the action
+4. what visible feedback proves it worked
+5. what should happen after refresh
+
+Keep the page to one HTML file with simple CSS and JavaScript. Do not add extra tools or extra parts.
+```
+
+Before sending it, predict what a good answer should contain. It should describe the browser’s responsibility in plain English and keep the task small.
+
+<Response id="week1-day2-codex-plan-prediction" prompt="Predict what Codex should explain before writing code. What would be a warning sign that its plan became too complicated for one small browser interaction?" rows={8} />
+
+### Then write a constrained build prompt
+
+Use this shape:
+
+```text
+Goal:
+Create one small browser-only interaction.
+
+Context:
+Use one HTML file with simple CSS and JavaScript.
+
+Constraints:
+- use one HTML file
+- use simple CSS and JavaScript
+- keep the code small
+- do not add extra tools or extra parts
+
+Acceptance criteria:
+- the initial state is visible
+- one user action changes one temporary value
+- the screen gives immediate feedback
+- refreshing restores the initial state
+
+Manual verification:
+- observe the initial state
+- perform the action
+- confirm the visible change
+- refresh
+- confirm the temporary change is gone
+
+Before the code, explain what the browser is doing in plain English.
+```
+
+<Response id="week1-day2-build-prompt" prompt="Write your own constrained build prompt for a tiny browser-only interaction. Keep the Goal, Context, Constraints, Acceptance criteria, and Manual verification sections. Keep it to one HTML file with simple CSS and JavaScript." rows={16} />
+
+If Codex gives you a large architecture for this exercise, stop and ask why. A larger answer is not automatically a better answer; it may be evidence that the prompt failed to protect the learning goal.
+
+### Evidence before debugging
+
+If the interaction fails, do not immediately ask Codex to rewrite the file. Record what happened first:
+
+<div class="app-example">
+<p><strong>Expected:</strong> what should the browser remember and show?</p>
+<p><strong>Actual:</strong> what did it remember or show instead?</p>
+<p><strong>Steps:</strong> what did you do to reproduce it?</p>
+<p><strong>Evidence:</strong> what was visible, and what appeared in the browser Console?</p>
+<p><strong>Suspected layer:</strong> event, rule, temporary data, or screen update?</p>
+</div>
+
+<Response id="week1-day2-bug-evidence" prompt="If your interaction is not behaving as expected, record the evidence using Expected, Actual, Steps, Evidence, and Suspected layer. Do not propose a rewrite before recording what you observed." rows={12} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+Build one simple page with:
+
+<ul class="observation-checklist">
+<li>one visible value;</li>
+<li>one button;</li>
+<li>one click handler;</li>
+<li>one temporary state change; and</li>
+<li>one visible feedback change.</li>
+</ul>
+
+Use one HTML file with simple CSS and JavaScript. A Like button is recommended because the state is easy to see:
+
+<div class="app-example">
+<p><strong>Before:</strong> Liked: false and an unselected Like button.</p>
+<p><strong>Click:</strong> the browser notices the click.</p>
+<p><strong>Temporary data:</strong> the browser changes Liked from false to true.</p>
+<p><strong>Screen update:</strong> the button and message reflect true.</p>
+<p><strong>Refresh:</strong> the page starts over because the value was not saved.</p>
+</div>
+
+Before you run the page, answer:
+
+<ul class="question-list">
+<li>What data exists before the click?</li>
+<li>Where does that data currently live?</li>
+<li>What should change after the click?</li>
+<li>What should the user see?</li>
+<li>What do you expect after refresh?</li>
+</ul>
+
+<Response id="week1-day2-technical-prediction" prompt="Describe the browser-only click story before running it: initial data, click event, temporary state change, screen update, feedback, and expected refresh result." rows={10} />
+
+### Run focused checks
+
+Use the cheapest checks that support the browser-only claim:
+
+1. Read the diff or changed file.
+2. Open the page and confirm the initial state.
+3. Click once and confirm the state and feedback change.
+4. Refresh and confirm the initial state returns.
+5. Open the browser Network panel and confirm the click itself did not create a data request.
+6. Read the Console for errors.
+
+The initial HTML, CSS, and JavaScript files may have been loaded over a network. That is different from the click handler making a request. Your claim is that the interaction itself was handled locally.
+
+<Checkpoint id="week1-day2-focused-checks">I checked the initial state, clicked once, observed the immediate change, refreshed, inspected the Console, and checked the Network panel.</Checkpoint>
+
+<Response id="week1-day2-evidence-review" prompt="Review the evidence: what passed, what failed, what was not run, and what does the Network panel actually show? Could any check be passing for the wrong reason? What remains unverified?" rows={10} />
+
+### Break it on purpose
+
+Choose one small browser-only bug. Make one change at a time so you can connect the symptom to the broken layer:
+
+<ul class="example-list">
+<li>The data changes, but the screen does not update.</li>
+<li>The screen changes, but the temporary value does not change correctly.</li>
+<li>The click handler changes the wrong item.</li>
+<li>The button’s visible name and the expected event connection do not match.</li>
+</ul>
+
+Before asking Codex for help, reproduce the bug and record the evidence. Then make the smallest fix and re-run the normal path.
+
+<Response id="week1-day2-deliberate-bug" prompt="Describe the deliberate bug you created, what you expected, what actually happened, what evidence you inspected, which layer you suspected, and what smallest fix restored the behavior." rows={12} />
+
+<Response id="week1-day2-regression" prompt="Regression check: after fixing the deliberate bug, what existing behavior did you re-test? Confirm the initial state, one-click change, feedback, refresh reset, and no-request claim." rows={9} />
+
+<Checkpoint id="week1-day2-regression-checked">I re-ran the normal browser-only workflow after the deliberate bug and confirmed the original behavior still worked.</Checkpoint>
+
+### What is still unverified?
+
+This exercise does not prove that the Like is saved, shared with another browser, or safe for multiple users. It proves a smaller claim: one browser can notice an action, change temporary data, update its screen, and provide feedback without contacting another computer for that click.
+
+<Response id="week1-day2-remaining-uncertainty" prompt="What remains unverified? Name at least two things this browser-only exercise cannot prove, and explain what new layer would be needed to make one of those claims testable." rows={8} />
+
+</Track>
+
+## Explain it back
+
+Use this as a starting point, then say it in your own words:
+
+<div class="explain-summary">
+<p>The application runs in my browser.</p>
+<p>The browser showed the screen and noticed my click.</p>
+<p>JavaScript changed temporary data in the browser.</p>
+<p>The browser updated the screen to give me feedback.</p>
+<p>The change disappeared after refresh because it was not saved persistently.</p>
+<p>Not every user action needs another computer.</p>
+</div>
+
+<Response id="week1-day2-explain-back" prompt="Explain the browser-only action from click to feedback. Include where the temporary value lived, why the screen changed immediately, why refresh reset it, what the Network panel showed, and what remains outside the claim." rows={11} />
+
+<aside class="mantra-callout">
+<p>You are not here to create software. You are here to solve user problems.</p>
+<p>Today, solving the learning problem means knowing exactly what the browser can do locally—and where that stops being enough.</p>
+</aside>
+
+> **Mentor pause:** Show your mentor the page. Explain the initial state, the click, the temporary change, the refresh reset, and the evidence from Console and Network. Ask them when another computer would become necessary for a real shared product.
+
+<Checkpoint id="week1-day2-mentor-pause">I explained one browser-only interaction to my mentor, showed what I checked, described what happened, and said what I still do not know.</Checkpoint>
+
+## Done for today
+
+You are ready for Day 3 if you can:
+
+<ul class="observation-checklist">
+<li>explain what the browser can do locally;</li>
+<li>trace one browser-only action from click to feedback;</li>
+<li>tell a visible change from saved shared data;</li>
+<li>use refresh as evidence about persistence;</li>
+<li>distinguish the page loading from the click making a request;</li>
+<li>debug from Expected, Actual, Steps, Evidence, and Suspected layer; and</li>
+<li>explain what remains unverified.</li>
+</ul>
+
+<Checkpoint id="week1-day2-complete">I completed Day 2 and can explain, test, and debug one browser-only interaction without confusing temporary screen state with shared persistent data.</Checkpoint>

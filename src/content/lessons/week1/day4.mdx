@@ -1,0 +1,682 @@
+---
+title: "Day 4: Build a browser-only Family Chore Board"
+section: "Week 1 · Day 4"
+order: 9
+estimatedTime: "300 minutes"
+mentalModel: "Start with a real user problem, model the smallest useful workflow, and keep the chore data in browser memory while you learn how actions change state and feedback."
+verificationFocus: "Define observable success, predict each state change, inspect the existing checks, test valid and invalid actions, deliberately break one state transition, and verify that unrelated chores still work."
+description: "Apply the users–data–actions–rules–feedback model to a small product and build its first browser-only workflow."
+---
+
+Yesterday you learned why many web apps need two cooperating parts: a client for the person using the app and a server for shared, trustworthy information.
+
+Today you will build only the client side of a small product: <b>a Family Chore Board</b>. The chores will live temporarily in this browser. That is intentional. We are learning how to model and build the user-facing workflow before we ask another computer to save or share it.
+
+
+## Start with the family’s problem
+
+Imagine a family where people regularly ask:
+
+<ul class="question-list">
+<li>“Who was supposed to take out the rubbish?”</li>
+<li>“Did anyone feed the dog?”</li>
+<li>“What still needs to be done?”</li>
+<li>“I thought you said you had done it.”</li>
+</ul>
+
+The problem is not “we need a web app.” The problem is that responsibilities are easy to forget, hard to see, or unclear between family members.
+
+The family might currently use memory, verbal reminders, paper, or a group chat. Those work sometimes, but information can be missed or become out of date.
+
+<div class="app-example">
+<p><strong>Smallest useful version:</strong> one person can add a chore, assign it to a family member, see the list, and mark one chore done.</p>
+<p><strong>Success signal:</strong> a person can add three chores, assign them, and mark exactly one complete without changing the others.</p>
+</div>
+
+<img src={`${import.meta.env.BASE_URL}images/day4-family-chore-board.png`} alt="A fictional Family Chore Board storyboard showing a chore being added, assigned to a person, and marked done." />
+
+*Figure 1. The first workflow is small enough to understand: add a chore, assign it, and mark one chore done.*
+
+This first version is deliberately modest. It does not try to solve every family coordination problem.
+
+## What we are building today
+
+Today’s version is a browser-only prototype:
+
+<ul class="observation-checklist">
+<li>Chores exist only in this browser’s temporary memory.</li>
+<li>A person can add a chore.</li>
+<li>A person can assign the chore to someone.</li>
+<li>The list shows the chore and its assigned person.</li>
+<li>A person can mark one chore done.</li>
+<li>Blank chores are rejected with understandable feedback.</li>
+<li>Refreshing the page clears the list.</li>
+</ul>
+
+<aside class="model-purpose">
+<p><strong>Scope boundary:</strong> this is useful for learning the workflow, but it is not yet a shared family product. A second browser will not see the same chores, and refreshing will remove them.</p>
+</aside>
+
+Do not add login, reminders, points, recurring chores, chat, a database, or a server today. Those might become useful later, but they would distract from the browser workflow we are learning now.
+
+## Map the product before designing it
+
+Use the five-part model from Day 1:
+
+<table>
+<thead><tr><th>Part</th><th>Family Chore Board</th></tr></thead>
+<tbody>
+<tr><td><strong>Users</strong></td><td>Family members sharing household responsibilities.</td></tr>
+<tr><td><strong>Data</strong></td><td>A chore’s name, assigned person, and completion status.</td></tr>
+<tr><td><strong>Actions</strong></td><td>Add a chore, choose a person, and mark one chore done.</td></tr>
+<tr><td><strong>Rules</strong></td><td>A chore cannot be blank, and clicking Done should change only the selected chore.</td></tr>
+<tr><td><strong>Feedback</strong></td><td>The list updates, the assigned person is visible, completed chores look different, and invalid input gets a useful message.</td></tr>
+</tbody>
+</table>
+
+### Predict before you design
+
+Choose one action and predict the complete story:
+
+<ol class="mental-model-steps">
+<li>The user sees the current chore list and controls.</li>
+<li>The user takes an action, such as entering “Feed the dog” and clicking Add.</li>
+<li>The browser notices the action.</li>
+<li>The browser checks the local rule: the chore name must not be blank.</li>
+<li>The browser changes its temporary chore data.</li>
+<li>The screen updates and gives feedback.</li>
+</ol>
+
+<Response id="week1-day4-model-prediction" prompt="Choose Add, Assign, or Done. What data exists before the action? What should change? What rule should be checked? What should the user see afterward? Should the change survive refresh today?" rows={10} />
+
+## Acceptance criteria
+
+A result is not “done” because the page looks close. Use observable criteria:
+
+<ul class="observation-checklist">
+<li>The page shows a clear way to enter a chore and choose a person.</li>
+<li>A valid chore can be added to the list.</li>
+<li>The assigned person is visible beside the chore.</li>
+<li>A blank chore is rejected and the user receives useful feedback.</li>
+<li>Marking one chore done changes its appearance or status.</li>
+<li>Marking one chore done does not mark other chores done.</li>
+<li>The list gives enough feedback for the user to understand what changed.</li>
+<li>Refreshing clears the list, because persistence is intentionally out of scope today.</li>
+</ul>
+
+<Response id="week1-day4-acceptance-criteria" prompt="Rewrite the acceptance criteria in your own words. For each one, say exactly what you would see, click, or inspect to know it passed." rows={12} />
+
+### Why unit and end-to-end tests matter
+
+When you are vibe coding, it is easy to make one part of an app better while accidentally breaking something else. Automated tests act like a safety net: they check that the app still behaves the way you expect after every change.
+
+They also **keep the coding agent honest**.
+
+An AI coding agent can write code that looks reasonable and confidently say a task is complete. But code that looks correct is not necessarily code that works. Without tests, the agent may have no reliable way to verify that it actually met your requirements.
+
+Automated tests turn your instructions into checks the agent can run.
+
+These tests are development-time code. The agent creates and runs them while building the app; they are not user-facing features and do not normally run as part of the app’s runtime experience. Their job is to give the agent a repeatable way to check correctness before the work is considered complete.
+
+A **unit test** checks one small piece of behavior in isolation. For example:
+
+> “A chore with a blank name should not be added.”
+
+This gives the agent a precise rule to satisfy. It can run the test, see whether the rule passes, and revise its code when it does not.
+
+An **end-to-end test** checks a complete user journey through the app. For example:
+
+> “A user can add two chores, mark one as done, and see that the other remains unfinished.”
+
+This verifies that the app works from the user’s point of view—not just that the individual pieces of code appear correct.
+
+When you are vibe coding, you usually are not writing the tests yourself. The coding agent writes and runs them. Your job is to make testing part of the assignment.
+
+Do not only prompt the agent to build a feature. Ask it to:
+
+- create tests for the required behavior,
+- run those tests,
+- fix any failures, and
+- consider edge cases that might not be obvious from the main request.
+
+When a new change breaks something that previously worked, it is called a **regression**. Regressions are usually accidental. The agent may fix the Add button and unknowingly break the Done button, or improve the chore list and accidentally allow blank chores again.
+
+Without tests, both you and the agent are relying heavily on appearances and assumptions. The app may load, the code may look clean, and the agent may report success—even though an important workflow is broken.
+
+With tests, “done” has a clearer meaning. The agent can run the checks and provide evidence that the requested behavior works. Tests do not guarantee that an app has no bugs, but they make it harder for the agent to mistake plausible-looking code for a working solution.
+
+Tests give you an early warning. They help you preserve the progress you have already made, understand exactly what broke, and make new changes with more confidence. Instead of repeatedly rechecking the entire app by hand, you can rely on focused tests to confirm that the important parts still work.
+
+Without that safety net, vibe coding can feel like whack-a-mole: you fix Add, then break Done. You repair the list, then blank input starts working again. Tests help you keep your progress, give the agent a way to verify its own work, and turn confident claims into results that can actually be checked.
+
+### How to create tests
+
+You do not need to know how to write these tests. You do need to tell the agent what outcomes matter.
+
+You should also ask the agent to look beyond the happy path. The happy path is the straightforward case where the user does everything as expected. **Edge cases** are the less obvious situations where bugs often hide.
+
+For a chore app, edge cases might include:
+
+* entering only spaces instead of a chore name,
+* clicking Add twice,
+* using a very long chore name,
+* marking an already completed chore as done,
+* refreshing the page after making a change, or
+* trying the feature when the list is empty.
+
+You will not always think of every edge case yourself. That is fine. **Ask the agent to identify likely edge cases, explain which ones it plans to test, and add tests for the important ones.** You can then review the list and point out anything it missed.
+
+A useful vibe-coding prompt is:
+
+> “Implement this feature, create unit and end-to-end tests for the required behavior, identify and test important edge cases, run the full test suite, and fix any failures before declaring the task complete.”
+
+Always remember this: 
+> **If you do not test your application, you are by default asking your users to test your application for you.**
+
+## Think through the product before writing code
+
+Before asking Codex to build the Family Chore Board, workshop the experience with ChatGPT.
+
+This can feel like “wasting time” because you are writing words instead of code. It is not wasted time. Writing down the requirements and the design forces you to think through the application before code makes the decisions harder to change.
+
+When you write the experience out, you have to notice things such as:
+
+<ul class="question-list">
+<li>What does the family member need to do first?</li>
+<li>What information must be visible at each step?</li>
+<li>What happens when the user makes a mistake?</li>
+<li>How does the user know that the chore was added or completed?</li>
+<li>What should happen when there are no chores yet?</li>
+<li>Which choices are product decisions, and which are merely implementation details?</li>
+</ul>
+
+This is valuable because **changes are cheapest before any code is written**. Changing a sentence, a user flow, or a rough mockup is quick. Changing a coded interface can require rewriting markup, state logic, styling, tests, and other behavior that has already grown around the first decision.
+
+<aside class="model-purpose">
+<p><strong>Why document the idea?</strong> Documentation is not paperwork added after the real work. It is a way to do the real product thinking before implementation. It gives you a chance to discover confusion, missing states, and unnecessary features while they are still cheap to change.</p>
+</aside>
+
+### Step 1: describe the user actions
+
+Start with actions, not screens. For this product, a family member needs to:
+
+<ol class="mental-model-steps">
+<li>see the current chores;</li>
+<li>add a new chore;</li>
+<li>choose who is responsible;</li>
+<li>understand whether the chore was added successfully; and</li>
+<li>mark one chore done without changing the others.</li>
+</ol>
+
+### Step 2: workshop UX options with ChatGPT
+
+ChatGPT can help you explore several possible ways to support those actions. Ask it to propose simple UX mockups or rough screen flows. At this stage, you are not asking for production code. You are comparing ways a person might use the product.
+
+```text
+I am thinking like a product designer, not asking for code yet.
+
+We are exploring a small Family Chore Board for family members who forget
+responsibilities or are unsure who is doing what.
+
+The user needs to:
+- see the current chores
+- add a chore
+- choose the responsible person
+- understand whether the chore was added
+- mark one chore done without changing other chores
+
+Suggest three simple UX mockups or screen flows for this experience.
+For each option, explain:
+1. what the user sees first
+2. what action they take
+3. what data they provide
+4. what feedback they receive
+5. how the design handles an empty list
+6. how the design handles blank or invalid input
+7. what could be confusing
+
+Keep the options beginner-friendly and browser-only.
+Do not write implementation code.
+```
+
+Do not accept the first idea automatically. Compare the options against the user’s problem. Choose the smallest flow that makes responsibilities clear and gives the user confidence about what happened.
+
+<Response id="week1-day4-ux-workshop" prompt="Describe the user actions for the Chore Board and compare two possible UX flows. Which flow would you choose, what user problem does it address, and what confusion or edge case does it handle?" rows={14} />
+
+### Step 3: save the decisions as project artifacts
+
+Once you have chosen a direction, ask ChatGPT to help turn the decision into two short Markdown documents. Save them in the project, for example:
+
+<table>
+<thead><tr><th>File</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>docs/product-requirements.md</code></td><td>What problem the product solves, who it is for, what the user needs to do, what success means, and what is out of scope.</td></tr>
+<tr><td><code>docs/high-level-design.md</code></td><td>How the chosen experience is organized: the screens or sections, important data, actions, rules, feedback, and today’s browser-only limit.</td></tr>
+</tbody>
+</table>
+
+The PRD answers **what and why**. The high-level design document answers **how the experience is organized**. Neither document needs to describe every line of code.
+
+These files serve two audiences in sequence. First, they are for **human review**: you must check whether ChatGPT understood the problem, whether the UX makes sense, and whether the requirements describe the product you actually want. Only after you have corrected and approved them do they become critical context for Codex agents.
+
+A future agent that opens the project should be able to read the approved files and quickly understand what the product is trying to solve, who it is for, what experience was chosen, what is in scope, and what must not be added. Without that reviewed context, an agent may produce code that works technically but solves the wrong problem or quietly expands the product.
+
+Use ChatGPT to draft them, then read them yourself line by line. Correct anything that is inaccurate, vague, overcomplicated, or not aligned with the user problem. Do not give the documents to Codex until you have reviewed and approved them. The student remains responsible for the product decision.
+
+<aside class="model-purpose">
+<p><strong class="important-sequence">Important sequence:</strong> ChatGPT drafts the artifacts. You review and approve them. Codex reads the approved artifacts and implements against them.</p>
+</aside>
+
+```text
+Using the UX direction we chose, draft two concise Markdown files.
+
+File 1: docs/product-requirements.md
+Include:
+- user and problem
+- situation and current workaround
+- user actions
+- smallest useful version
+- observable success criteria
+- deliberate scope exclusions
+
+File 2: docs/high-level-design.md
+Include:
+- the main screen or sections
+- data for one chore
+- actions and state changes
+- rules and validation
+- success, empty, and error feedback
+- what is temporary in the browser today
+- what is intentionally postponed
+
+Do not write application code.
+Do not add a server, database, login, reminders, points, chat, or recurring chores.
+Keep both files understandable to a beginner.
+```
+
+<Response id="week1-day4-artifact-review" prompt="Write the key decisions that should appear in your PRD and high-level design document. What would you change now, before implementation, if the documents exposed an unclear user flow or unnecessary feature?" rows={12} />
+
+<Checkpoint id="week1-day4-product-artifacts">I chose a UX direction, saved a product-requirements.md and high-level-design.md artifact in the project, and reviewed both for unclear flows, missing feedback, unnecessary scope, and remaining decisions.</Checkpoint>
+
+### Step 4: ask ChatGPT for an implementation plan
+
+The PRD explains what problem we are solving. The high-level design explains the experience we chose. Next, ask ChatGPT to suggest a safe way to build that experience in small pieces.
+
+The plan should be broken into **milestones**. Each milestone must produce something visible in the app. After every milestone, you should be able to open the page and see the product taking shape—not just trust that a large invisible refactor is complete.
+
+Visible milestones make the work easier to understand and easier to correct. If the experience looks wrong after the first or second milestone, you can change direction while very little code depends on that decision. A plan that hides all visible output until the end makes it much harder to tell where the product went off course.
+
+Each milestone also needs focused tests or checks. The check should answer: **what would prove that this milestone was implemented correctly?**
+
+```text
+Read these approved project documents first:
+- docs/product-requirements.md
+- docs/high-level-design.md
+
+Suggest an implementation plan for the browser-only Family Chore Board.
+
+Break the plan into small milestones. For every milestone, include:
+1. the user-visible result after this milestone
+2. the smallest implementation change needed
+3. the product behavior being added
+4. focused tests or checks that verify this milestone
+5. a manual check I can perform in the browser
+6. what existing behavior must still work
+7. what remains intentionally unbuilt
+
+The milestones should show visible progress, for example:
+- show the empty Chore Board screen
+- let the user enter and display one chore
+- let the user choose and display an assignment
+- let the user add another chore without losing the first
+- let the user mark exactly one chore done
+- show useful feedback for blank input
+
+Keep the plan browser-only and beginner-friendly.
+Do not add a server, database, login, reminders, points, chat, recurring chores,
+React, or external libraries.
+Do not plan a large hidden rewrite before showing visible progress.
+```
+
+Ask ChatGPT to suggest the plan, but review it yourself. Make sure every milestone has visible output and a meaningful check. If a milestone only says “refactor the state architecture” but gives you nothing to see or verify, ask for it to be split into a smaller, visible step.
+
+<Response id="week1-day4-implementation-plan" prompt="Draft or review an implementation plan with at least four visible milestones. For each milestone, state what the user will see and what test or check will prove it works. Which milestone would you change if it produced no visible progress?" rows={16} />
+
+Save the reviewed plan as another project artifact, for example <code>docs/implementation-plan.md</code>. This gives Codex a sequence to follow instead of asking it to invent the build order while it is editing the project.
+
+<Checkpoint id="week1-day4-implementation-plan-reviewed">I reviewed an implementation plan whose milestones each produce visible output, include a focused test or check, and preserve the existing behavior.</Checkpoint>
+
+### Step 5: give the documents and plan to Codex
+
+Only after the product thinking and implementation plan are written down should Codex help implement the workflow. Add the approved documents and plan to the prompt context and ask Codex to read them before planning or changing code. They are the agent’s high-level understanding of the product and its agreed build sequence, not optional background reading.
+
+ChatGPT helped you explore the UX, document the product, and suggest the milestone plan. You reviewed and approved those decisions. Codex will help you implement and verify one visible milestone at a time. Neither tool replaces your judgment about whether the experience solves the family’s problem.
+
+<Track type="product" title="Product Judgment">
+
+Today is a learning task with a small product story. The problem, smallest workflow, and acceptance criteria are already written above. Your job in this track is to challenge them before implementation.
+
+Ask yourself:
+
+<ul class="question-list">
+<li>Would a family member know what to do without being taught?</li>
+<li>Would the screen make it obvious who is responsible?</li>
+<li>Would “done” be clear enough, or would the family need a different status?</li>
+<li>What would make the list confusing or untrustworthy?</li>
+<li>Which parts would eventually need a shared source of truth?</li>
+<li>What assumption about the family’s behavior are we making?</li>
+<li>What could we learn from a quick prototype before building more?</li>
+</ul>
+
+<Response id="week1-day4-product-judgment" prompt="Review the proposed Family Chore Board. What assumption could be wrong, what part of the UX might confuse a family member, what is the smallest thing we could learn from this prototype, and what should remain out of scope?" rows={12} />
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Use Codex to implement the reviewed plan, but keep control of the product decisions and evidence. ChatGPT already helped create the implementation plan; Codex should execute it one milestone at a time rather than inventing another plan.
+
+### Implement one milestone at a time
+
+The implementation plan is now the build plan. Do not ask Codex to design the whole application again. Ask it to implement only the next approved milestone, then verify that milestone before continuing.
+
+```text
+Read these approved documents first:
+- docs/product-requirements.md
+- docs/high-level-design.md
+- docs/implementation-plan.md
+
+Implement only the next milestone in docs/implementation-plan.md:
+[paste or identify the next milestone]
+
+Before editing:
+- explain the visible result this milestone should produce
+- identify the smallest change needed
+- identify the focused tests or checks for this milestone
+- identify the existing behavior that must remain working
+
+Constraints:
+- do not skip ahead to later milestones
+- do not add features outside the approved documents
+- do not make a hidden architecture rewrite
+- use the existing project structure unless a change is necessary
+
+After editing:
+- run the focused checks for this milestone
+- perform the planned manual browser check
+- run the relevant regression checks
+- report what passed, failed, or was not run
+- state what remains unverified
+```
+
+<Response id="week1-day4-build-prompt" prompt="Write an execution prompt for the next approved milestone. Include the milestone, visible result, smallest change, focused checks, regression checks, manual browser check, evidence report, and remaining uncertainty. Do not write a second whole-product plan." rows={14} />
+
+### Evidence before debugging
+
+If the app does not behave as expected, do not begin with “rewrite it.” Record the failure first:
+
+<div class="app-example">
+<p><strong>Bug:</strong> what is not working?</p>
+<p><strong>Expected:</strong> what should the user see after the action?</p>
+<p><strong>Actual:</strong> what did the user see?</p>
+<p><strong>Steps:</strong> how can someone make the problem happen again?</p>
+<p><strong>Evidence:</strong> what did the list, browser Console, and underlying data show?</p>
+<p><strong>Suspected link:</strong> user action, rule, state change, screen update, or feedback?</p>
+<p><strong>Constraint:</strong> make the smallest fix and explain why it broke.</p>
+</div>
+
+<Response id="week1-day4-debug-evidence" prompt="Write an evidence-first bug report for one possible Chore Board failure. Include Bug, Expected, Actual, Steps, Evidence, Suspected link, and the smallest-fix constraint." rows={14} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+Build the smallest browser-only workflow in plain HTML, CSS, and JavaScript.
+
+### Start the client
+
+From the app project’s folder, run:
+
+```text
+npm run dev
+```
+
+Keep that terminal open. Open the local URL printed by the command in your browser. This is the client: the page the user sees and interacts with. Whenever Codex changes the client, refresh the page or let the development server show the update, then perform the planned browser check.
+
+The app should have:
+
+<ul class="observation-checklist">
+<li>a visible list of chores;</li>
+<li>a way to enter a chore name;</li>
+<li>a way to choose the assigned person;</li>
+<li>an Add action;</li>
+<li>a Done action for each chore; and</li>
+<li>clear feedback for success and invalid input.</li>
+</ul>
+
+Do not add persistence today. Do not add optional features until the core workflow passes its checks. Delete and an unfinished-chore count can wait for another lesson or for a deliberate extension after the core work is secure.
+
+### Inspect the project before editing
+
+Before asking Codex to change code:
+
+<ol class="mental-model-steps">
+<li>Open the current project and find the page you are changing.</li>
+<li>Identify the existing scripts, checks, and build command.</li>
+<li>Run the relevant baseline check if one exists.</li>
+<li>Record what passed, failed, or was not available.</li>
+<li>Only then make the smallest planned change.</li>
+</ol>
+
+<Checkpoint id="week1-day4-existing-checks">I inspected the existing project checks, ran the relevant baseline check, and recorded what passed, failed, or was not available.</Checkpoint>
+
+### Build one action at a time
+
+Before each action, predict the state transition:
+
+<table>
+<thead><tr><th>Action</th><th>Before</th><th>Expected change</th><th>Feedback</th></tr></thead>
+<tbody>
+<tr><td>Add</td><td>The input may contain a chore name; the list may be empty.</td><td>One new chore is added with its assigned person and a not-done status.</td><td>The new chore appears, and the input is ready for another chore.</td></tr>
+<tr><td>Add blank</td><td>The chore name is empty or only spaces.</td><td>The list does not gain a blank chore.</td><td>The user sees what needs to be entered.</td></tr>
+<tr><td>Done</td><td>Several chores may be incomplete.</td><td>Only the selected chore changes to done.</td><td>The selected chore looks complete and the others stay unchanged.</td></tr>
+</tbody>
+</table>
+
+<Response id="week1-day4-state-transitions" prompt="Choose one row from the table. Explain what the browser data is before the action, what exact value changes, and what evidence would prove that unrelated data stayed unchanged." rows={9} />
+
+### Focused manual verification
+
+Run these checks in order:
+
+<ol class="mental-model-steps">
+<li>Add “Feed the dog” and assign it to one person.</li>
+<li>Add “Take out the rubbish” and assign it to another person.</li>
+<li>Confirm both chores and both assignments are visible.</li>
+<li>Mark only “Feed the dog” done.</li>
+<li>Confirm “Feed the dog” looks complete and “Take out the rubbish” does not.</li>
+<li>Try to add an empty chore and confirm the list does not gain a blank row.</li>
+<li>Refresh and confirm the list clears, as expected for today’s temporary version.</li>
+</ol>
+
+<Checkpoint id="week1-day4-core-workflow">I manually tested adding, assigning, completing one chore, rejecting blank input, and refreshing the temporary list.</Checkpoint>
+
+### Break one connection on purpose
+
+Choose one controlled bug or edge case:
+
+<ul class="example-list">
+<li>change the wrong chore when Done is clicked;</li>
+<li>update the list data but forget to redraw the screen;</li>
+<li>redraw the screen but fail to update the underlying chore data;</li>
+<li>allow a blank chore to appear;</li>
+<li>make every chore become done when one button is clicked; or</li>
+<li>hide the feedback after invalid input.</li>
+</ul>
+
+Before fixing it, locate the broken link:
+
+<ol class="mental-model-steps">
+<li>Did the user action get noticed?</li>
+<li>Did the rule run?</li>
+<li>Did the correct chore data change?</li>
+<li>Did the screen redraw from the changed data?</li>
+<li>Did the user receive honest feedback?</li>
+</ol>
+
+<Response id="week1-day4-deliberate-bug" prompt="Describe the controlled failure you tried. What did you expect, what happened, what evidence did you gather, which link broke, and what was the smallest fix?" rows={13} />
+
+<Response id="week1-day4-regression" prompt="Regression check: after fixing the failure, re-test adding two chores, assigning different people, completing only one, rejecting blank input, and refreshing. What passed, what failed, and what remains unverified?" rows={11} />
+
+<Checkpoint id="week1-day4-regression-checked">I re-ran the normal workflow after the controlled failure and confirmed the original add, assign, complete, invalid-input, and refresh behavior still worked.</Checkpoint>
+
+### Review the evidence
+
+Separate the claims instead of trusting one screenshot:
+
+<ul class="observation-checklist">
+<li>The valid chore was accepted.</li>
+<li>The assignment was stored in the browser’s temporary data.</li>
+<li>The correct chore changed to done.</li>
+<li>Other chores remained unchanged.</li>
+<li>The screen displayed the current data.</li>
+<li>Blank input was rejected.</li>
+<li>The feedback explained what happened.</li>
+<li>Refresh cleared the list as expected.</li>
+</ul>
+
+<Response id="week1-day4-evidence-review" prompt="Review your evidence honestly. What passed? What failed? What did you not run? Could any check pass for the wrong reason? What remains unverified about this browser-only prototype?" rows={12} />
+
+### Final test review: happy case and edge cases
+
+It is easy to test only the **happy case**: the user enters a normal chore, chooses a person, clicks Add, and sees the expected result.
+
+That is important, but it is not enough. **Edge cases** are the unusual, incomplete, invalid, or difficult situations that can expose a broken rule:
+
+<table>
+<thead><tr><th>Happy case</th><th>Possible edge case</th></tr></thead>
+<tbody>
+<tr><td>The user enters “Feed the dog” and adds it.</td><td>The user submits an empty name or a name containing only spaces.</td></tr>
+<tr><td>The user marks one visible chore done.</td><td>The user clicks Done twice or clicks a button after several chores have been added.</td></tr>
+<tr><td>The user assigns a normal person.</td><td>No person is selected, or the selected person is missing from the available choices.</td></tr>
+<tr><td>The list contains a few normal chores.</td><td>The list is empty, contains duplicate names, or contains a very long chore name.</td></tr>
+<tr><td>The screen updates after the data changes.</td><td>The data changes but the screen shows old information, or the screen changes the wrong chore.</td></tr>
+</tbody>
+</table>
+
+The happy case tells us that the main path works. Edge-case thinking asks whether the rules still protect the user when the input, timing, or data is not ideal. This matters because real users do not follow the perfect path every time—and a small mistake can make an app confusing or untrustworthy.
+
+At the end of each milestone, ask Codex to perform this critical test review itself. Codex should inspect the implementation and the approved requirements, map each required behavior to a meaningful test or check, inspect coverage, and think through edge cases that the current tests may not exercise. Your job is to read Codex’s report and evidence—not to reproduce the entire test audit manually.
+
+```text
+Perform a critical final test and coverage review for the milestone you just implemented.
+
+1. List every required behavior for this milestone.
+2. For each behavior, identify the unit test or other automated check that
+   verifies it. If the project has no unit-test setup, say that clearly.
+3. Inspect the available test coverage and identify important code paths that
+   are not covered. Do not merely report the coverage percentage.
+4. Decide whether each test is meaningful or could pass for the wrong reason.
+5. Separate the happy-case checks from edge-case checks.
+6. Think critically through edge cases involving empty input, repeated actions, missing
+   choices, multiple chores, long names, wrong item selection, stale screen
+   data, and refresh behavior where relevant.
+7. Recommend the smallest meaningful tests or manual checks for uncovered
+   cases. Do not add a testing framework or external library without approval.
+8. Run the available checks and report what passed, failed, or was not run.
+9. State what remains unverified and why.
+```
+
+<Response id="week1-day4-happy-edge-review" prompt="Record Codex’s critical test and coverage report for one milestone. Which required behaviors have meaningful checks? Which happy cases and edge cases are covered or missing? Did Codex find any check that could pass for the wrong reason? What remains unverified?" rows={14} />
+
+<Checkpoint id="week1-day4-test-coverage-reviewed">I asked Codex to critically review the required functionality, available tests, coverage, happy-case behavior, edge cases, weak checks, and remaining unverified behavior, then recorded its report.</Checkpoint>
+
+### Final audit: compare the implementation with the plan
+
+When the work appears finished, take one more step back. Ask Codex to compare the actual implementation with the approved PRD, high-level design, and implementation plan.
+
+This catches a different kind of failure. The app may look good and its tests may pass, but a milestone may have been skipped, a requirement may only be partly implemented, or an extra feature may have slipped into the product. Codex should check the implementation against the plan instead of assuming that “finished” means “complete.”
+
+```text
+Take a step back and audit the completed implementation against the approved
+project context:
+- docs/product-requirements.md
+- docs/high-level-design.md
+- docs/implementation-plan.md
+
+Compare the actual implementation with every requirement and milestone.
+
+Report:
+1. what is fully implemented
+2. what is only partially implemented
+3. what is missing
+4. what was implemented but was not requested
+5. whether each milestone produces the planned visible result
+6. whether the planned tests and manual checks were run
+7. whether the implementation still respects the browser-only scope
+8. what should be fixed before calling the work complete
+9. what remains unverified
+
+Use the files and the implementation as evidence. Do not assume that a
+passing test proves that every requirement is covered.
+```
+
+<Response id="week1-day4-plan-implementation-audit" prompt="Record Codex’s final comparison of the implementation with the PRD, high-level design, and implementation plan. What is complete, partial, missing, extra, or still unverified?" rows={14} />
+
+<Checkpoint id="week1-day4-plan-implementation-reviewed">I asked Codex to compare the completed implementation with the approved requirements, design, and milestone plan, and recorded what was complete, missing, extra, or unverified.</Checkpoint>
+
+Codex’s audit is an additional reviewer, not the final authority. Before keeping the work, inspect its reported evidence and the resulting change yourself. If Codex is uncertain, a check fails, or a requirement is missing, the work is not complete yet.
+
+</Track>
+
+## Explain it back
+
+Complete these sentences in plain English:
+
+<ul class="question-list">
+<li>The users of this product are…</li>
+<li>The problem they are experiencing is…</li>
+<li>One chore contains…</li>
+<li>The chore list lives…</li>
+<li>When Add is clicked, the browser…</li>
+<li>When Done is clicked, only… should change.</li>
+<li>The screen updates because…</li>
+<li>A blank chore is rejected because…</li>
+<li>The chores disappear after refresh because…</li>
+<li>To share and save them later, we would need…</li>
+</ul>
+
+<Response id="week1-day4-explain-back" prompt="Explain the Family Chore Board from the family’s problem through users, data, actions, rules, feedback, temporary browser state, and what remains unverified. Use plain English and explain why this is only a prototype today." rows={14} />
+
+<aside class="mantra-callout">
+<p>You are not here to create software.</p>
+<p>You are here to solve user problems.</p>
+<p>Today, that means testing whether a small, understandable workflow helps make family responsibilities clearer—not pretending that a browser-only page is already a shared family system.</p>
+</aside>
+
+<details>
+<summary>Mentor pause</summary>
+
+Show your mentor the product problem, the acceptance criteria, the browser-only scope, and the evidence from your manual and regression checks. Explain one deliberate bug, why you think it broke, and what remains unverified.
+</details>
+
+<Checkpoint id="week1-day4-mentor-pause">I explained the family problem, the workflow, the evidence, the deliberate bug, the regression check, and the remaining uncertainty to a mentor.</Checkpoint>
+
+## Done for today
+
+You are ready for Day 5 if you can:
+
+<ul class="observation-checklist">
+<li>apply the users–data–actions–rules–feedback model to a new product;</li>
+<li>explain why the first version is browser-only;</li>
+<li>add and assign a chore;</li>
+<li>mark exactly one chore done;</li>
+<li>reject blank input with understandable feedback;</li>
+<li>use evidence to locate a broken state transition;</li>
+<li>re-test the normal workflow after a deliberate failure;</li>
+<li>ask Codex to critically review both happy-case and edge-case test coverage;</li>
+<li>ask Codex to compare the implementation with the approved plan before calling it complete; and</li>
+<li>explain what the prototype does not yet prove.</li>
+</ul>
+
+<Checkpoint id="week1-day4-complete">I completed Day 4 and can explain, build, test, and debug the browser-only Family Chore Board workflow.</Checkpoint>

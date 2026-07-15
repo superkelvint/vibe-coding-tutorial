@@ -1,0 +1,171 @@
+---
+title: "Preamble Hour 3: Make a button do something"
+section: "Preamble · Hour 3"
+order: 3
+estimatedTime: "60 minutes"
+mentalModel: "The user clicks; JavaScript notices; JavaScript changes the page."
+verificationFocus: "Predict the click story, test visible behavior, deliberately break one connection, and debug from evidence."
+description: "Connect one user action to one visible change, then practice reproducing and fixing a small bug."
+---
+
+Keep this interaction deliberately small. One click causes one visible change. Do not use React or a framework.
+
+<Track type="product" title="Product Judgment">
+
+This is a learning task. The smallest useful interaction is:
+
+```text
+One click causes one visible change.
+```
+
+<Response id="preamble-hour3-product-scope" prompt="What are we learning, what should happen after one click, how will we test it, and what are we deliberately ignoring?" rows={8} />
+
+<Response id="preamble-hour3-acceptance-criteria" prompt="Write observable acceptance criteria for the button page. Include the before-click state, after-click state, and one unchanged behavior." rows={7} />
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Use this prompt:
+
+```text
+I am a beginner.
+
+Create one simple HTML file with:
+- a message
+- a button
+- simple styling
+
+When I click the button, the message should change.
+
+Use HTML, CSS, and JavaScript in one file.
+Keep it very small.
+Do not use React or frameworks.
+
+Before the code, describe the click story in plain English.
+
+After the code, explain:
+1. what the user clicks
+2. what JavaScript looks for
+3. what JavaScript changes
+4. why the names must match
+```
+
+Before clicking, ask:
+
+```text
+What message do you expect now?
+
+What message do you expect after clicking?
+
+Which code probably connects the button to the message?
+```
+
+<Response id="preamble-hour3-prediction" prompt="Predict the before-click message, after-click message, and the code connection you expect to find. Do not click yet." rows={7} />
+
+<details>
+  <summary>Hint: follow the names</summary>
+
+  The HTML gives the button and message identities. JavaScript must look up the same identities before it can attach a click or change the message.
+</details>
+
+<Response id="preamble-hour3-verification-plan" prompt="Write a short verification plan. Which manual check supports the acceptance criterion, which check protects the before-click state, and which evidence will you inspect if the click fails?" rows={8} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+Create:
+
+```text
+button.html
+```
+
+Before clicking, record your prediction. Open the browser Console so you can inspect evidence if something fails. Click once and compare the visible result with your acceptance criteria.
+
+Then change manually:
+
+```text
+1. Button text
+2. Message before clicking
+3. Message after clicking
+4. One color
+```
+
+Reload after each small change and test again.
+
+<Checkpoint id="preamble-hour3-click-tested">I tested the button before and after my manual changes and observed the intended visible message change.</Checkpoint>
+
+### Break it on purpose
+
+Change the button ID so the HTML and JavaScript no longer agree. Open the browser Console before asking Codex.
+
+Ask:
+
+```text
+What happened?
+What did you expect?
+What evidence do we have?
+Which two names should match?
+```
+
+Use this evidence-first debug prompt:
+
+```text
+Bug:
+The button stopped changing the message.
+
+Expected:
+Clicking the button changes the message.
+
+Actual:
+Nothing happens.
+
+Evidence:
+[paste the browser Console error if there is one]
+
+I intentionally changed one ID.
+
+Help me compare:
+1. the ID in the HTML
+2. the ID JavaScript is looking for
+3. the smallest fix
+
+Do not rewrite the whole file.
+```
+
+<Response id="preamble-hour3-bug-report" prompt="Record the bug using Bug, Expected, Actual, Evidence, and the two names you compared. Explain why the evidence is more useful than a guess." rows={12} />
+
+<details>
+  <summary>Hint: reproduce before fixing</summary>
+
+  Confirm that the broken behavior happens more than once, inspect the Console and source, and change only the mismatched name. A successful fix should restore the click without rewriting unrelated code.
+</details>
+
+<Response id="preamble-hour3-fix-evidence" prompt="After the smallest fix, what evidence shows the click works again? What regression did you re-test, and what remains unverified?" rows={9} />
+
+### Explain back
+
+You should be able to say:
+
+```text
+The click was noticed by ______.
+
+The code tried to find ______.
+
+The bug happened because ______.
+
+The smallest fix was ______.
+```
+
+<Response id="preamble-hour3-explain-back" prompt="Explain back the complete click story, including the deliberate bug, the evidence you inspected, and the smallest fix." rows={10} />
+
+<Checkpoint id="preamble-hour3-regression-check">I confirmed the original message appears before clicking and the repaired button changes it after clicking.</Checkpoint>
+
+<p><strong>Mentor pause:</strong> Explain why a visible failure or Console error is evidence, but not automatically the whole diagnosis.</p>
+
+<Checkpoint id="preamble-hour3-mentor-pause">I explained the evidence-first debugging loop and remaining uncertainty to a mentor.</Checkpoint>
+
+</Track>
+
+<Checkpoint id="preamble-hour3-complete">I completed Hour 3 and can connect a user click, JavaScript lookup, visible change, failure, and smallest fix.</Checkpoint>

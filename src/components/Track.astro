@@ -1,0 +1,11 @@
+---
+const { type, title } = Astro.props;
+const labels = { product: 'Product Judgment', codex: 'Codex Prompting and Debugging', technical: 'Technical Build' };
+const label = labels[type as keyof typeof labels] ?? title;
+---
+
+<section class={`track track-${type}`} aria-labelledby={`track-${type}-title`}>
+  <p class="track-kicker">Track</p>
+  <h2 id={`track-${type}-title`}>{label}</h2>
+  <div class="track-content"><slot /></div>
+</section>

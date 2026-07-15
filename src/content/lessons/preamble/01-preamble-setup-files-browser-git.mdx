@@ -1,0 +1,191 @@
+---
+title: "Preamble Hour 1: Setup, files, browser, and Git"
+section: "Preamble · Hour 1"
+order: 1
+estimatedTime: "60 minutes"
+mentalModel: "A project is a folder containing files; the browser reads some files; Git records understandable checkpoints."
+verificationFocus: "Predict what each command changes, then verify the file, browser, and Git state separately."
+description: "Build the first mental model: where code lives, how a browser reads it, and how Git saves understandable checkpoints."
+---
+
+This is a learning task, not a production setup exercise. Move slowly and ask for an explanation whenever a word or command is unfamiliar.
+
+Git is a tool that keeps a history of the changes you make to a project.
+We will use it to create clear local save points after work that we have checked.
+You do not need an online account for this lesson; everything happens on your own computer.
+
+Keep this nearby while you practice: <a href={`${import.meta.env.BASE_URL}lessons/preamble/05-preamble-git-cheatsheet/`}>Git cheat sheet: 10 commands to know</a>.
+
+<Track type="product" title="Product Judgment">
+
+The smallest useful result is not a polished app. It is a clear, observable save point.
+
+Ask:
+
+```text
+What are we learning?
+How a project folder, files, browser, and Git relate.
+
+What should happen?
+We create a file, change it, and save a checkpoint.
+
+How will we test it?
+The file exists, the browser can open it, and Git says the work is saved.
+
+What are we ignoring?
+Branches, React, servers, and deployment.
+```
+
+<Response id="preamble-hour1-learning-gate" prompt="Complete the learning gate in your own words: what are we learning, what should happen, how will we test it, and what are we deliberately ignoring?" rows={8} />
+
+<Response id="preamble-hour1-success-criteria" prompt="Write observable success criteria. What would you be able to see in the folder, browser, and Git output if this lesson worked?" rows={7} />
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Ask Codex for explanations, not setup magic. You are practicing keeping control of the mental model.
+
+Use this prompt:
+
+```text
+I am a complete beginner.
+
+Explain these in plain English:
+- project folder
+- file
+- browser
+- terminal
+- Git repository
+- commit
+
+Use one simple analogy.
+Do not give me a long history lesson.
+```
+
+Before asking, predict what a useful answer should contain. It should define each word, connect the words, and avoid asking you to run an unexplained command.
+
+<Response id="preamble-hour1-codex-prediction" prompt="Predict: what should Codex explain, and what would make its answer unhelpful for a complete beginner?" rows={6} />
+
+<details>
+  <summary>Hint: check whether the explanation preserves your control</summary>
+
+  A good explanation lets you say what a command or file is for before you run it. It does not replace understanding with a large setup script.
+</details>
+
+<Response id="preamble-hour1-codex-evidence" prompt="Record the evidence from the explanation and your first commands. Which words can you now explain, and which remain uncertain?" rows={7} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+Install or confirm that you have:
+
+```text
+VS Code
+Git
+A browser
+```
+
+Use the official installation pages for your operating system:
+
+<table>
+<thead><tr><th>Operating system</th><th>VS Code</th><th>Git</th></tr></thead>
+<tbody>
+<tr><td>Windows</td><td><a href="https://code.visualstudio.com/download">Download VS Code</a></td><td><a href="https://git-scm.com/install/windows">Install Git for Windows</a></td></tr>
+<tr><td>macOS</td><td><a href="https://code.visualstudio.com/download">Download VS Code</a></td><td><a href="https://git-scm.com/install/mac">Install Git for macOS</a></td></tr>
+<tr><td>Linux</td><td><a href="https://code.visualstudio.com/download">Download VS Code</a></td><td><a href="https://git-scm.com/install/linux">Install Git for Linux</a></td></tr>
+</tbody>
+</table>
+
+On the VS Code download page, choose the installer for your operating system. On Linux, choose the package format your distribution uses, such as `.deb` or `.rpm`. If Git is already installed, you do not need to install it again.
+
+After installing, open a terminal and check Git with:
+
+```bash
+git --version
+```
+
+You should see a version number. You do not need to understand the version number yet; it simply confirms that the command is available.
+
+Create a folder called:
+
+```text
+vibe-prework
+```
+
+Inside it, create:
+
+```text
+notes.txt
+```
+
+Write this exact line:
+
+```text
+My first Git save point.
+```
+
+Run each command one at a time:
+
+```bash
+git init
+git status
+git add notes.txt
+git commit -m "Add first notes file"
+git status
+```
+
+### Pause and predict
+
+Before each command, ask:
+
+```text
+What do you think this command will change?
+
+Does it change the file, Git's memory, or neither?
+```
+
+<Response id="preamble-hour1-command-predictions" prompt="For git init, git status, git add, commit, and the final git status, predict what changes and what evidence you expect from each command." rows={12} />
+
+### Verify the result
+
+Check these separately:
+
+1. Open `notes.txt` and confirm the sentence is present.
+2. Open the folder in the browser only if you have a suitable local file view; the browser is not Git and does not create commits.
+3. Read the final `git status` and confirm it reports a clean working tree.
+
+<Checkpoint id="preamble-hour1-file-check">I opened `notes.txt` and confirmed that the intended sentence is present.</Checkpoint>
+
+<Checkpoint id="preamble-hour1-git-check">I ran the Git commands and confirmed that the final status shows the work is saved and clean.</Checkpoint>
+
+### Explain back
+
+You should be able to say:
+
+```text
+The file is the work.
+
+Git noticed the file.
+
+I chose the file for the save point.
+
+The commit created the save point.
+```
+
+<Response id="preamble-hour1-explain-back" prompt="Explain back the relationship between the folder, file, browser, Git repository, staging, and commit. Mention one thing you verified and one thing you did not build." rows={9} />
+
+### Regression or unchanged-behavior check
+
+Open `notes.txt` again after the commit. Its contents should be unchanged. If the file changed unexpectedly, inspect the diff before continuing.
+
+<Checkpoint id="preamble-hour1-regression-check">I re-opened the original file after committing and confirmed its contents did not change unexpectedly.</Checkpoint>
+
+<p><strong>Mentor pause:</strong> Explain out loud what Git remembers and what it does not do. Ask your mentor to name one command you can explain before running.</p>
+
+<Checkpoint id="preamble-hour1-mentor-pause">I explained the first save point to a mentor and answered a question about the evidence.</Checkpoint>
+
+</Track>
+
+<Checkpoint id="preamble-hour1-complete">I completed Hour 1 and can distinguish the file, the browser, and Git's saved checkpoint.</Checkpoint>

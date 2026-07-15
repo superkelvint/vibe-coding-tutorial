@@ -1,0 +1,162 @@
+---
+title: "Preamble Hour 4: Product judgment and better prompts"
+section: "Preamble · Hour 4"
+order: 4
+estimatedTime: "60 minutes"
+mentalModel: "Users describe solutions; builders investigate problems."
+verificationFocus: "Turn a real conversation into observable criteria, constrained prompts, regression checks, and an honest evidence plan."
+description: "Connect product judgment to small technical changes by investigating pain before proposing a feature."
+---
+
+There is no major new technical layer in this hour. The goal is to connect judgment to building. Do not pitch an app during the conversation.
+
+<Track type="product" title="Product Judgment">
+
+Talk to one person for 10–15 minutes about chores, responsibilities, reminders, or things people forget.
+
+Ask:
+
+```text
+Tell me about the last time a responsibility was forgotten.
+
+What happened?
+
+Who was involved?
+
+What did you do instead?
+
+What was annoying?
+
+How often does this happen?
+
+What would have been good enough?
+```
+
+Fill out:
+
+```text
+User:
+
+Situation:
+
+Current workaround:
+
+Pain:
+
+Smallest useful fix:
+
+Feature ideas to avoid for now:
+```
+
+<Response id="preamble-hour4-discovery-notes" prompt="Record the conversation using User, Situation, Current workaround, Pain, Smallest useful fix, and Feature ideas to avoid for now. Do not turn the notes into a feature pitch yet." rows={14} />
+
+<Response id="preamble-hour4-success-signal" prompt="What observable signal would suggest the smallest useful fix helped? What evidence would still be missing after one conversation?" rows={8} />
+
+<details>
+  <summary>Hint: stay close to the person's words</summary>
+
+  Separate what the person actually described from your interpretation. A feature idea is a hypothesis, not proof that the pain is important or frequent.
+</details>
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Write three prompts. Keep the person making the product decision and require evidence in the build and debug work.
+
+### Build prompt
+
+Use:
+
+```text
+Goal
+Context
+Constraints
+Acceptance criteria
+Existing verification
+Required new tests
+Regression checks
+Verification commands
+Manual verification
+Evidence
+```
+
+### Debug prompt
+
+Use:
+
+```text
+Bug
+Expected
+Actual
+Steps to reproduce
+Evidence
+Constraints
+```
+
+### Product discovery prompt
+
+Use:
+
+```text
+A user asked for [feature].
+Do not write code.
+Help me uncover the real pain.
+```
+
+<Response id="preamble-hour4-build-prompt" prompt="Write a constrained build prompt for the smallest useful fix. Include observable acceptance criteria, existing verification, regression checks, manual verification, and the evidence you expect." rows={16} />
+
+<Response id="preamble-hour4-debug-prompt" prompt="Write a debug prompt for a possible failure in this smallest fix. Include Bug, Expected, Actual, Steps to reproduce, Evidence, and Constraints." rows={12} />
+
+<Response id="preamble-hour4-discovery-prompt" prompt="Write a product discovery prompt beginning with ‘A user asked for [feature].’ Make it clear that Codex must not write code and should help uncover the real pain." rows={7} />
+
+<Response id="preamble-hour4-prompt-prediction" prompt="Predict: what should a useful answer from each prompt contain, and what would count as an answer that is too broad, too technical, or missing evidence?" rows={9} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+There is no major new technical layer in this hour. Create:
+
+```text
+prework-notes.md
+```
+
+Save the discovery notes and the three prompts. Commit them as an understandable change.
+
+Before changing the button page again, write three checks:
+
+```text
+Acceptance criterion:
+Clicking the button changes the message.
+
+Regression check:
+The original message is visible before clicking.
+
+Failure check:
+If the button and JavaScript IDs do not match, the expected behavior fails and evidence appears in the Console or visible behavior.
+```
+
+<Response id="preamble-hour4-verification-exercise" prompt="Write the three button-page checks in your own words. For each, state the claim and the evidence that would support it." rows={10} />
+
+<Checkpoint id="preamble-hour4-notes-saved">I saved the discovery notes and three prompts in `prework-notes.md` and created a Git commit.</Checkpoint>
+
+<Checkpoint id="preamble-hour4-button-regression">I re-tested the button page: the original message appears before clicking and clicking changes it afterward.</Checkpoint>
+
+### Explain back
+
+The goal is to begin thinking:
+
+```text
+How would Codex know whether its work was right?
+```
+
+<Response id="preamble-hour4-explain-back" prompt="Explain back how product judgment, a constrained Codex prompt, a technical change, and verification fit together. Name one thing you know and one remaining uncertainty." rows={11} />
+
+<p><strong>Mentor pause:</strong> Read one prompt out loud. Ask your mentor whether it gives Codex enough context to identify a wrong result without giving Codex ownership of the product decision.</p>
+
+<Checkpoint id="preamble-hour4-mentor-pause">I reviewed one prompt with a mentor and recorded the remaining uncertainty.</Checkpoint>
+
+</Track>
+
+<Checkpoint id="preamble-hour4-complete">I completed Hour 4 and can investigate pain, write three prompt types, and describe the evidence needed to trust a change.</Checkpoint>

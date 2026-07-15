@@ -1,0 +1,552 @@
+---
+title: "Day 5: Keep browser state and the screen in sync with React"
+section: "Week 1 · Day 5"
+order: 10
+estimatedTime: "180 minutes"
+mentalModel: "React helps keep browser data and the screen synchronized; it does not make the chore list shared or saved for later."
+verificationFocus: "Preserve every Day 4 acceptance criterion, predict the React data flow, inspect the existing checks, test state ownership and component behavior, deliberately break one prop or handler connection, run every regression check established so far, and ask Codex to audit coverage and plan completeness."
+description: "Rebuild the browser-only Family Chore Board in React while keeping the same product behavior and learning how state flows through components."
+---
+
+Yesterday you designed and built the first Family Chore Board workflow in plain browser code. Today you will reorganize that same browser-only product using a tool designed to help keep a changing screen consistent with changing browser data.
+
+This is not a new product. The technical tool is the subject for today—not a reason to add saving after refresh, sharing across browsers, reminders, or extra features.
+
+<aside class="mantra-callout">
+<p>You are not here to create software.</p>
+<p>You are here to solve user problems.</p>
+<p>Today, solving the problem means preserving the useful chore workflow while learning a new way to keep the screen synchronized with browser data.</p>
+</aside>
+
+## One change can affect several parts of the screen
+
+Imagine the Chore Board has several parts of the screen:
+
+<ul class="question-list">
+<li>a form where the user enters a chore;</li>
+<li>a person selector;</li>
+<li>a list of all chores;</li>
+<li>a Done button for each chore; and</li>
+<li>feedback showing what happened.</li>
+</ul>
+
+When the user marks one chore done, all of the relevant parts should agree immediately. The list should show the chore as done, the correct button should change, the other chores should remain unfinished, and the feedback should describe the same result.
+
+In plain browser code, it is possible to update each part separately. But as the interface grows, it becomes easy for one part to show new data while another part still shows the old data. You can fix the list and accidentally forget the count. You can update a copy of the chore but not the data that the rest of the screen uses. You can click Done on one row and change the wrong row.
+
+<aside class="model-purpose">
+<p><strong>How can we organize the client so that one change to the browser data reliably updates every part of the screen that depends on it?</strong></p>
+</aside>
+
+<img src={`${import.meta.env.BASE_URL}images/day5-react-state-sync.png`} alt="A fictional Family Chore Board showing one chore marked done consistently in the summary, chore list, status badge, button, and feedback message." />
+
+*Figure 1. The same `done` value appears in several places. A reliable interface keeps all of those views consistent.*
+
+## The answer: React helps synchronize state and the screen
+
+React is an open-source JavaScript tool for building interactive screens out of reusable components. You describe what the screen should show for the current browser data, and React helps update the right parts when that data changes.
+
+Imagine the chore list is browser data. A user adds a chore, and that data changes. The screen should change too.
+
+In this lesson, <strong>state</strong> simply means the current browser data that the screen needs to remember while the page is open.
+
+React helps organize that relationship:
+
+<ol class="mental-model-steps">
+<li>The app owns the current chore data.</li>
+<li>The app gives the relevant data to smaller interface pieces.</li>
+<li>The user acts inside one of those pieces.</li>
+<li>The piece reports the action.</li>
+<li>The app updates its browser state.</li>
+<li>React redraws the parts of the screen that depend on that state.</li>
+<li>The user sees feedback that matches the current data.</li>
+</ol>
+
+<aside class="model-purpose">
+<p><strong>The mental model:</strong> React helps keep the screen synchronized with browser state. It is a way to organize the client side of the app.</p>
+</aside>
+
+## React components are reusable pieces of a screen
+
+There is another reason React became popular: it gives you a clear way to split a large interface into smaller, reusable pieces called <strong>components</strong>.
+
+Imagine building the Chore Board as one giant block of code. The form, the list, every chore row, every button, and every message would all be mixed together. That can work for a tiny page, but it becomes harder to understand when the screen grows.
+
+A component is a named piece of the interface with a focused job. It can receive information, display that information, and report an action back to the part of the app that owns the data.
+
+For example, the same `ChoreItem` component can display every row in the list:
+
+<table>
+<thead><tr><th>Component</th><th>What it does</th><th>What it needs</th></tr></thead>
+<tbody>
+<tr><td><code>ChoreForm</code></td><td>Shows the fields for adding a chore.</td><td>The people the user can choose and what should happen after Add.</td></tr>
+<tr><td><code>ChoreList</code></td><td>Shows the current collection of chores.</td><td>The current chore data.</td></tr>
+<tr><td><code>ChoreItem</code></td><td>Shows one chore and its Done button.</td><td>One chore and a way to report which chore was clicked.</td></tr>
+<tr><td><code>Button</code></td><td>Provides a consistent, understandable button.</td><td>Its label, whether it is available, and what should happen when it is clicked.</td></tr>
+</tbody>
+</table>
+
+The benefit is not “more files.” The benefit is that each piece has a job you can explain, reuse, and check. If the list contains five chores, React can render five `ChoreItem` components from the same pattern while giving each one different chore data.
+
+<img src={`${import.meta.env.BASE_URL}images/day5-react-choreitem-reuse.png`} alt="A reusable ChoreItem component on the left connected to three chore rows that use the same layout with different data." />
+
+*Figure 2. One `ChoreItem` pattern is reused for three chores. The layout stays consistent while the title, person, status, and action value change.*
+
+### A real open-source example: React DayPicker
+
+[React DayPicker](https://react-day-picker.js.org/) is a popular open-source React date-picker component. It is a good example because a date picker is much more than a text box: it has to display months, let someone move between months, select one date or a range, disable dates that cannot be chosen, and support keyboard navigation.
+
+<img src={`${import.meta.env.BASE_URL}images/day5-react-daypicker.png`} alt="A fictional travel form using a React date-picker component with range selection, disabled dates, month navigation, and keyboard focus." />
+
+*Figure 3. A date-picker component handles several interaction details that would take much more work than a plain HTML input. The surrounding app still decides what the selected dates mean and what happens next.*
+
+The component handles the calendar interaction, but it does not decide what the selected dates mean. Your application still has to receive the selected value, check whether it makes sense for the product, update its own data, and give the user honest feedback.
+
+Today you will install React DayPicker and use it in a small, separate component demonstration. This gives you a real component-library experience without quietly changing the Family Chore Board’s product behavior. You will see the component on screen, select a date, and verify that your React code receives the selected value.
+
+<aside class="model-purpose">
+<p><strong>Component mental model:</strong> a component is a reusable interface piece; <strong>props</strong> are the information it receives about what to display; an <strong>event</strong> is a signal that tells the data owner what the user did; the data owner remains responsible for changing the current data.</p>
+</aside>
+
+React does not automatically make the chore list:
+
+<ul class="example-list">
+<li>come back after you refresh the page;</li>
+<li>appear in another browser;</li>
+<li>recognize a particular person; or</li>
+<li>gain reminders or other new product behavior.</li>
+</ul>
+
+A React application can still be entirely client-side. In today’s version, the chores should still disappear after refresh, just as they did in Day 4.
+
+## The product must stay the same
+
+The user should still be able to:
+
+<ul class="observation-checklist">
+<li>see the chore list;</li>
+<li>add a chore;</li>
+<li>assign a person;</li>
+<li>receive useful feedback for blank input;</li>
+<li>mark exactly one chore done; and</li>
+<li>see the list clear after refresh because it is still temporary browser data.</li>
+</ul>
+
+<aside class="model-purpose">
+<p><strong>Today’s scope:</strong> React should change how the interface is organized, not what the product does. Do not add saving after refresh, sharing with another browser, sign-in, reminders, points, chat, recurring chores, or new product behavior today.</p>
+</aside>
+
+## Predict the React data flow
+
+Before opening Codex or changing code, predict one complete interaction:
+
+<ol class="mental-model-steps">
+<li>The user enters a chore and chooses a person.</li>
+<li>A form component notices the submit action.</li>
+<li>The form reports the action to the component that owns the chore data.</li>
+<li>The app checks the blank-input rule.</li>
+<li>The app updates its browser state.</li>
+<li>React passes the updated data to the list and item components.</li>
+<li>The screen redraws and shows the new chore or useful feedback.</li>
+</ol>
+
+<Response id="week1-day5-data-flow-prediction" prompt="Choose Add or Done. Predict which component notices the action, where the chore data should change, what data the affected component needs, what React should redraw, and what the user should see afterward." rows={11} />
+
+## Acceptance criteria for the React rewrite
+
+The React version is successful only if it preserves the Day 4 behavior:
+
+<table>
+<thead><tr><th>Behavior</th><th>Observable evidence</th></tr></thead>
+<tbody>
+<tr><td>Add a valid chore</td><td>The new chore appears with the selected person.</td></tr>
+<tr><td>Reject blank input</td><td>No blank chore appears and the user receives useful feedback.</td></tr>
+<tr><td>Mark one chore done</td><td>Only the selected chore changes its status or appearance.</td></tr>
+<tr><td>Keep other chores unchanged</td><td>A second chore remains assigned and unfinished when the first is completed.</td></tr>
+<tr><td>Refresh the page</td><td>The temporary list clears, because today’s chores are only held in this browser session.</td></tr>
+</tbody>
+</table>
+
+<Response id="week1-day5-acceptance-criteria" prompt="Rewrite the React acceptance criteria in your own words. For each behavior, say what you would see and what evidence would prove that the React rewrite preserved it." rows={11} />
+
+### Acceptance criteria for the DayPicker component exercise
+
+<table>
+<thead><tr><th>Behavior</th><th>Observable evidence</th></tr></thead>
+<tbody>
+<tr><td>Install the component</td><td>The project records `react-day-picker` and its date helper dependency, and the app still starts.</td></tr>
+<tr><td>Render the calendar</td><td>A visible monthly calendar appears in the separate component demonstration.</td></tr>
+<tr><td>Select a date</td><td>Clicking a day changes the selected value and the screen reports the chosen date.</td></tr>
+<tr><td>Use the component’s interaction</td><td>Month navigation works, and the component’s documented keyboard behavior remains available.</td></tr>
+<tr><td>Preserve the product</td><td>The original chore workflow still behaves exactly as it did before the demonstration was added.</td></tr>
+</tbody>
+</table>
+
+<Response id="week1-day5-daypicker-prediction" prompt="Before asking Codex to install anything, predict what you expect to see after the DayPicker exercise. What action will you take, what value should React receive, what feedback should appear, and what will you check to make sure the chore workflow did not change?" rows={11} />
+
+## Inspect the project before editing
+
+Before asking Codex to change the app:
+
+<ol class="mental-model-steps">
+<li>Find the current Day 4 browser-only implementation.</li>
+<li>Find the project scripts, existing tests, checks, and build command.</li>
+<li>Run the relevant baseline check and record what passed, failed, or was unavailable.</li>
+<li>Read the approved product and design artifacts if they exist.</li>
+<li>Confirm that React and the deliberately separate DayPicker demonstration are the only new technical additions planned for today.</li>
+</ol>
+
+<Checkpoint id="week1-day5-baseline-checks">I inspected the current project and available checks, ran the relevant baseline check, and recorded what passed, failed, or was unavailable before changing the implementation.</Checkpoint>
+
+<Track type="product" title="Product Judgment">
+
+Today is a technical learning task, not a new product discovery exercise. Rebuilding the same workflow in React does not automatically solve a new user problem.
+
+Use this short gate:
+
+<table>
+<thead><tr><th>Question</th><th>Answer for today</th></tr></thead>
+<tbody>
+<tr><td>What are we learning?</td><td>How React organizes browser state and screen updates, and how a real React component handles a rich interaction.</td></tr>
+<tr><td>What should happen?</td><td>The same add, assign, blank-input, done, and refresh behavior should continue working.</td></tr>
+<tr><td>How will we test it?</td><td>Run focused checks, every regression check established so far, and the complete Day 4 workflow, then compare the result with the acceptance criteria.</td></tr>
+<tr><td>What are we ignoring?</td><td>Saving after refresh, sharing across browsers, sign-in, reminders, and turning the DayPicker demonstration into a chore feature.</td></tr>
+</tbody>
+</table>
+
+The product question is: **did React preserve the user value we already chose?** If the rewrite adds complexity without preserving the experience, it is not successful just because the code uses React.
+
+<Response id="week1-day5-product-judgment" prompt="Explain why React does not solve a new user problem today. What user value must the rewrite preserve, and what would be a warning sign that technical complexity has started to change the product scope?" rows={10} />
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Codex should use the approved product context and implement the React milestone without inventing a new product plan.
+
+### Ask Codex to explain the current data flow
+
+```text
+Do not write code yet.
+
+Read these project files first, if they exist:
+- docs/product-requirements.md
+- docs/high-level-design.md
+- docs/implementation-plan.md
+
+Inspect the current Day 4 browser-only Family Chore Board.
+
+Explain in plain English:
+1. where the current chore data lives
+2. which user actions change it
+3. which parts of the screen depend on it
+4. which small React components could display the existing behavior
+5. which component should own the chore data
+6. how Add, blank-input validation, and Done should report actions
+7. how the Day 4 acceptance criteria will be preserved
+
+Do not write code yet.
+Do not install anything during this explanation step.
+Do not add saving after refresh, sharing across browsers, sign-in,
+or extra product features.
+Keep the component structure small.
+```
+
+Before sending the prompt, predict what a useful explanation should contain. It should name one clear owner for the chore data, explain how actions travel back to that owner, and preserve the existing browser-only behavior.
+
+<Response id="week1-day5-codex-explanation" prompt="Predict what Codex should explain before writing React code. What would show that it has confused component display with state ownership, or browser state with data that should return after refresh?" rows={9} />
+
+### Implement the next React milestone
+
+Use the reviewed implementation plan in `docs/implementation-plan.md`. Ask Codex to implement only the next React milestone:
+
+```text
+Read and follow:
+- docs/product-requirements.md
+- docs/high-level-design.md
+- docs/implementation-plan.md
+
+Implement only the next React milestone:
+[paste or identify the milestone]
+
+Before editing:
+- explain the visible result this milestone should produce
+- identify where the chore data will live
+- identify which component receives each relevant piece of data
+- identify which action each component reports
+- identify the focused tests or checks
+- identify the existing Day 4 behavior that must remain working
+
+Constraints:
+- use React only for the client-side organization being learned today
+- keep the component structure small
+- do not add saving after refresh, sharing across browsers, sign-in, or new product behavior
+- do not skip ahead to later milestones
+- do not make a hidden architecture rewrite
+
+After editing:
+- run the focused checks for this milestone
+- run all regression checks established up to this point, including the
+  complete Day 4 workflow
+- perform the planned browser check
+- report what passed, failed, or was not run
+- state what remains unverified
+```
+
+<Response id="week1-day5-build-prompt" prompt="Write an execution prompt for the next React milestone. Include the visible result, state owner, component data, reported action, focused checks, regression checks, browser check, evidence, and remaining uncertainty." rows={14} />
+
+### Ask Codex to install and use React DayPicker
+
+Use this prompt after you have made your prediction. It gives Codex a small, visible milestone with a clear finish line:
+
+```text
+Implement one separate React component demonstration using React DayPicker.
+
+Before editing:
+- inspect the current project and package manager
+- explain where this demonstration will appear
+- explain where the selected date will live in React state
+- explain how the DayPicker component will report a selected date
+- explain how the selected date will be shown as feedback
+- identify the focused checks and all regression checks established so far
+
+Install the documented React DayPicker dependencies using this project’s
+existing package manager:
+- react-day-picker
+- date-fns
+
+Implement the smallest useful demonstration:
+- render a visible monthly DayPicker
+- use single-date selection
+- keep the selected date in React state
+- show the selected date in plain-language feedback
+- import the component’s documented stylesheet
+- keep this demonstration separate from the Family Chore Board behavior
+
+Do not add due dates to chores or change the chore product today.
+Do not add accounts, saving after refresh, sharing across browsers,
+or any other new product behavior.
+
+After editing:
+- run the project check and build commands
+- open the app and select a date
+- move between months
+- verify that the selected-date feedback changes
+- run all regression checks established up to this point, including the
+  complete Day 4 workflow: add two chores, assign different people,
+  reject blank input, complete only one chore, and refresh
+- report what passed, failed, was not run, and remains unverified
+- mention any generated test that could pass for the wrong reason
+```
+
+The important thing to notice is the division of responsibility: React DayPicker handles the difficult calendar interaction, while your component owns the selected value and decides what feedback to show.
+
+<Response id="week1-day5-daypicker-execution" prompt="Record Codex’s evidence from the DayPicker exercise. What did it install, what appeared on screen, what value did React receive after your click, what feedback changed, and which of the regression checks established so far passed?" rows={14} />
+
+### Compare plain JavaScript and React
+
+Use this comparison to explain the technical change without pretending the product changed:
+
+<table>
+<thead><tr><th>Question</th><th>Plain JavaScript</th><th>React</th></tr></thead>
+<tbody>
+<tr><td>Where does browser data live?</td><td>In variables and browser-managed values.</td><td>In React state owned by a component.</td></tr>
+<tr><td>How is an action handled?</td><td>An event handler changes the data and the screen.</td><td>A component reports the action and the state owner updates data.</td></tr>
+<tr><td>How does the screen update?</td><td>Code directly changes the relevant elements.</td><td>React redraws from the current state.</td></tr>
+<tr><td>What happens after refresh?</td><td>The temporary list disappears.</td><td>The temporary list still disappears.</td></tr>
+</tbody>
+</table>
+
+<Response id="week1-day5-comparison" prompt="Compare the plain JavaScript and React versions. Where does the data live, where does the action travel, how does the screen update, and why do both versions still lose the list after refresh?" rows={10} />
+
+### Evidence before debugging
+
+If the React version fails, record the evidence before asking Codex for a fix:
+
+<div class="app-example">
+<p><strong>Expected:</strong> what should the user see?</p>
+<p><strong>Actual:</strong> what did the user see?</p>
+<p><strong>Action:</strong> what did the user click or submit?</p>
+<p><strong>State:</strong> what data should have changed?</p>
+<p><strong>Component evidence:</strong> which component received the data or action?</p>
+<p><strong>Console evidence:</strong> what error or warning appeared?</p>
+<p><strong>Suspected link:</strong> prop, handler, state update, render, or feedback?</p>
+</div>
+
+<Response id="week1-day5-debug-evidence" prompt="Write an evidence-first React bug report. Include Expected, Actual, Action, State, Component evidence, Console evidence, Suspected link, and the smallest-fix constraint." rows={14} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+Use Vite to create or reorganize a small React app. Keep the component structure small enough that you can explain the data flow.
+
+### Start the React client
+
+From the React app’s folder, run:
+
+```text
+npm run dev
+```
+
+Keep that terminal open and open the local URL printed by the command. This starts the client that renders the React screen. After each visible milestone, use that browser window to inspect the result before moving on.
+
+The required behavior is unchanged:
+
+<ul class="observation-checklist">
+<li>display chores;</li>
+<li>add a chore;</li>
+<li>assign a person;</li>
+<li>reject blank input;</li>
+<li>mark exactly one chore done; and</li>
+<li>clear the temporary list after refresh.</li>
+</ul>
+
+The chore workflow remains the product you are preserving. Alongside it, add the separate DayPicker demonstration:
+
+<ul class="observation-checklist">
+<li>install React DayPicker and its date helper;</li>
+<li>show a monthly calendar;</li>
+<li>select a date and keep it in React state; and</li>
+<li>show feedback containing the selected date.</li>
+</ul>
+
+### A simple component shape
+
+Use this as a starting mental model, not a rule that every app must follow:
+
+<table>
+<thead><tr><th>Component</th><th>Possible responsibility</th></tr></thead>
+<tbody>
+<tr><td><strong>App</strong></td><td>Owns the chore list and the actions that change it.</td></tr>
+<tr><td><strong>ChoreForm</strong></td><td>Collects a chore name and person, then reports a submit action.</td></tr>
+<tr><td><strong>ChoreList</strong></td><td>Receives the list and displays the current chores.</td></tr>
+<tr><td><strong>ChoreItem</strong></td><td>Displays one chore and reports when its Done action is clicked.</td></tr>
+</tbody>
+</table>
+
+The important question is not “How many components can I create?” It is: **where should the shared browser data change so every part of the screen sees the same current value?** Keep the chore data in one clear owner instead of creating competing copies in several components.
+
+### Build one visible milestone at a time
+
+For each milestone:
+
+<ol class="mental-model-steps">
+<li>Predict what the user should see.</li>
+<li>Ask Codex to implement only that milestone.</li>
+<li>Open the app and inspect the visible result.</li>
+<li>Run the focused automated checks.</li>
+<li>Run all regression checks established up to this point, including the complete Day 4 workflow.</li>
+<li>Record what passed, failed, was not run, and remains unverified.</li>
+</ol>
+
+<Checkpoint id="week1-day5-visible-milestone">I implemented one React milestone, inspected its visible result, ran its focused checks, and recorded the evidence before moving to the next milestone.</Checkpoint>
+
+### Break one React connection on purpose
+
+Use one controlled React-specific failure:
+
+<ul class="example-list">
+<li>a child receives the wrong prop name;</li>
+<li>a handler updates a copy but not the state owner;</li>
+<li>an item uses the wrong identity and the wrong chore changes;</li>
+<li>the rule works but feedback is not rendered; or</li>
+<li>the list data changes but React receives stale or incomplete data.</li>
+</ul>
+
+Ask these questions before fixing it:
+
+<ol class="mental-model-steps">
+<li>What data should the child receive?</li>
+<li>What action should the child report?</li>
+<li>Where should the state change?</li>
+<li>What should React redraw?</li>
+<li>What evidence shows where the chain broke?</li>
+</ol>
+
+<Response id="week1-day5-deliberate-bug" prompt="Describe the React failure you tried. What did you expect, what happened, which component had the relevant data or action, which connection broke, and what was the smallest fix?" rows={13} />
+
+<Response id="week1-day5-regression" prompt="Regression check: after fixing the React failure, re-run every regression check established up to this point, including adding two chores, assigning different people, rejecting blank input, completing only one chore, and refreshing. What passed, what failed, and what remains unverified?" rows={11} />
+
+<Checkpoint id="week1-day5-regression-checked">I re-ran every regression check established up to this point, including the complete Day 4 workflow, after the deliberate React failure and confirmed that the original behavior still worked.</Checkpoint>
+
+### Ask Codex for the final test and plan audit
+
+At the end, ask Codex to perform the same critical review it performed for the browser-only milestone:
+
+```text
+Perform a final review of the React and DayPicker milestones.
+
+1. Map each Day 4 acceptance criterion and each DayPicker acceptance criterion
+   to a meaningful test or check.
+2. Identify unit tests, end-to-end tests, and manual checks that cover the
+   React behavior and the DayPicker demonstration. If a test setup is
+   unavailable, say so clearly.
+3. Inspect coverage and identify important code paths that are not covered.
+4. Think through happy cases and edge cases, including blank input, repeated
+   actions, multiple chores, wrong-item selection, stale rendering, refresh,
+   selecting a date, moving between months, keyboard navigation, and disabled
+   dates.
+5. Check whether any test could pass for the wrong reason.
+6. Compare the implementation with the approved implementation plan and report
+   complete, partial, missing, extra, and unverified work.
+7. Run the available checks and report what passed, failed, or was not run.
+```
+
+<Response id="week1-day5-final-audit" prompt="Record Codex’s final audit. What Day 4 behavior and DayPicker behavior are covered, what edge cases or code paths are missing, what did coverage reveal, and what is complete, partial, extra, or unverified against the plan?" rows={14} />
+
+<Checkpoint id="week1-day5-test-audit">I asked Codex to audit React test coverage, happy cases, edge cases, and implementation-plan completeness, then recorded its evidence and remaining uncertainty.</Checkpoint>
+
+</Track>
+
+## Explain it back
+
+Complete these sentences in plain English:
+
+<ul class="question-list">
+<li>The chore data lives in…</li>
+<li>The component that owns the data is…</li>
+<li>A ChoreItem receives…</li>
+<li>When the user clicks Done, the component reports…</li>
+<li>The state changes in…</li>
+<li>React then…</li>
+<li>Blank input is rejected because…</li>
+<li>The data disappears after refresh because…</li>
+<li>The DayPicker component receives…</li>
+<li>When a date is selected, the app shows…</li>
+<li>The React rewrite preserved the product by…</li>
+</ul>
+
+<Response id="week1-day5-explain-back" prompt="Explain the React data-flow story from the user’s action through the component, state owner, state change, redraw, and feedback. Then explain what React DayPicker handles, what value it reports to your component, and what feedback your component shows. Explain why the chores do not return after refresh or appear in another browser, and state what remains unverified." rows={14} />
+
+<aside class="mantra-callout">
+<p>You are not here to create software.</p>
+<p>You are here to solve user problems.</p>
+<p>Today, that means using React components to preserve a useful browser experience—not adding technology just to make the project look more advanced.</p>
+</aside>
+
+<details>
+<summary>Mentor pause</summary>
+
+Show your mentor the Day 4 and DayPicker acceptance criteria, the React data-flow explanation, the visible milestones, the full regression evidence, and Codex’s final test and plan audit. Explain one React-specific failure and what remains uncertain.
+</details>
+
+<Checkpoint id="week1-day5-mentor-pause">I explained the React data flow, showed the visible milestones and full regression evidence, described the deliberate failure, and reported what Codex found in its final audit.</Checkpoint>
+
+## Done for today
+
+You are ready for Day 6 if you can:
+
+<ul class="observation-checklist">
+<li>explain what React changes and what it does not provide;</li>
+<li>identify the component that owns the chore data;</li>
+<li>explain how a child reports an action;</li>
+<li>preserve add, assign, blank-input, done, and refresh behavior;</li>
+<li>install React DayPicker, select a date, and show the selected-date feedback;</li>
+<li>inspect a React-specific failure using evidence;</li>
+<li>re-test the original workflow after a deliberate failure;</li>
+<li>ask Codex to critically review tests, coverage, edge cases, and plan completeness; and</li>
+<li>explain what remains unverified.</li>
+</ul>
+
+<Checkpoint id="week1-day5-complete">I completed Day 5 and can explain how React components keep browser data and the screen synchronized, how React DayPicker reports a selected date, and why the chore list does not return after refresh or appear in another browser.</Checkpoint>

@@ -1,0 +1,17 @@
+---
+import '../styles/global.css';
+const { title = 'Vibe Coding Foundations' } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="A calm, verification-first course workbook." />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header"><a href={import.meta.env.BASE_URL}>Vibe Coding Foundations</a><span>7-day build week</span></header>
+    <main class="site-main"><slot /></main>
+  </body>
+</html>

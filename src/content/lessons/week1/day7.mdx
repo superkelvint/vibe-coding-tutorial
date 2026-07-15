@@ -1,0 +1,439 @@
+---
+title: "Day 7: Recap the whole system, test it with a real person, and hand it off"
+section: "Week 1 · Day 7"
+order: 12
+estimatedTime: "180 minutes"
+mentalModel: "The browser is the user-facing client, the server applies shared rules, SQLite stores shared rows, and deployment is the step that lets another person reach the system."
+verificationFocus: "Run every regression check established through Day 6, review the complete client–server–SQLite story, test the core workflow with a real person when possible, inspect evidence and limitations, ask Codex for a final plan and coverage review, and write a clear handoff."
+description: "Review the complete Family Chore Board system, test the experience with another person, and hand off the work honestly."
+---
+
+You have now followed one product through the major layers of a web application. Day 7 is about stepping back, checking whether the whole system makes sense, and explaining what you built.
+
+## The complete story
+
+Start with the user problem: a family needs one trustworthy chore list that different people can use.
+
+<ol class="mental-model-steps">
+<li>The user opens the client.</li>
+<li>React displays the user-facing screen.</li>
+<li>The client asks the server for chores.</li>
+<li>The server applies the rules.</li>
+<li>The server reads or changes rows in SQLite.</li>
+<li>The server sends a response.</li>
+<li>React updates the screen and gives honest feedback.</li>
+<li>Another browser can request the same saved data.</li>
+</ol>
+
+Deployment is the missing connection between your computer and another person. It gives the client and server a reachable address. This lesson explains that idea, but does not teach a hosting provider, account setup, pricing, or provider-specific configuration.
+
+<aside class="model-purpose">
+<p><strong>Day 7’s purpose:</strong> prove that the product, architecture, evidence, and handoff all tell the same story.</p>
+</aside>
+
+## The important ideas from the whole week
+
+The week introduced several technical ideas, but they all support one larger way of thinking. Keep these mental models available whenever you build or debug an app:
+
+<table>
+<thead><tr><th>Mental model</th><th>Question it helps you answer</th></tr></thead>
+<tbody>
+<tr><td><strong>Solve the problem, not the request</strong></td><td>Who is struggling, what are they trying to accomplish, and what is the smallest useful thing to try?</td></tr>
+<tr><td><strong>User → data → action → rule → feedback</strong></td><td>What is the person doing, what information matters, what is allowed, and how will the app make the result clear?</td></tr>
+<tr><td><strong>Temporary vs. saved data</strong></td><td>Should this information disappear after refresh, or should it be available later?</td></tr>
+<tr><td><strong>React components and state</strong></td><td>Which part of the screen owns the current browser data, and which reusable pieces depend on it?</td></tr>
+<tr><td><strong>Client → server → database</strong></td><td>Is the browser showing its own temporary copy, or is it displaying the shared data decided and saved elsewhere?</td></tr>
+<tr><td><strong>Evidence and regressions</strong></td><td>What proves this change works, and what previously working behavior might have been broken?</td></tr>
+</tbody>
+</table>
+
+### The course mantra
+
+<aside class="mantra-callout">
+<p>You are not here to create software.</p>
+<p>You are here to solve user problems.</p>
+</aside>
+
+Users often describe the solution they imagine instead of the problem they are experiencing. Your job is to understand the person, situation, pain, and success signal before asking an agent to build anything.
+
+### The five-part app loop
+
+<ol class="mental-model-steps">
+<li>A user sees or needs something.</li>
+<li>The app has data representing the current situation.</li>
+<li>The user takes an action.</li>
+<li>A rule decides what is allowed.</li>
+<li>The app gives feedback about what happened.</li>
+</ol>
+
+When debugging, walk through the same loop. Ask whether the user action happened, whether the rule ran, whether the data changed, and whether the screen told the truth.
+
+### The layers of the Family Chore Board
+
+<ol class="mental-model-steps">
+<li>React components organize the user-facing client.</li>
+<li>Browser state holds what this screen currently needs.</li>
+<li>The client sends a request when shared data must be read or changed.</li>
+<li>The server applies rules and decides what response to send.</li>
+<li>SQLite stores the shared rows so they can return after refresh.</li>
+<li>Verification checks whether each layer did its job.</li>
+</ol>
+
+The learner does not need to memorize every library or command. The important skill is being able to point to the layer responsible for a behavior and gather evidence there.
+
+
+## Local, deployed, prototype, and production
+
+<table>
+<thead><tr><th>Term</th><th>Plain-English meaning</th></tr></thead>
+<tbody>
+<tr><td>Local</td><td>The client and server are running on your computer for development.</td></tr>
+<tr><td>Deployed</td><td>The client and server are running somewhere reachable by a real URL.</td></tr>
+<tr><td>Prototype</td><td>A small version that lets people try the important workflow.</td></tr>
+<tr><td>Production</td><td>A system that has been hardened, supported, monitored, and prepared for real use.</td></tr>
+</tbody>
+</table>
+
+Do not call a prototype production-ready just because it has a URL. A public URL does not prove that data is safe, persistent, or usable.
+
+## Predict before the final review
+
+Before running the final checks, predict what evidence should exist:
+
+<ol class="mental-model-steps">
+<li>The client loads and shows useful initial feedback.</li>
+<li>The client can request chores from the server.</li>
+<li>The server can read SQLite.</li>
+<li>Add and Done produce requests and honest feedback.</li>
+<li>Saved data returns after refresh.</li>
+<li>A second browser can see the same data.</li>
+<li>The product still preserves the original family workflow.</li>
+</ol>
+
+
+## Final acceptance criteria
+
+<table>
+<thead><tr><th>Behavior</th><th>Observable evidence</th></tr></thead>
+<tbody>
+<tr><td>Client works</td><td>The user can open the client and use the main workflow.</td></tr>
+<tr><td>Server works</td><td>The client requests chores and receives responses from the server.</td></tr>
+<tr><td>SQLite works</td><td>A saved chore row can be inspected and appears again after refresh.</td></tr>
+<tr><td>Feedback is honest</td><td>Loading, pending, success, and failure states describe what is actually happening.</td></tr>
+<tr><td>Shared behavior works</td><td>A second browser can see the same saved chore.</td></tr>
+<tr><td>Real user can try it</td><td>Another person can attempt the core workflow without being coached through every click.</td></tr>
+<tr><td>Earlier behavior remains safe</td><td>Every regression check established through Day 6 still passes.</td></tr>
+</tbody>
+</table>
+
+<Track type="product" title="Product Judgment">
+
+Day 7 returns to the product question: **did we make the family’s problem smaller?**
+
+<table>
+<thead><tr><th>Question</th><th>Answer for this project</th></tr></thead>
+<tbody>
+<tr><td>Who is the user?</td><td>A family member trying to understand and complete a responsibility.</td></tr>
+<tr><td>What problem are we solving?</td><td>People need one shared chore list instead of separate temporary copies.</td></tr>
+<tr><td>What should the user be able to do?</td><td>Load chores, add one, assign it, mark it done, and understand what happened.</td></tr>
+<tr><td>What is the smallest success signal?</td><td>A person can complete the core workflow and trust that the saved result is shared.</td></tr>
+<tr><td>What are we not claiming?</td><td>We are not claiming production security, full accounts, reminders, history, analytics, or a complete family-management product.</td></tr>
+</tbody>
+</table>
+
+### Test the experience with a real person
+
+If you already have a reachable URL, send it to one person. If you do not, run the client and server locally and let the person use the app while sitting with you. This lesson does not require learning a hosting provider before the real-user test.
+
+Say:
+
+<blockquote>
+<p>Please try to add a chore, assign it, and mark it done. I will watch and take notes, but I will not explain every click.</p>
+</blockquote>
+
+Observe:
+
+<ul class="question-list">
+<li>What did they click first?</li>
+<li>Where did they hesitate?</li>
+<li>What did they expect to happen?</li>
+<li>Did they notice waiting feedback?</li>
+<li>Did they trust that the chore was saved?</li>
+<li>Did they understand what to do next?</li>
+</ul>
+
+Then ask:
+
+<ul class="question-list">
+<li>What confused you?</li>
+<li>What did you expect to happen?</li>
+<li>Was any message unclear?</li>
+<li>What would you change first?</li>
+</ul>
+
+Do not turn this into a feature wishlist. Separate an observed difficulty from a requested solution, then identify the smallest change worth considering.
+
+<Response id="week1-day7-real-user-test" prompt="Record the real-user test. What did the person try to do, what did they do first, where did they hesitate, what did they expect, what evidence did you observe, and what remains uncertain? Separate an observed problem from a feature request." rows={16} />
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Day 7 is the point where you ask Codex to review the whole project rather than blindly add another feature.
+
+### Ask Codex for a final system review
+
+```text
+Review the complete Family Chore Board against:
+- docs/product-requirements.md
+- docs/high-level-design.md
+- docs/implementation-plan.md
+
+Do not rewrite the project and do not add features.
+
+Explain in plain English:
+- what the user problem is
+- what the React client is responsible for
+- what the server is responsible for
+- what SQLite stores
+- how one Add action travels through the system
+- how the app gives loading, success, and failure feedback
+- what happens after refresh
+- how a second browser sees shared data
+- what deployment would change and what it would not change
+
+Then report:
+- complete behavior
+- partial behavior
+- missing behavior
+- extra behavior
+- unverified behavior
+- the most important remaining risk
+```
+
+<Response id="week1-day7-system-review" prompt="Record Codex’s system review. What does each layer own, what happens during Add, what is complete, partial, missing, extra, or unverified, and what is the most important remaining risk?" rows={16} />
+
+### Ask Codex for the final test and edge-case audit
+
+```text
+Perform a critical final verification review.
+
+1. Map every final acceptance criterion to a meaningful unit test,
+   end-to-end test, or manual check.
+2. Inspect available coverage and identify important code paths that are
+   not covered.
+3. Think through happy cases and edge cases, including blank input,
+   repeated clicks, two chores with similar titles, a slow response, a
+   failed response, refresh during a request, stale client data, and a
+   second browser.
+4. Check whether any generated test could pass for the wrong reason.
+5. Inspect whether any secret value is exposed in source code or browser
+   output.
+6. Run the project checks and every regression check established through
+   Day 6.
+7. Report what passed, failed, was not run, and remains unverified.
+```
+
+<Response id="week1-day7-final-audit" prompt="Record Codex’s final test and edge-case audit. What is covered, what is missing, what could pass for the wrong reason, what passed or failed, and what remains unverified?" rows={16} />
+
+### Debug from evidence
+
+If something works locally but fails in the final test, record:
+
+<div class="app-example">
+<p><strong>Expected:</strong> what should the user see?</p>
+<p><strong>Actual:</strong> what happened?</p>
+<p><strong>Action:</strong> what did the user do?</p>
+<p><strong>Client evidence:</strong> what did the screen and Console show?</p>
+<p><strong>Request evidence:</strong> what request was sent and what response came back?</p>
+<p><strong>SQLite evidence:</strong> did the saved row change?</p>
+<p><strong>Remaining uncertainty:</strong> which layer has not been inspected?</p>
+</div>
+
+<Response id="week1-day7-debug-evidence" prompt="Write an evidence-first report for one final failure. Include Expected, Actual, Action, client evidence, request evidence, SQLite evidence, the suspected layer, and remaining uncertainty." rows={14} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+### Run the complete local verification
+
+Run the client and server as you did on Day 6:
+
+<table>
+<thead><tr><th>Terminal</th><th>Command</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td>Terminal 1</td><td><code>npm run dev</code></td><td>Starts the React client.</td></tr>
+<tr><td>Terminal 2</td><td><code>npm run server</code></td><td>Starts the server that uses SQLite.</td></tr>
+</tbody>
+</table>
+
+Then:
+
+<ol class="mental-model-steps">
+<li>Run the project check and production build.</li>
+<li>Run every regression check established through Day 6.</li>
+<li>Load saved chores.</li>
+<li>Add a chore and inspect the SQLite row.</li>
+<li>Complete the correct chore and inspect the changed row.</li>
+<li>Refresh and verify that saved data returns.</li>
+<li>Verify the same data from a second browser.</li>
+<li>Test one controlled failure.</li>
+<li>Check the narrow phone-sized layout.</li>
+</ol>
+
+<Checkpoint id="week1-day7-local-verification">I ran the complete local check, build, client-server workflow, SQLite inspection, refresh test, second-browser test, controlled failure, and all regression checks through Day 6.</Checkpoint>
+
+### Make one final tiny verified change
+
+Choose one small improvement based on evidence from the real-user test. For example:
+
+<ul class="example-list">
+<li>make the saving message clearer;</li>
+<li>improve the empty-list explanation; or</li>
+<li>make the next action clearer after a successful save.</li>
+</ul>
+
+Do not add a new feature. Ask Codex to make the smallest change, run the focused check, run every regression check through Day 6, and repeat the relevant manual test.
+
+### Write the handoff
+
+<table>
+<thead><tr><th>Handoff question</th><th>Your answer</th></tr></thead>
+<tbody>
+<tr><td>What changed?</td><td>What the final verified change does.</td></tr>
+<tr><td>Why?</td><td>Which user problem or observed difficulty it addresses.</td></tr>
+<tr><td>Who and what action are affected?</td><td>The user and workflow involved.</td></tr>
+<tr><td>What data changes?</td><td>What the client, server, and SQLite row do.</td></tr>
+<tr><td>How was it tested?</td><td>Local checks, manual checks, real-user observation, and evidence.</td></tr>
+<tr><td>What did not change?</td><td>Features and scope deliberately left alone.</td></tr>
+<tr><td>What are the limitations?</td><td>Known security, data, deployment, usability, or testing limitations.</td></tr>
+<tr><td>What should happen next?</td><td>One sensible next step, if any.</td></tr>
+</tbody>
+</table>
+
+<Response id="week1-day7-handoff" prompt="Write the final handoff in plain English. Include what changed, why, who is affected, what data changes, how you tested it, what you did not change, known limitations, deployment status, and the next sensible step." rows={16} />
+
+### Populate the repository README
+
+The repository’s `README.md` is the project’s front door. It is the first place a new person—or a future Codex agent—looks to understand what the project is, how to run it, how to check it, and what is still unfinished.
+
+A useful README should answer practical questions without making someone reconstruct the project from scattered files:
+
+<ul class="question-list">
+<li>What problem does this project solve?</li>
+<li>What can the current version do?</li>
+<li>How do I start the client?</li>
+<li>How do I start the server?</li>
+<li>What does SQLite store?</li>
+<li>How do I run the checks?</li>
+<li>What environment settings are needed?</li>
+<li>What is deliberately not built?</li>
+<li>What is the current deployment status?</li>
+<li>What limitations should I know about?</li>
+</ul>
+
+The README is documentation, not decoration. Writing it forces you to check whether the project can actually be explained and started by someone who did not build it. It also gives a future Codex agent high-level orientation before it reads individual files.
+
+Do not let Codex make up commands, features, environment settings, deployment status, or security claims. The README should describe the repository that actually exists.
+
+Use this prompt:
+
+```text
+Create or update the repository root README.md.
+
+First inspect the actual repository. Read:
+- docs/product-requirements.md, if it exists
+- docs/high-level-design.md, if it exists
+- docs/implementation-plan.md, if it exists
+- package.json and all project scripts
+- the React client entrypoints
+- the server entrypoints
+- the SQLite setup and schema creation code
+- the available tests and verification commands
+
+Do not change application code. Do not invent features, commands,
+environment settings, deployment status, security guarantees, or test results.
+If information is missing, say so clearly in the README.
+
+Write a concise, beginner-friendly README with these sections:
+1. Project name and one-sentence purpose
+2. The user problem this project addresses
+3. Current capabilities
+4. How the client and server work together
+5. What SQLite stores
+6. Prerequisites
+7. Setup instructions
+8. How to start the client
+9. How to start the server
+10. How to run checks and tests
+11. Important environment settings, listing names only and never values
+12. Current deployment status
+13. Known limitations and deliberately unbuilt features
+14. Useful project structure notes
+
+Use the exact commands found in the repository. Explain when two terminals
+are required. Make clear that the client is user-facing, the server applies
+rules and talks to SQLite, and SQLite is an existing open-source database
+engine rather than code built by this project.
+
+After writing the README:
+- verify every command you document against package.json or the actual files
+- run the documented check and build commands
+- compare every capability claim with the implementation
+- report anything you could not verify
+- show a short summary of what the README now explains
+```
+
+<Response id="week1-day7-readme-review" prompt="Review the generated README. Does it explain the user problem, current behavior, client, server, SQLite, setup, commands, checks, limitations, and deployment status without making unsupported claims? What remains unverified?" rows={14} />
+
+<Checkpoint id="week1-day7-readme-complete">I asked Codex to create the README from the actual repository, checked its commands and claims, and recorded anything the README could not verify.</Checkpoint>
+
+</Track>
+
+## Explain the complete system back
+
+<ol class="mental-model-steps">
+<li>The user opens…</li>
+<li>The browser downloads…</li>
+<li>The client asks…</li>
+<li>The server applies…</li>
+<li>SQLite stores…</li>
+<li>The response tells the client…</li>
+<li>React shows…</li>
+<li>When the user changes a chore, the client…</li>
+<li>The server…</li>
+<li>After refresh…</li>
+<li>Another browser can…</li>
+<li>One thing that remains unverified is…</li>
+</ol>
+
+<Response id="week1-day7-explain-back" prompt="Explain the complete Family Chore Board story from the user problem through the browser, React client, request, server rule, SQLite row, response, feedback, refresh, second browser, deployment concept, and remaining uncertainty." rows={16} />
+
+<details>
+<summary>Mentor pause</summary>
+
+Show your mentor the final acceptance criteria, complete verification evidence, real-user notes, final small change, handoff, and Codex’s final review. Explain what is working, what was not tested, what limitations remain, and what you would do next.
+</details>
+
+<Checkpoint id="week1-day7-mentor-pause">I explained the complete system, showed the verification evidence and real-user notes, described the final change and handoff, and stated what remains unverified.</Checkpoint>
+
+## Done for today
+
+You are finished with the build week if you can:
+
+<ul class="observation-checklist">
+<li>explain the users, data, actions, rules, feedback, client, server, SQLite, and deployment layers;</li>
+<li>run the complete local workflow;</li>
+<li>show that the client can reach the server and the server can read and change SQLite;</li>
+<li>verify loading, pending, success, failure, refresh, and second-browser behavior;</li>
+<li>observe a real person using the core workflow;</li>
+<li>run all regression checks through Day 6;</li>
+<li>describe deployment without pretending that it was performed;</li>
+<li>describe limitations honestly;</li>
+<li>hand off the work clearly; and</li>
+<li>leave behind a README.md that another person or AI agent can use to understand and start the project;</li>
+<li>explain what remains unverified.</li>
+</ul>
+
+<Checkpoint id="week1-day7-complete">I completed Day 7 and can explain, verify, and hand off the Family Chore Board while stating its deployment status and limitations honestly.</Checkpoint>

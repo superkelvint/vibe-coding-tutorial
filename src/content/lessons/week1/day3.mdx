@@ -1,0 +1,538 @@
+---
+title: "Day 3: The browser asks another computer for help"
+section: "Week 1 · Day 3"
+order: 8
+estimatedTime: "120 minutes"
+mentalModel: "When several people or devices need to agree, the server holds the trusted source of truth; browsers consume that truth and ask for allowed changes."
+verificationFocus: "Trace a request from action to feedback, inspect the request and response separately, test loading/success/error states, deliberately break one layer, and debug from evidence."
+description: "Learn why a browser sometimes needs another computer, what happens while it waits, and how to tell where a request went wrong."
+---
+
+Yesterday you saw that the browser can handle a small interaction by itself. That is enough for a menu, a local counter, or a temporary display choice.
+
+But the web is a multi-user world, and the many of the most useful web applications have to do with connecting multiple people together and letting them interact with one another.
+
+
+## When one browser is not enough
+
+Ask: **what would go wrong if the whole app lived only in this browser?**
+
+| User problem | Why one browser cannot solve it by itself |
+| --- | --- |
+| “I want to see the same messages on my phone and laptop.” | One browser’s memory is not automatically available on another device. |
+| “I want my friend to see the message I just sent.” | The message needs to travel somewhere both people can reach. |
+| “I want my order status to be current.” | The browser needs the latest shared information, not an old copy it made up earlier. |
+| “I want my bank balance to be private and accurate.” | The app needs a trusted place to check identity, permissions, and the official balance. |
+| “I want a driver to accept my ride request.” | The request needs to be shared with other people and coordinated with their actions. |
+| “I want my uploaded video to be available after I close my laptop.” | The video and its status need to be kept somewhere that can continue working after this browser is gone. |
+| “I want search results or traffic information to be current.” | The browser needs to ask for data that changes outside the browser. |
+
+The pattern is simple: a browser-only app can change what **this person sees right now**. It cannot, by itself, become a trusted shared place for many people, many devices, protected information, or work that continues after the browser closes.
+
+## The web is a multi-user world
+
+A private browser tool can help one person by itself. It can show a menu, calculate a total, or remember a temporary choice. But the value of many familiar web apps comes from people seeing, changing, or responding to shared information:
+
+<ul class="question-list">
+<li>Instagram is useful because other people can see posts and react to them.</li>
+<li>Online shopping is useful because a store and many shoppers can coordinate products, payments, and orders.</li>
+<li>Messaging is useful because one person can send something another person receives.</li>
+<li>Google Docs is useful because several people can work on the same document.</li>
+<li>Ride-sharing is useful because riders and drivers can be matched through the same system.</li>
+<li>Online banking is useful because a customer and the bank need to agree about the same account.</li>
+</ul>
+
+### The provocation: why can’t the browsers handle this themselves?
+
+Imagine that every shopper, friend, driver, or collaborator has a browser. Why not let those browsers talk directly to one another and handle everything themselves?
+
+The problem is that each browser is a separate, privately controlled copy. A browser can say “I added the last jacket to my cart,” but it cannot reliably tell every other browser whether that jacket is still available. Two browsers could make conflicting claims, and neither one would have the authority to settle the disagreement.
+
+The product needs a shared system that can receive everyone’s requests, keep the official information, apply the rules, and send consistent answers back. That shared system is what we call a **server**. The browser is where one person participates; the server coordinates everyone’s participation.
+
+### You are building both sides
+
+When you build a web app that works this way, you are usually building **two cooperating parts**:
+
+<table>
+<thead><tr><th>Part</th><th>Where it runs</th><th>What you are responsible for</th></tr></thead>
+<tbody>
+<tr><td><strong>Client</strong></td><td>In the user’s browser</td><td>The screen, buttons, loading messages, and the requests the user can make.</td></tr>
+<tr><td><strong>Server</strong></td><td>On another computer</td><td>The shared information, rules, permissions, and answers sent back to browsers.</td></tr>
+</tbody>
+</table>
+
+These are not two unrelated apps. They are two parts of one product. The client gives one person a usable experience. The server makes sure that different people and devices can work from the same official information.
+
+The two sides also have different main responsibilities:
+
+<table>
+<thead><tr><th>When you build the…</th><th>Your main question is…</th><th>Pay special attention to…</th></tr></thead>
+<tbody>
+<tr><td><strong>Client</strong></td><td>Can this person understand and use what is happening?</td><td>Clear screens, sensible buttons, useful loading messages, honest success and error feedback, and an experience that does not make the user guess.</td></tr>
+<tr><td><strong>Server</strong></td><td>Can this shared information remain correct and dependable?</td><td>Rules, permissions, missing or unexpected data, competing requests, accurate saving, and answers that other clients can trust.</td></tr>
+</tbody>
+</table>
+
+For the online store, the client should make it obvious whether an item was added, whether the order is still being checked, and whether the order really succeeded. The server should handle two people trying to buy the last jacket, reject invalid quantities, and save the correct order details. A polished screen cannot repair incorrect saved data, and perfectly stored data is not enough if the shopper cannot understand what happened.
+
+For the online store, you would build the product page and cart that the shopper sees. You would also build the part that checks stock, accepts or rejects an order, saves the order, and tells the client what happened. If you only build the client, you can create a convincing shopping screen—but you cannot create a trustworthy shared store.
+
+<aside class="model-purpose">
+<p><strong>Developer responsibility:</strong> when a product needs shared behavior, think about both sides: what should this browser show and ask for, and what should the server decide and remember?</p>
+</aside>
+
+<aside class="model-purpose">
+<p><strong>Core idea:</strong> a server is not needed because a website is fancy. It is needed when the product must connect people, devices, or organizations around shared information.</p>
+</aside>
+
+<Response id="week1-day3-why-server" prompt="Choose two scenarios from the table. Explain the user’s problem, what a browser-only app could do, what it could not do, and why a shared system would help." rows={10} />
+
+Now that we know why a shared system is needed, ask the deeper question: **who gets to decide what is true?**
+
+## One trusted answer: the source of truth
+
+Imagine that you tap Like on your phone. Your phone immediately changes the heart to red. Then your friend opens the same post on a laptop and still sees the old count.
+
+Which screen is right?
+
+<div class="app-example">
+<p><strong>Phone:</strong> “This post is liked.”</p>
+<p><strong>Laptop:</strong> “This post is not liked.”</p>
+<p><strong>Problem:</strong> two browsers have made different claims about the same shared fact.</p>
+<p><strong>Needed:</strong> one trusted record that both browsers can ask about.</p>
+</div>
+
+A browser can remember a local opinion, but it cannot decide the official answer for every other browser. When people or devices need to agree, the app needs a **source of truth**: one trusted record that determines what the shared data currently says.
+
+The source of truth is not merely “where the data happens to be.” It is the place whose answer the product treats as authoritative. The browser may show a fast guess while it waits, but the shared result is not confirmed until the source of truth accepts it and sends back an answer.
+
+<table>
+<thead><tr><th>Local browser memory</th><th>Source of truth</th></tr></thead>
+<tbody>
+<tr><td>What this device currently believes</td><td>The official shared record</td></tr>
+<tr><td>Can be different on another device</td><td>Can be checked by many devices</td></tr>
+<tr><td>Can make the screen feel instantly responsive</td><td>Confirms whether a change really happened</td></tr>
+<tr><td>Should not be trusted for a bank balance, shared Like, or order status</td><td>Applies the rules for who may read or change the data</td></tr>
+</tbody>
+</table>
+
+## Who owns the official answer?
+
+This is the easiest way to understand the producer/consumer idea:
+
+<ol class="mental-model-steps">
+<li>Someone or something creates or owns the official information.</li>
+<li>Other people, devices, or apps read that information.</li>
+<li>Those readers may ask for a change, but the owner decides whether the change is allowed.</li>
+</ol>
+
+The creator or owner is sometimes called the **producer**. The person or app reading the information is called a **consumer**. You do not need to memorize those words yet. The useful question is simply: **who gets to say what is officially true?**
+
+For example, when you tap Like, your phone can change the heart immediately so the app feels responsive. But your phone does not get to announce an official Like to everyone else. The shared service must accept the change. That service is the source of truth, and other phones consume its answer.
+
+<table>
+<thead><tr><th>Example</th><th>Who owns the official answer?</th><th>What does the app do?</th></tr></thead>
+<tbody>
+<tr><td>Instagram Like</td><td>The shared Instagram record.</td><td>The phone asks to Like or Unlike, then shows the accepted result.</td></tr>
+<tr><td>Online banking balance</td><td>The bank’s account system.</td><td>The app shows the balance and asks the bank to approve a transfer.</td></tr>
+<tr><td>YouTube video</td><td>The upload and processing service.</td><td>The creator sends a video; the service decides whether it is accepted and playable.</td></tr>
+<tr><td>Google Maps traffic</td><td>The map and traffic service.</td><td>The app asks for current information and displays the route it receives.</td></tr>
+</tbody>
+</table>
+
+<aside class="model-purpose">
+<p><strong>Remember this:</strong> the browser can ask and display. The source of truth decides and confirms.</p>
+</aside>
+
+### A real-world example: an online store
+
+Imagine you are building the website for an online clothing store. A shopper opens the store on their phone and sees a blue jacket that costs $60.
+
+At first, the phone is only displaying information. It did not decide the price, and it does not know for certain how many jackets are left. The store's shared system owns those official answers.
+
+Now walk through what happens when the shopper buys it:
+
+<ol class="mental-model-steps">
+<li><strong>The shopper looks at the jacket.</strong> The browser asks the store for the product name, photo, price, and available sizes.</li>
+<li><strong>The shopper adds it to the cart.</strong> The browser can show the jacket in the cart immediately, but that does not guarantee that the store has reserved it.</li>
+<li><strong>The shopper clicks “Place order.”</strong> The browser sends the store a request with the item, size, address, and payment details.</li>
+<li><strong>The store checks the request.</strong> It checks the price, stock, delivery details, and payment.</li>
+<li><strong>The store gives an answer.</strong> If everything is valid, the store saves the order and returns an order number. If something is wrong, it explains the failure.</li>
+<li><strong>The browser shows the answer.</strong> It shows “Order confirmed” only after the store confirms the order.</li>
+</ol>
+
+<aside class="app-example">
+<p><strong>Important:</strong> changing the cart or showing “Order confirmed” on the phone does not create a real order. The order becomes real when the store's trusted system accepts it and saves it.</p>
+</aside>
+
+This also explains why two shoppers cannot both be promised the last jacket just because both browsers showed it as available. The store's shared system must decide which request succeeds. Both browsers are using the store's answer; neither browser owns it.
+
+<Response id="week1-day3-store-walkthrough" prompt="Follow the online-store example. What does the browser display? What does it ask the store to do? What does the store need to check? What evidence would prove that the order is real?" rows={8} />
+
+That is why these problems need a server. The server gives the product one place to keep the official answer, apply the rules, and give the same answer to many browsers. The browser makes the experience usable, but it is not allowed to make a shared fact official by changing its own screen.
+
+<Response id="week1-day3-source-of-truth" prompt="Choose one example. Who owns the official answer? What does the browser ask for? What must be confirmed before the change or result is official?" rows={8} />
+
+## The words we need
+
+You do not need a complicated definition. For this lesson, use these:
+
+<dl class="definition-list">
+<div><dt><b>Client</b></dt><dd>The application running in the user’s browser.</dd></div>
+<div><dt><b>Server</b></dt><dd>Another computer that receives a request, follows rules, finds or changes shared data, and sends a response back.</dd></div>
+<div><dt><b>Request</b></dt><dd>The browser asking the server to do something or send something.</dd></div>
+<div><dt><b>Response</b></dt><dd>The server’s answer to the browser.</dd></div>
+</dl>
+
+<img src={`${import.meta.env.BASE_URL}images/day3-client-server-flow.png`} alt="A fictional client-server flow showing a browser action, request, server checks, response, loading, success, and error feedback." />
+
+*Figure 1. The browser does not disappear when a server is involved. It sends the request, waits, reads the response, and updates the screen.*
+
+## The request–response story
+
+Here is the full story in order:
+
+<ol class="mental-model-steps">
+<li>The user takes an action.</li>
+<li>The browser creates a request.</li>
+<li>The request travels to the server.</li>
+<li>The server reads the request.</li>
+<li>The server applies its rules.</li>
+<li>The server may read or change saved shared data.</li>
+<li>The server sends a response.</li>
+<li>The browser reads the response.</li>
+<li>The browser updates its temporary data and screen.</li>
+<li>The user receives success or failure feedback.</li>
+</ol>
+
+<aside class="model-purpose">
+<p><strong>Why this model matters:</strong> it helps you locate a problem. If the screen is wrong, ask: did the request leave the browser, did the server answer, did the answer contain the right data, did the browser store it, or did the screen display it incorrectly?</p>
+</aside>
+
+### Predict before you inspect
+
+Choose one familiar action: loading a feed, sending a message, checking a balance, searching for a video, or checking an order.
+
+<Response id="week1-day3-request-prediction" prompt="Choose one familiar action. Predict what the browser does, what the server must do, what response comes back, what the user sees while waiting, and what the user sees after success or failure." rows={10} />
+
+## Familiar stories
+
+### Opening a social feed
+
+<div class="app-example">
+<p><strong>Browser asks:</strong> “Give me posts this person is allowed to see.”</p>
+<p><strong>Server does:</strong> identifies the person, finds appropriate posts, and returns the data.</p>
+<p><strong>Browser does:</strong> displays the posts and gives feedback while they load.</p>
+<p><strong>Possible failure:</strong> the feed is empty, stale, or an error appears.</p>
+</div>
+
+### Sending a message
+
+<div class="app-example">
+<p><strong>Before Send:</strong> the typed message is temporary data in the browser.</p>
+<p><strong>After Send:</strong> the browser sends a request.</p>
+<p><strong>Server:</strong> checks the request, saves the message, and routes it.</p>
+<p><strong>Response:</strong> the server answers the browser.</p>
+<p><strong>Feedback:</strong> sending, sent, delivered, failed, or retry.</p>
+</div>
+
+### Checking a bank balance
+
+<div class="app-example">
+<p><strong>Browser asks:</strong> “Show the balance this person is allowed to see.”</p>
+<p><strong>Server checks:</strong> the person’s identity and permissions.</p>
+<p><strong>Server reads:</strong> saved financial data.</p>
+<p><strong>Server returns:</strong> only the permitted information.</p>
+<p><strong>Browser displays:</strong> the response and its freshness or error state.</p>
+</div>
+
+## Browser-only versus server-backed
+
+| Browser-only action | Server-backed action |
+| --- | --- |
+| User opens a menu | User sends a message |
+| Browser changes temporary data | Browser sends a request |
+| Browser redraws the screen | Server checks rules and saves shared data |
+| No request is needed for the interaction | Server sends a response |
+| The change may disappear on refresh | Browser shows the confirmed result or failure |
+
+The important lessons are:
+
+<ul class="question-list">
+<li>Not every click contacts a server.</li>
+<li>Changing the screen does not prove that something was saved.</li>
+<li>A successful response does not prove that the browser displayed it correctly.</li>
+</ul>
+
+## Waiting is part of the product
+
+When a request takes time, the user is left with a question: “Did anything happen?” A good app answers that question instead of making the user guess.
+
+<table>
+<thead><tr><th>State</th><th>What it means</th><th>What the user should see</th></tr></thead>
+<tbody>
+<tr><td>Idle</td><td>The action has not started.</td><td>The normal button or screen.</td></tr>
+<tr><td>Loading</td><td>The request is in progress.</td><td>A spinner, message, disabled repeat action, or other clear waiting signal.</td></tr>
+<tr><td>Success</td><td>The server accepted the request or returned the data.</td><td>The result and a clear confirmation.</td></tr>
+<tr><td>Error</td><td>The request failed, the server rejected it, or the response could not be used.</td><td>An honest explanation and a sensible next step.</td></tr>
+</tbody>
+</table>
+
+<Response id="week1-day3-feedback-states" prompt="For one familiar server-backed action, describe the idle, loading, success, and error states. What should the user see in each state, and what would be confusing or misleading?" rows={10} />
+
+<Track type="product" title="Product Judgment">
+
+The product question today is not “How do we add a server?” It is:
+
+> Why does this action need another computer at all?
+
+Ask:
+
+<ul class="question-list">
+<li>What data must be shared or available later?</li>
+<li>What rule must be enforced somewhere the user cannot simply change?</li>
+<li>What should the user see while waiting?</li>
+<li>What should happen after success?</li>
+<li>What should happen after failure?</li>
+<li>Should the user be able to try again?</li>
+</ul>
+
+Choose one workflow such as loading a profile, searching for a video, sending a message, checking an order, or requesting a ride. Separate the user’s pain from the technical solution. The server is useful only if it helps the product provide shared, protected, or persistent value.
+
+<Response id="week1-day3-product-judgment" prompt="Analyze one server-backed workflow. What user problem does it solve, what data needs to be shared or saved, what rule needs to be enforced, what should happen while waiting, and what should happen after success or failure?" rows={11} />
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Today, ask Codex to explain the request and response story before asking it to change code.
+
+### Explanation prompt
+
+```text
+Do not write code.
+
+Explain the difference between a browser client and a server using:
+- opening a social feed
+- sending a message
+- viewing an online bank balance
+
+For each example, identify:
+1. what happens only in the browser
+2. what request is sent
+3. what the server must check
+4. what saved data is read or changed
+5. what response comes back
+6. what feedback the browser should show while waiting
+7. what feedback should appear after success or failure
+
+Use plain English and one simple diagram for each example.
+```
+
+<Response id="week1-day3-codex-explanation-prediction" prompt="Predict what a useful Codex explanation should contain. What would make it too technical, skip the waiting state, confuse the browser with the server, or claim more than the evidence supports?" rows={9} />
+
+### Build prompt for a prepared endpoint
+
+For the small build, use a prepared teaching endpoint or a tiny server supplied by your mentor. You are not building the server today.
+
+```text
+Goal:
+Load a small list of familiar sample items from a prepared endpoint.
+
+Context:
+The browser-only page currently displays temporary local data.
+
+Constraints:
+- use plain HTML, CSS, and JavaScript
+- keep the page small
+- show loading, success, and error states
+
+Acceptance criteria:
+- loading feedback appears while waiting
+- returned data appears after success
+- a useful error appears after failure
+- the page does not claim success before the response arrives
+
+Verification:
+- inspect the request in the Network panel
+- inspect the response status
+- inspect the response data
+- test a working URL
+- test a deliberately broken URL
+```
+
+<Response id="week1-day3-build-prompt" prompt="Write your own build prompt for the prepared endpoint. Include Goal, Context, Constraints, Acceptance criteria, and Verification. Make the loading, success, error, and Network checks explicit." rows={16} />
+
+### Debug prompt
+
+When something fails, report the evidence before asking for a fix:
+
+<div class="app-example">
+<p><strong>Bug:</strong> the browser request did not produce the expected result.</p>
+<p><strong>Expected:</strong> the screen and data you expected.</p>
+<p><strong>Actual:</strong> what the screen showed instead.</p>
+<p><strong>Evidence:</strong> request URL, method, response status, response data shape, Console message, and visible feedback.</p>
+<p><strong>Question:</strong> is the problem in the request, server response, response data, browser state, or screen update?</p>
+<p><strong>Constraint:</strong> make the smallest fix; do not rewrite the page.</p>
+</div>
+
+<Response id="week1-day3-debug-evidence" prompt="Write an evidence-first debug report for a possible request failure. Include Bug, Expected, Actual, request and response evidence, visible feedback, the layer you suspect, and the smallest-fix constraint." rows={14} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+Use a prepared public teaching endpoint or a tiny server provided by your mentor. You are not building the server today.
+
+Before changing the page, find out what checks are already available. With Codex or your mentor, inspect the project scripts and run the relevant baseline check or build. Record what passed, failed, or was not available. This gives you a comparison point after the request behavior changes.
+
+The browser should:
+
+<ol class="mental-model-steps">
+<li>start in an idle state;</li>
+<li>request a small list;</li>
+<li>show loading;</li>
+<li>receive a response;</li>
+<li>store the response temporarily;</li>
+<li>render the returned data; and</li>
+<li>show an error after a controlled failure.</li>
+</ol>
+
+Before running the request, predict what you expect to see:
+
+<Response id="week1-day3-technical-prediction" prompt="Predict the browser’s idle, loading, success, and error states. What request do you expect in Network, what response status do you expect, and what data should appear on the page?" rows={10} />
+
+### Inspect the request and response
+
+Open the browser’s Network panel. You do not need to understand every line. Find these five pieces:
+
+<ul class="observation-checklist">
+<li>the request URL: where the browser asked;</li>
+<li>the request method: what kind of action it sent;</li>
+<li>the request timing: when it started and finished;</li>
+<li>the response status: whether the server reported success or failure; and</li>
+<li>the response body: the data that came back.</li>
+</ul>
+
+<Checkpoint id="week1-day3-network-inspected">I found the request in Network and recorded its URL, method, timing, response status, and response data.</Checkpoint>
+
+### Compare two persistence experiments
+
+#### Experiment A: browser memory only
+
+Change a value locally, refresh, and observe that the change disappears.
+
+#### Experiment B: server-provided data
+
+Load data from the teaching endpoint, refresh, and observe that the browser asks for it again and receives it again.
+
+If the prepared server supports a disposable write operation, you may also:
+
+<ol class="mental-model-steps">
+<li>send a change;</li>
+<li>wait for confirmation;</li>
+<li>refresh;</li>
+<li>request the data again; and</li>
+<li>observe whether the saved change returns.</li>
+</ol>
+
+Do not assume that “it appeared on the screen” means “it was saved.” Use the refresh and response evidence.
+
+<Response id="week1-day3-persistence-comparison" prompt="Compare the two experiments. What disappeared from browser memory, what came back from the teaching endpoint, and what evidence would be needed before claiming that a change was saved?" rows={10} />
+
+### Break one layer on purpose
+
+Use one controlled failure:
+
+<ul class="example-list">
+<li>a wrong URL;</li>
+<li>a response with an error status;</li>
+<li>data in an unexpected shape;</li>
+<li>loading that never stops;</li>
+<li>error feedback that is hidden; or</li>
+<li>success shown before the response arrives.</li>
+</ul>
+
+Before fixing anything, ask these questions in order:
+
+<ol class="mental-model-steps">
+<li>Did the request leave the browser?</li>
+<li>Did the server respond?</li>
+<li>Was the response status successful?</li>
+<li>Did the response contain the expected data?</li>
+<li>Did the browser store it?</li>
+<li>Did the screen render it?</li>
+</ol>
+
+<Response id="week1-day3-deliberate-failure" prompt="Describe the controlled failure you tried. What did the Network panel show, what did the response contain, what did the browser store, what did the screen show, and what smallest fix restored the correct behavior?" rows={13} />
+
+<Response id="week1-day3-regression" prompt="Regression check: after fixing the failure, did the normal request still show loading, success data, and understandable error feedback? What did you re-test, and what remains uncertain?" rows={9} />
+
+<Checkpoint id="week1-day3-regression-checked">I re-ran the normal request after the controlled failure and confirmed the original loading, success, and error behavior still worked.</Checkpoint>
+
+### Separate the claims
+
+Verify these claims separately:
+
+<ul class="observation-checklist">
+<li>The request was sent.</li>
+<li>The server responded.</li>
+<li>The response status was understood.</li>
+<li>The response data had the expected shape.</li>
+<li>The browser stored the response temporarily.</li>
+<li>The screen displayed the response correctly.</li>
+<li>Loading feedback appeared while waiting.</li>
+<li>Failure feedback appeared after an error.</li>
+</ul>
+
+<Response id="week1-day3-evidence-review" prompt="Review your evidence honestly: what passed, what failed, what did you not run, which generated checks would be weak or misleading, and what remains unverified?" rows={11} />
+
+</Track>
+
+## Explain it back
+
+Use these questions to guide your explanation:
+
+<ul class="question-list">
+<li>What is the client, and where does it run?</li>
+<li>What is the server?</li>
+<li>Why does a multi-user product need a shared source of truth?</li>
+<li>What does the developer build on the client side?</li>
+<li>What does the developer build on the server side?</li>
+<li>Who owns the official answer, and who is consuming it?</li>
+<li>Why does the browser send a request?</li>
+<li>What does the server do with it?</li>
+<li>What is a response?</li>
+<li>Why might a request fail?</li>
+<li>What should the user see while waiting?</li>
+<li>Why does changing the screen not prove that data was saved?</li>
+<li>Why can some actions happen without a server?</li>
+</ul>
+
+<Response id="week1-day3-explain-back" prompt="Explain one request from the user’s action through the browser, request, server rules, response, temporary browser state, screen feedback, and remaining uncertainty. Use plain English." rows={12} />
+
+<aside class="mantra-callout">
+<p>You are not here to create software. You are here to solve user problems.</p>
+<p>Today, that means understanding when another computer is needed to provide shared or saved value—and showing the user honestly what is happening while they wait.</p>
+</aside>
+
+> **Mentor pause:** Explain one request using the Network panel as evidence. Show your mentor what was requested, what came back, what the browser displayed, and one thing you still cannot prove.
+
+<Checkpoint id="week1-day3-mentor-pause">I explained one request to my mentor, showed the request and response evidence, described what the browser displayed, and said what I still do not know.</Checkpoint>
+
+## Done for today
+
+You are ready for Day 4 if you can:
+
+<ul class="observation-checklist">
+<li>draw or explain the client–server relationship;</li>
+<li>explain why many web apps need to coordinate multiple users or devices;</li>
+<li>trace a request from a user action to feedback;</li>
+<li>explain idle, loading, success, and error in plain English;</li>
+<li>use the Network panel as evidence;</li>
+<li>separate the visible screen, browser memory, server response, and saved data; and</li>
+<li>debug a failure by checking one layer at a time.</li>
+</ul>
+
+<Checkpoint id="week1-day3-complete">I completed Day 3 and can explain, inspect, and debug a request from the browser to another computer and back again.</Checkpoint>

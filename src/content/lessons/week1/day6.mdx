@@ -1,0 +1,705 @@
+---
+title: "Day 6: Let the family share the same chore list"
+section: "Week 1 · Day 6"
+order: 11
+estimatedTime: "240 minutes"
+mentalModel: "A browser remembers its own temporary view; a server reads and changes a SQLite database so multiple browsers can work from the same source of truth."
+verificationFocus: "Preserve every earlier acceptance criterion, predict the request and response, inspect the project's existing checks, verify loading, success, failure, saved data, refresh, and a second browser, inspect network and data evidence, run every regression check established so far, and ask Codex to audit coverage and edge cases."
+description: "Create a small server and SQLite database, then wire the React Family Chore Board to shared saved data so a chore survives refresh and can be seen from another browser."
+---
+
+Yesterday, the Family Chore Board worked in one browser. Today we will face the problem that browser-only code cannot solve on its own.
+
+## What if two family members use the app?
+
+Imagine this:
+
+<ol class="mental-model-steps">
+<li>One parent opens the Chore Board on a laptop.</li>
+<li>They add “Take out the trash” and assign it to Maya.</li>
+<li>Maya opens the app on her phone.</li>
+<li>She needs to see the same chore.</li>
+<li>She marks it done.</li>
+<li>The parent needs to see that change too.</li>
+</ol>
+
+If each browser keeps its own temporary list, the family does not have one Chore Board. They have several unrelated copies that can disagree.
+
+<aside class="model-purpose">
+<p><strong>Where should the shared chore list live so that every browser can ask for the same current information?</strong></p>
+</aside>
+
+The answer is not “make React remember harder.” React manages the current screen inside one browser. We need another place that all of the browsers can contact.
+
+## The server becomes the shared source of truth
+
+A <strong>server</strong> is another computer or hosted application that receives requests from browsers and sends responses back. It can apply rules, read shared saved data, change that data, and tell the browser what happened.
+
+A <strong>database</strong> is a place for organized saved data that can be found again later. A database is made up of <strong>tables</strong>, and a table is very much like an Excel spreadsheet: it has rows and columns.
+
+Each column has a name that describes what belongs there. Each row is one saved item. In our `chores` table, one row will represent one chore:
+
+<table>
+<thead><tr><th><code>id</code></th><th><code>title</code></th><th><code>assigned_to</code></th><th><code>done</code></th><th><code>created_at</code></th></tr></thead>
+<tbody>
+<tr><td>42</td><td>Take out the trash</td><td>Maya</td><td>false</td><td>Today</td></tr>
+<tr><td>43</td><td>Feed the dog</td><td>Leo</td><td>true</td><td>Today</td></tr>
+</tbody>
+</table>
+
+The column names are not decoration. They tell the server what each value means. Without named columns, the app would not know whether “Maya” was the person, the chore title, or something else. When the app asks for chores, the server reads rows from this table and sends their named values back to the browser.
+
+The server and database work together:
+
+<ol class="mental-model-steps">
+<li>The browser asks the server for the current chores.</li>
+<li>The server reads the shared saved data.</li>
+<li>The server sends the chores back.</li>
+<li>The browser displays the response.</li>
+<li>When someone adds or completes a chore, the browser sends a request.</li>
+<li>The server checks the request and changes the shared saved data.</li>
+<li>The server sends a response that says whether the change succeeded.</li>
+<li>The browser updates its state and React updates the screen.</li>
+</ol>
+
+<img src={`${import.meta.env.BASE_URL}images/day6-client-server-data-flow.png`} alt="Architecture diagram showing the Browser and React app, Server, and Shared saved data connected by read and change flows." />
+
+*Figure 1. The browser does not directly decide what the shared data says. It asks the server, and the server reads or changes the shared saved data before sending a response back.*
+
+<aside class="model-purpose">
+<p><strong>The mental model:</strong> the browser is the user-facing client, while the server and shared saved data provide the common reality that multiple browsers can use.</p>
+</aside>
+
+## Who is responsible for which part?
+
+There are three different responsibilities here. Keeping them separate makes the architecture much easier to understand:
+
+<table>
+<thead><tr><th>Part</th><th>Who provides it?</th><th>What we do</th></tr></thead>
+<tbody>
+<tr><td>Client</td><td>Us, using React in the browser.</td><td>We write the screen, buttons, loading feedback, requests, and response handling that the user sees.</td></tr>
+<tr><td>Server</td><td>Us, using server-side JavaScript.</td><td>We write the request handlers, rules, validation, database queries, and responses.</td></tr>
+<tr><td>Database engine</td><td>SQLite, an existing open-source program.</td><td>We use SQLite to save and retrieve rows. We do not write SQLite itself.</td></tr>
+<tr><td>Database table</td><td>Codex translates the approved product context into a table design.</td><td>We review whether the generated table represents the app correctly; Codex writes the SQL.</td></tr>
+</tbody>
+</table>
+
+This is similar to using a spreadsheet program. You do not code Excel in order to use a spreadsheet. You describe what information the app needs, and the tool creates or stores the rows and columns. In the same way, we install and use the open-source SQLite engine, while coding the client and server that give the data meaning for the Family Chore Board.
+
+<aside class="model-purpose">
+<p><strong>Say it plainly:</strong> we are not building a database engine. We are building the client and server, asking Codex to derive the <code>chores</code> table from the approved product context, reviewing the result, and using SQLite to save the rows.</p>
+</aside>
+
+## Walk through the same idea with Instagram
+
+The Chore Board is easier to understand when you connect it to an app you already know. Imagine an Instagram-like app where someone taps the heart on a post.
+
+The browser may show the post, the heart, and the current like count. But the browser is not the shared authority for the like. If it were, every browser could invent its own count.
+
+<table>
+<thead><tr><th>Part</th><th>Instagram-like example</th></tr></thead>
+<tbody>
+<tr><td>Browser</td><td>Shows the post, the heart button, the current count, and “Saving…” feedback.</td></tr>
+<tr><td>Request</td><td>The browser asks to create or remove this user’s like on this post.</td></tr>
+<tr><td>Server rule</td><td>The server checks that the request is allowed and that the same user cannot create five likes by accident.</td></tr>
+<tr><td>Shared saved data</td><td>Stores rows describing the post, the user’s like, and the count or the information needed to calculate it.</td></tr>
+<tr><td>Response</td><td>Says whether the like was saved or whether the action failed.</td></tr>
+<tr><td>Screen update</td><td>React shows the confirmed heart state, count, and feedback returned by the app.</td></tr>
+</tbody>
+</table>
+
+The complete interaction looks like this:
+
+<ol class="mental-model-steps">
+<li>The browser loads a post and asks for its current like information.</li>
+<li>The server reads the post and the saved like data.</li>
+<li>The server sends the post, like state, and count back.</li>
+<li>The browser displays the heart and count.</li>
+<li>The user taps the heart.</li>
+<li>The browser shows waiting feedback and sends a request.</li>
+<li>The server checks the request and saves or removes one like.</li>
+<li>The server sends a success or failure response.</li>
+<li>The browser updates its state and React redraws the heart, count, and feedback.</li>
+</ol>
+
+The same failure questions apply to the Chore Board:
+
+<ul class="question-list">
+<li>Did the browser send the request?</li>
+<li>Did the server accept it?</li>
+<li>Was the like actually saved?</li>
+<li>Did the response describe what happened accurately?</li>
+<li>Did the browser redraw from the response, or merely pretend the action worked?</li>
+</ul>
+
+This is why the architecture is useful. It does not just tell you which technologies exist. It gives you places to look when the heart looks selected but a refresh shows that the like was never saved.
+
+The app developer is responsible for both sides of this relationship:
+
+<table>
+<thead><tr><th>Part</th><th>What it must do well</th></tr></thead>
+<tbody>
+<tr><td>Client</td><td>Be clear and friendly for the person using it. Show waiting, success, and failure honestly.</td></tr>
+<tr><td>Server and saved data</td><td>Be dependable. Check requests carefully, store the right values, and return accurate results.</td></tr>
+</tbody>
+</table>
+
+The client should not pretend that a change succeeded before it knows. A visible chore is not proof that the shared data was changed.
+
+## Producers and consumers: who decides what is true?
+
+Think of a shop’s inventory. The shop’s inventory system determines how many items really exist. A customer-facing page consumes that information and may let a customer request a purchase, but the page cannot simply declare that the shop has ten more items.
+
+In the Chore Board:
+
+<table>
+<thead><tr><th>Role</th><th>In plain English</th></tr></thead>
+<tbody>
+<tr><td>Producer of shared data</td><td>The server and saved data decide what chores are actually recorded.</td></tr>
+<tr><td>Consumer of shared data</td><td>Each browser requests that data and displays the answer.</td></tr>
+<tr><td>Allowed change</td><td>A browser may ask to add, complete, or delete a chore, but the server must check and accept the request before shared data changes.</td></tr>
+</tbody>
+</table>
+
+This is why the server must be the source of truth. If every browser could decide its own version was correct, two people could complete different versions of the same chore and neither screen would reliably represent the family’s shared list.
+
+## Predict one complete request
+
+Before opening Codex or changing code, predict what happens when someone adds a chore:
+
+<ol class="mental-model-steps">
+<li>The user enters a title and chooses a person.</li>
+<li>The client shows that it is sending the request.</li>
+<li>The client sends the title and person to the server.</li>
+<li>The server checks that the request is allowed and complete.</li>
+<li>The server saves a new chore.</li>
+<li>The server sends a success or failure response.</li>
+<li>The client updates browser state from the response.</li>
+<li>React redraws the list and feedback.</li>
+</ol>
+
+<Response id="week1-day6-request-prediction" prompt="Predict the Add flow in plain English. What does the browser send, what should the server check, what should be saved, what response should come back, and what should the user see while waiting, after success, and after failure?" rows={14} />
+
+## Acceptance criteria for shared chores
+
+The Day 6 change is successful only if these behaviors are observable:
+
+<table>
+<thead><tr><th>Behavior</th><th>Observable evidence</th></tr></thead>
+<tbody>
+<tr><td>Load saved chores</td><td>The app requests chores and displays the saved results.</td></tr>
+<tr><td>Create shared saved data</td><td>The SQLite database contains a <code>chores</code> table with the agreed fields, and the server can read it.</td></tr>
+<tr><td>Create the server</td><td>The server starts successfully, exposes the planned endpoints, and returns useful responses.</td></tr>
+<tr><td>Wire the client</td><td>The React app sends requests to the server instead of changing only browser state.</td></tr>
+<tr><td>Show waiting</td><td>The user sees useful loading feedback while the request is in progress.</td></tr>
+<tr><td>Add a chore</td><td>Add sends a request and a successful response results in one saved chore.</td></tr>
+<tr><td>Reject invalid input</td><td>A blank title is rejected with useful feedback and does not create a saved row.</td></tr>
+<tr><td>Complete the correct chore</td><td>Done changes the selected saved chore and leaves other chores unchanged.</td></tr>
+<tr><td>Show failure honestly</td><td>A failed request produces failure feedback and does not claim success.</td></tr>
+<tr><td>Survive refresh</td><td>A saved chore appears again after the page is refreshed.</td></tr>
+<tr><td>Work across browsers</td><td>A second browser can see a chore created in the first browser.</td></tr>
+<tr><td>Preserve earlier behavior</td><td>Every regression check established through Day 5 still passes.</td></tr>
+</tbody>
+</table>
+
+<Response id="week1-day6-acceptance-criteria" prompt="Rewrite the shared-data acceptance criteria in your own words. For each one, say what you would observe and what evidence would prove it." rows={14} />
+
+## Inspect what already exists
+
+Before asking Codex to connect anything:
+
+<ol class="mental-model-steps">
+<li>Find the React client and the Day 5 DayPicker demonstration.</li>
+<li>Find the project’s package scripts, tests, checks, and build command.</li>
+<li>Read the approved product requirements, high-level design, and implementation plan.</li>
+<li>Find the planned server and SQLite approach, and confirm how the client is meant to contact the server.</li>
+<li>Run the existing checks and every regression check established through Day 5.</li>
+<li>Record what passed, failed, was not run, and remains unverified.</li>
+</ol>
+
+<Checkpoint id="week1-day6-baseline-checks">I inspected the client, planned server and SQLite approach, available checks, and approved project context. I ran the baseline checks and every regression check established through Day 5 before changing the data flow.</Checkpoint>
+
+<Track type="product" title="Product Judgment">
+
+Today’s product change is justified by a real limitation:
+
+<table>
+<thead><tr><th>Product question</th><th>Answer for today</th></tr></thead>
+<tbody>
+<tr><td>What was requested?</td><td>Save chores in shared data.</td></tr>
+<tr><td>Who has the problem?</td><td>A family using more than one browser or device.</td></tr>
+<tr><td>What happens today?</td><td>Each browser has its own temporary list, and refresh clears it.</td></tr>
+<tr><td>What is painful?</td><td>People see different lists and cannot trust whether a chore was recorded.</td></tr>
+<tr><td>What is the smallest useful version?</td><td>One shared <code>chores</code> table that can be loaded, added to, and updated.</td></tr>
+<tr><td>What would show success?</td><td>Add a chore in one browser, refresh, and see it in a second browser.</td></tr>
+<tr><td>What are we leaving out?</td><td>Individual accounts, comments, reminders, history, advanced permissions, and unrelated product features.</td></tr>
+</tbody>
+</table>
+
+The important product decision is not “we should use a database because databases are impressive.” It is: **the family needs one shared list, so the list needs one shared place where its current values are decided.**
+
+<Response id="week1-day6-product-judgment" prompt="Explain why shared saved data solves a real family problem today. What would be the smallest useful version, and what would count as evidence that the family no longer has separate conflicting lists?" rows={12} />
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Codex should not invent a data model or quietly choose what the server accepts. You define the smallest workflow and ask Codex to explain the plan before editing.
+
+### Ask Codex to explain the saved data it inferred
+
+```text
+Do not write app code yet.
+
+Read the approved project documents and inspect the existing React client.
+
+Inspect the approved product requirements, high-level design,
+implementation plan, and existing React client. Infer the smallest table
+design needed for the current Family Chore Board workflow.
+
+Explain in plain English:
+1. what one saved row represents
+2. which named columns the table needs
+3. what each column means
+4. which rules the saved data should enforce
+5. which values are created by the app rather than entered by the user
+
+Then explain:
+- which data the client sends when adding a chore
+- which rule should reject a blank title
+- which data the server should return after success
+- how the client should handle loading, success, and failure
+
+Do not write app code or SQL yet.
+Do not add accounts, comments, reminders, history, or unrelated features.
+```
+
+Before sending it, predict what a useful answer should say. Codex should derive the table from the approved product context rather than asking you to invent columns from memory.
+
+<Response id="week1-day6-schema-prediction" prompt="Predict what Codex should explain before creating the SQLite table. What would show that it used the approved product context, identified the information the app needs, and avoided inventing unrelated data?" rows={11} />
+
+### Ask Codex to implement the shared-data milestones
+
+Use the reviewed implementation plan in `docs/implementation-plan.md`. The work has three visible milestones: SQLite, the server, and the React wiring. Ask Codex to implement only one milestone at a time.
+
+#### Milestone 1: Create SQLite and the table
+
+```text
+Implement only Milestone 1: create the SQLite database and chores table.
+
+Before editing:
+- inspect the current project and package manager
+- inspect the existing React app and any existing server code
+- explain where the SQLite database file will live
+- explain which SQLite library will be used and why it works with this project
+- explain how the database can be inspected during development
+
+Use SQLite for the saved data. If the project does not already have a
+compatible SQLite driver, add the smallest appropriate development dependency
+and explain the choice before installing it.
+
+Create a database file in a server-side data directory, not in the browser
+bundle. Read the approved product requirements, high-level design,
+implementation plan, and existing client behavior to determine what the
+current Family Chore Board needs to store.
+
+Before editing:
+- explain in plain English what table and columns you infer from the approved
+  product context
+- explain which rules the saved data should enforce
+- identify anything that is unclear or missing from the approved context
+
+Do not ask me to design the table or write SQL. Translate the approved product
+context into the SQL and code needed to create the SQLite database and table.
+Explain the generated SQL in plain English after you create it. Use
+parameterized SQL for values. Do not put private secrets in browser code.
+Do not create accounts, comments, reminders, history, or unrelated features.
+
+After editing:
+- run the project checks and build
+- prove that the database file exists
+- inspect the table columns
+- insert one clearly fake teaching row
+- read that row back
+- report what passed, failed, was not run, and remains unverified
+```
+
+You do not need to know SQL syntax to complete this milestone. Your job is to understand what one chore needs to remember and to check whether Codex created the right table. Codex’s job is to translate those requirements into SQL and explain the result.
+
+#### Milestone 2: Create the server
+
+```text
+Implement only Milestone 2: create the server that uses the SQLite database.
+
+Read the approved product requirements, high-level design, and implementation
+plan. Inspect the SQLite database and chores table created in Milestone 1.
+
+Before editing, explain in plain English:
+- what the server is responsible for
+- how the React client will ask to load, add, and complete chores
+- which rules the server must enforce
+- what the client should learn from a successful or failed response
+
+Do not ask me to design the server interface. Derive the routes, request
+details, response details, validation, and status codes from the approved
+product context and the existing client. Keep the interface as small as the
+current chore workflow requires.
+
+Create or extend the small server so it:
+- opens the SQLite database from the server-side data directory
+- gives the React client a way to load, add, and complete chores
+- checks invalid requests before changing saved data
+- returns honest success and failure responses
+- uses safe database queries
+- provides a clear <code>npm run server</code> command for starting it
+
+After editing:
+- run the server checks and build
+- prove the server starts
+- write down the exact command and local URL used to start it
+- test loading chores, adding a valid chore, rejecting invalid input,
+  completing a chore, and handling a missing chore
+- inspect the SQLite rows after the write requests
+- report what passed, failed, was not run, and remains unverified
+```
+
+#### Milestone 3: Wire React to the server
+
+```text
+Implement only Milestone 3: connect the existing React client to the server.
+
+Before editing:
+- identify every place the client currently reads or changes browser-only
+  chore state
+- identify the request each user action should send
+- identify the response each request should expect
+- explain where loading, success, and failure state will live
+
+Replace browser-only chore changes with requests to:
+- GET /api/chores when the app opens
+- POST /api/chores when Add succeeds locally
+- PATCH /api/chores/:id when Done is clicked
+
+The client must:
+- show loading feedback while GET is pending
+- show pending feedback while Add or Done is pending
+- update the list from the successful server response
+- show useful failure feedback when a request fails
+- avoid claiming a chore was saved before the server confirms it
+- preserve the DayPicker demonstration
+- preserve every earlier chore behavior
+
+Do not let the browser open the SQLite file directly. Do not add accounts,
+comments, reminders, history, or unrelated features.
+
+After editing:
+- run the project checks and build
+- inspect the browser Network requests and responses
+- add a chore and inspect its SQLite row
+- complete the chore and inspect the changed SQLite row
+- refresh and verify the saved row returns
+- verify the same row from a second browser
+- run every regression check established through Day 5
+- report what passed, failed, was not run, and remains unverified
+```
+
+After these three milestones, use the broader review prompt below to compare the implementation with the approved plan:
+
+```text
+Read and follow:
+- docs/product-requirements.md
+- docs/high-level-design.md
+- docs/implementation-plan.md
+
+Implement only this approved milestone:
+[paste or identify the milestone]
+
+Before editing:
+- explain the visible result this milestone should produce
+- identify the client state involved
+- identify the request the client will send
+- identify the response the client expects
+- identify the server-side rule that must be enforced
+- identify where the saved data will be inspected
+- identify focused automated checks and manual checks
+
+Constraints:
+- preserve all Day 5 behavior, including the separate DayPicker demonstration
+- use the approved SQLite database and server approach
+- keep the shared data model to the approved chore fields
+- prefer confirmed feedback: update the visible chore list after success
+- do not add accounts, comments, reminders, history, advanced permissions,
+  or unrelated product behavior
+- do not put any privileged secret in browser code
+- do not skip ahead to later milestones
+
+If the SQLite database, `chores` table, or server does not exist yet, create
+the missing layer as its own earlier milestone. Do not pretend that a browser
+variable is shared saved data.
+
+After editing:
+- run focused checks for this milestone
+- run every regression check established through Day 5
+- inspect the request, response, and saved data
+- perform the planned browser check
+- test refresh behavior
+- test the two-browser workflow
+- report what passed, failed, was not run, and remains unverified
+```
+
+<Response id="week1-day6-build-prompt" prompt="Write the Codex prompt for one shared-data milestone. Include the visible result, request, response, server rule, saved-data inspection, focused checks, every prior regression check, refresh, two-browser verification, evidence, and remaining uncertainty." rows={16} />
+
+### Debug from the evidence chain
+
+Suppose a chore appears immediately but disappears after refresh. Do not guess that the database is broken. First gather evidence across the complete chain:
+
+<ol class="mental-model-steps">
+<li>Did the browser handler notice the user action?</li>
+<li>Was a request sent?</li>
+<li>What status and data came back?</li>
+<li>Did the server accept the request?</li>
+<li>Did the saved data change?</li>
+<li>What happened when the client loaded again?</li>
+<li>Did React display the loaded response?</li>
+</ol>
+
+<div class="app-example">
+<p><strong>Expected:</strong> the new chore remains after refresh.</p>
+<p><strong>Actual:</strong> the new chore was visible until refresh.</p>
+<p><strong>Request evidence:</strong> request method, URL, status, and response.</p>
+<p><strong>Saved-data evidence:</strong> whether the row exists and what values it contains.</p>
+<p><strong>Reload evidence:</strong> what request was made when the page loaded again.</p>
+<p><strong>Remaining uncertainty:</strong> the layer that has not yet been inspected.</p>
+</div>
+
+<Response id="week1-day6-debug-evidence" prompt="Write an evidence-first report for a chore that appears before refresh but disappears afterward. Record the expected result, actual result, request evidence, saved-data evidence, reload evidence, likely broken link, and remaining uncertainty." rows={14} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+Today you will create a small Node server and a SQLite database. The React client will not open the database file directly. It will send HTTP requests to the server, and the server will read or change SQLite.
+
+### Yes: create the shared saved data today
+
+Today you will actually create a small, real teaching database file, a server that uses it, and the client connection between React and that server. You will create one `chores` table, connect the React app to server endpoints, and prove that the app can read and change the saved rows.
+
+This is not a pretend diagram or a browser variable. The saved row must still exist after you refresh the app, and a second browser must be able to request and see it. It is a disposable learning database, so do not put private information in it.
+
+The concrete result for today is:
+
+<ol class="mental-model-steps">
+<li>Create the SQLite database file and the <code>chores</code> table.</li>
+<li>Create the server that opens SQLite and applies the app’s rules.</li>
+<li>Create the server endpoints for loading, adding, and completing chores.</li>
+<li>Wire the React client to those endpoints with requests and response handling.</li>
+<li>Inspect the saved row, refresh the app, and verify it from a second browser.</li>
+</ol>
+
+### Run the client and server
+
+Day 6 has two programs running at the same time:
+
+<table>
+<thead><tr><th>Terminal</th><th>Command</th><th>What it runs</th></tr></thead>
+<tbody>
+<tr><td>Terminal 1</td><td><code>npm run dev</code></td><td>The React client: the screen the user sees.</td></tr>
+<tr><td>Terminal 2</td><td><code>npm run server</code></td><td>The server: the program that receives client requests and uses SQLite.</td></tr>
+</tbody>
+</table>
+
+Codex must create or confirm the <code>npm run server</code> script as part of the server milestone and tell you which local URL each program uses. Keep both terminals open while testing. If the client and server use different local addresses, Codex must configure the documented development connection between them and explain how you can tell that the client is talking to the server.
+
+### Create one small saved table
+
+Create one table named `chores` with these minimum columns:
+
+<table>
+<thead><tr><th>Field</th><th>Purpose</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td><code>id</code></td><td>Identifies one row and therefore one chore.</td><td><code>42</code></td></tr>
+<tr><td><code>title</code></td><td>Names the work to be done.</td><td>Take out the trash</td></tr>
+<tr><td><code>assigned_to</code></td><td>Records who is responsible.</td><td>Maya</td></tr>
+<tr><td><code>done</code></td><td>Records whether this chore is complete.</td><td><code>false</code></td></tr>
+<tr><td><code>created_at</code></td><td>Records when the row was created.</td><td>A timestamp</td></tr>
+</tbody>
+</table>
+
+Keep the data model small. The goal is to understand the path from a user action to shared saved data and back again, not to design a complete family-management system.
+
+### Connect the client one operation at a time
+
+Implement these operations in visible milestones:
+
+<ol class="mental-model-steps">
+<li>Load saved chores when the app opens.</li>
+<li>Add one chore and show confirmed success only after the response succeeds.</li>
+<li>Reject a blank title before creating saved data.</li>
+<li>Mark exactly one saved chore done.</li>
+<li>Delete a chore only if the approved plan includes it and time allows.</li>
+</ol>
+
+Every request-backed operation needs clear feedback:
+
+<table>
+<thead><tr><th>State</th><th>What the user should understand</th></tr></thead>
+<tbody>
+<tr><td>Idle</td><td>The app is ready for an action.</td></tr>
+<tr><td>Pending</td><td>The app noticed the action and is waiting for an answer.</td></tr>
+<tr><td>Success</td><td>The shared data accepted the change and the screen reflects it.</td></tr>
+<tr><td>Failure</td><td>The shared data did not accept the change, and the user knows what to do next.</td></tr>
+</tbody>
+</table>
+
+For today, prefer <strong>confirmed feedback</strong>: wait for a successful response before treating the chore as saved. <strong>Optimistic feedback</strong> changes the screen before confirmation arrives. It can feel faster, but if the request fails, the app must undo the visible change and explain what happened. Do not add that complexity unless the approved plan explicitly requires demonstrating it.
+
+### The magic moment
+
+Use a SQLite inspection tool or the server’s approved development data tool to add one chore directly to the shared saved table. Then refresh the app.
+
+When the chore appears, explain the chain:
+
+<ol class="mental-model-steps">
+<li>The client did not invent the chore.</li>
+<li>The SQLite table already contained its row.</li>
+<li>The client requested the current chores.</li>
+<li>The server read the row from SQLite and returned it.</li>
+<li>React rendered the response on screen.</li>
+</ol>
+
+<aside class="model-purpose">
+<p><strong>Evidence matters:</strong> seeing a chore on screen proves only that something was rendered. Inspect the request, response, saved row, refresh behavior, and second browser before claiming that shared persistence works.</p>
+</aside>
+
+<Checkpoint id="week1-day6-magic-moment">I added or inspected one saved chore, refreshed the app, traced where the data came from, and recorded evidence from the request, response, saved data, and screen.</Checkpoint>
+
+### Break the end-to-end chain on purpose
+
+Choose one controlled failure:
+
+<ul class="example-list">
+<li>The screen updates, but no request is sent.</li>
+<li>The request succeeds, but the client expects the wrong response shape.</li>
+<li>The saved row changes, but the screen does not update.</li>
+<li>The app shows success after an error response.</li>
+<li>The change saves, but reload uses the wrong query.</li>
+</ul>
+
+Ask these questions before fixing it:
+
+<ol class="mental-model-steps">
+<li>What did the user do?</li>
+<li>What should the browser handler have sent?</li>
+<li>What did the request actually contain?</li>
+<li>What did the server return after reading or changing SQLite?</li>
+<li>What does the saved data contain?</li>
+<li>What did the client render?</li>
+<li>Which evidence identifies the smallest broken link?</li>
+</ol>
+
+<Response id="week1-day6-deliberate-bug" prompt="Describe the end-to-end failure you tried. What did you expect, what actually happened, which request or saved-data evidence did you inspect, which link broke, and what was the smallest fix?" rows={14} />
+
+<Response id="week1-day6-regression" prompt="Regression check: after fixing the deliberate failure, re-run every regression check established through Day 5, then verify loading saved chores, adding one, rejecting blank input, completing only the selected chore, refreshing, and checking from a second browser. What passed, what failed, and what remains unverified?" rows={14} />
+
+<Checkpoint id="week1-day6-regression-checked">I re-ran every regression check established through Day 5 and verified the new shared-data behavior through refresh, saved-data inspection, and a second browser.</Checkpoint>
+
+### Ask Codex for the final test, data, and plan audit
+
+At the end, ask Codex to review the whole Day 6 change critically:
+
+```text
+Perform a final review of the Day 6 shared-data milestone.
+
+1. Map every Day 6 acceptance criterion to a meaningful unit test,
+   end-to-end test, or manual check.
+2. Identify checks for loading, pending feedback, successful add, blank
+   input, completing the correct chore, failure feedback, refresh, and a
+   second browser.
+3. Inspect coverage and identify important request, response, rule, saved
+   data, and rendering paths that are not covered.
+4. Think through happy cases and edge cases, including a blank title,
+   repeated clicks, a slow response, an error response, a duplicate action,
+   two chores with similar titles, stale client data, refresh during a
+   request, and a second browser viewing older data.
+5. Check whether any generated test could pass for the wrong reason.
+6. Inspect whether any privileged secret was placed in browser code and
+   whether the data permissions are appropriate for this disposable teaching
+   project.
+7. Compare the implementation with the approved requirements, design, and
+   implementation plan. Report complete, partial, missing, extra, and
+   unverified work.
+8. Run the available checks and every regression check established through
+   Day 5. Report what passed, failed, or was not run.
+```
+
+<Response id="week1-day6-final-audit" prompt="Record Codex’s final audit. Which shared-data behaviors are covered, what did the request and saved-data inspection show, what edge cases or code paths are missing, what did coverage reveal, and what is complete, partial, extra, or unverified against the plan?" rows={16} />
+
+<Checkpoint id="week1-day6-test-audit">I asked Codex to audit shared-data tests, request and saved-data evidence, happy cases, edge cases, permissions, every prior regression check, and implementation-plan completeness, then recorded what remains uncertain.</Checkpoint>
+
+</Track>
+
+## Safety for a teaching project
+
+This is a disposable teaching database. Do not place private family information in it.
+
+Never put a privileged server or database secret in browser code. The browser should call the server; it should never open the SQLite file directly. This is a disposable prototype, so treat its data as temporary and disposable.
+
+<details>
+<summary>Why this matters</summary>
+
+The browser is visible to anyone who uses the app. A secret that gives unrestricted control over shared data must stay on a protected server-side system. Today’s goal is to understand the client–server–saved-data flow, not to build a production security system.
+</details>
+
+## Explain it back
+
+Complete these sentences in plain English:
+
+<ul class="question-list">
+<li>Browser state lives…</li>
+<li>The shared chore data lives…</li>
+<li>The client sends this request after Add…</li>
+<li>The server checks…</li>
+<li>The response confirms…</li>
+<li>The chore survives refresh because…</li>
+<li>A second browser can see it because…</li>
+<li>While waiting, the screen shows…</li>
+<li>After success, the screen shows…</li>
+<li>After failure, the screen shows…</li>
+<li>The evidence that proves the data was saved is…</li>
+</ul>
+
+<Response id="week1-day6-explain-back" prompt="Trace one chore from the user’s action through the client, request, server rule, saved data, response, browser state, React screen, and feedback. Explain why a visible chore is not by itself proof of persistence, and state what remains unverified." rows={16} />
+
+<aside class="mantra-callout">
+<p>You are not here to create software.</p>
+<p>You are here to solve user problems.</p>
+<p>Today, that means giving a family one trustworthy shared chore list—not merely adding a database because the technology exists.</p>
+</aside>
+
+<details>
+<summary>Mentor pause</summary>
+
+Show your mentor the shared-data acceptance criteria, the request prediction, the request and saved-data evidence, the second-browser result, the deliberate failure, and Codex’s final test and plan audit. Explain what the client owns, what the server decides, what SQLite stores, and what remains uncertain.
+</details>
+
+<Checkpoint id="week1-day6-mentor-pause">I explained the client–server–saved-data story, showed the request and saved-data evidence, described the deliberate failure, reported the complete regression checks, and explained what remains uncertain.</Checkpoint>
+
+## Done for today
+
+You are ready for Day 7 if you can:
+
+<ul class="observation-checklist">
+<li>explain why one browser cannot be the family’s shared source of truth;</li>
+<li>explain what the client, server, and saved data each do;</li>
+<li>describe producers and consumers in plain English;</li>
+<li>predict a request, response, rule, and feedback state;</li>
+<li>load, add, and complete shared chores;</li>
+<li>show loading, success, and failure feedback;</li>
+<li>verify saved data after refresh and from a second browser;</li>
+<li>debug from request, response, saved-data, and rendering evidence;</li>
+<li>re-run every regression check established through Day 5;</li>
+<li>ask Codex to critically review tests, coverage, edge cases, permissions, and plan completeness; and</li>
+<li>explain what remains unverified.</li>
+</ul>
+
+<Checkpoint id="week1-day6-complete">I completed Day 6 and can trace a chore from a user action through the client, server, shared saved data, response, React screen, and honest feedback.</Checkpoint>

@@ -1,0 +1,61 @@
+---
+title: "Shell validation: one small change"
+section: "Demonstration lesson"
+order: 0
+estimatedTime: "15 minutes"
+mentalModel: "A useful change has a user-visible behavior and evidence that supports it."
+verificationFocus: "Predict, define observable criteria, run checks, review evidence, and explain back."
+description: "A deliberately small lesson used to validate the course shell and its interaction model."
+---
+
+This lesson is a shell demonstration, not a new curriculum chapter. The three tracks stay distinct; Verification Engineering runs through each one.
+
+<Track type="product" title="Product Judgment">
+
+Imagine the smallest useful change is a page that clearly tells a learner when their response has been saved.
+
+<Response id="demo-product-prediction" prompt="Predict: what should happen after you type a response, and what evidence would convince you it was saved?" rows={5} />
+
+<Response id="demo-acceptance-criteria" prompt="Write observable acceptance criteria for this small change." rows={6} />
+
+<Checkpoint id="demo-keyboard-check">I used Tab and Shift+Tab to reach and leave the response control, then typed without needing a mouse.</Checkpoint>
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Draft a small request that keeps the learner in control and names the checks that matter.
+
+<Response id="demo-verification-plan" prompt="Write a verification plan: which checks will you run, and what claim does each check support?" rows={7} />
+
+<details>
+  <summary>Hint: make the evidence specific</summary>
+
+  Include a refresh, keyboard interaction, malformed stored data, and one regression check.
+</details>
+
+<Response id="demo-evidence-review" prompt="Review the evidence honestly: what passed, failed, was not run, or remains uncertain? Include what happened after a refresh and after malformed localStorage data." rows={8} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+The shell uses MDX for content, Astro for static pages, React islands for the two interactive controls, and localStorage for browser-only learner state.
+
+<Checkpoint id="demo-checkpoint">I inspected the changed behavior and recorded the checks I intend to run.</Checkpoint>
+
+<Response id="demo-regression-question" prompt="Regression question: what existing behavior could this change break, and how will you re-test it?" rows={6} />
+
+<Response id="demo-explain-back" prompt="Explain back: tell the story from the learner action through stored state, the visible update, and the evidence that supports it." rows={8} />
+
+<Checkpoint id="demo-refresh-check">I entered a response, refreshed the page, and confirmed the response returned.</Checkpoint>
+
+<Checkpoint id="demo-malformed-storage-check">I tested malformed or missing course state and confirmed the page still rendered without crashing.</Checkpoint>
+
+<p><strong>Mentor pause:</strong> Explain the mental model and the remaining uncertainty out loud before moving on.</p>
+
+<Checkpoint id="demo-mentor-pause">I paused to explain the result and remaining uncertainty to a mentor.</Checkpoint>
+
+</Track>
+
+<Checkpoint id="demo-lesson-complete">I completed this shell demonstration and can describe what was verified.</Checkpoint>
