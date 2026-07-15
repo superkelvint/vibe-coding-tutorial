@@ -915,6 +915,48 @@ git commit -m "Add first notes file"
 git status
 ```
 
+### Make a second change
+
+Add a second line to `notes.txt`:
+
+```text
+I can compare my changes.
+```
+
+Before saving it, predict what Git should notice. Then run:
+
+```bash
+git status
+git diff
+```
+
+The diff should show the new line as an unsaved change. Now create a second save point:
+
+```bash
+git add notes.txt
+git diff --staged
+git commit -m "Add comparison note"
+git status
+```
+
+The final status should again show a clean working tree.
+
+### View the history and compare save points
+
+Show the two save points:
+
+```bash
+git log --oneline
+```
+
+Then compare the newest commit with the one immediately before it:
+
+```bash
+git diff HEAD~1 HEAD
+```
+
+This should show the second line that was added. The student has now seen that Git records a history and can show the difference between save points.
+
 ### Pause and Predict
 
 Before each command, ask:
@@ -937,6 +979,10 @@ Git noticed the file.
 I chose the file for the save point.
 
 The commit created the save point.
+
+The history shows my save points.
+
+The diff shows how one save point differs from another.
 ```
 
 ---
