@@ -38,7 +38,7 @@ In plain browser code, it is possible to update each part separately. But as the
 <p><strong>How can we organize the client so that one change to the browser data reliably updates every part of the screen that depends on it?</strong></p>
 </aside>
 
-<img src={`${import.meta.env.BASE_URL}images/day5-react-state-sync.png`} alt="A fictional Family Chore Board showing one chore marked done consistently in the summary, chore list, status badge, button, and feedback message." />
+<img src={`${import.meta.env.BASE_URL}/images/day5-react-state-sync.png`} alt="A fictional Family Chore Board showing one chore marked done consistently in the summary, chore list, status badge, button, and feedback message." />
 
 *Figure 1. The same `done` value appears in several places. A reliable interface keeps all of those views consistent.*
 
@@ -88,7 +88,7 @@ For example, the same `ChoreItem` component can display every row in the list:
 
 The benefit is not “more files.” The benefit is that each piece has a job you can explain, reuse, and check. If the list contains five chores, React can render five `ChoreItem` components from the same pattern while giving each one different chore data.
 
-<img src={`${import.meta.env.BASE_URL}images/day5-react-choreitem-reuse.png`} alt="A reusable ChoreItem component on the left connected to three chore rows that use the same layout with different data." />
+<img src={`${import.meta.env.BASE_URL}/images/day5-react-choreitem-reuse.png`} alt="A reusable ChoreItem component on the left connected to three chore rows that use the same layout with different data." />
 
 *Figure 2. One `ChoreItem` pattern is reused for three chores. The layout stays consistent while the title, person, status, and action value change.*
 
@@ -96,7 +96,7 @@ The benefit is not “more files.” The benefit is that each piece has a job yo
 
 [React DayPicker](https://react-day-picker.js.org/) is a popular open-source React date-picker component. It is a good example because a date picker is much more than a text box: it has to display months, let someone move between months, select one date or a range, disable dates that cannot be chosen, and support keyboard navigation.
 
-<img src={`${import.meta.env.BASE_URL}images/day5-react-daypicker.png`} alt="A fictional travel form using a React date-picker component with range selection, disabled dates, month navigation, and keyboard focus." />
+<img src={`${import.meta.env.BASE_URL}/images/day5-react-daypicker.png`} alt="A fictional travel form using a React date-picker component with range selection, disabled dates, month navigation, and keyboard focus." />
 
 *Figure 3. A date-picker component handles several interaction details that would take much more work than a plain HTML input. The surrounding app still decides what the selected dates mean and what happens next.*
 

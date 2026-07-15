@@ -106,7 +106,7 @@ Here are a few more versions of the same story. Read one, look at its image, and
 <p><strong>Possible failure:</strong> the heart looks selected, but a refresh shows the like was never saved.</p>
 </div>
 
-<img src={`${import.meta.env.BASE_URL}images/day1-instagram-like.png`} alt="A fictional social post showing a like changing from 24 to 25 and then appearing inconsistent after refresh." />
+<img src={`${import.meta.env.BASE_URL}/images/day1-instagram-like.png`} alt="A fictional social post showing a like changing from 24 to 25 and then appearing inconsistent after refresh." />
 
 *Notice the disagreement in the final panel: the heart still looks selected, but the count has returned to 24. That is evidence worth investigating.*
 
@@ -121,7 +121,7 @@ Here are a few more versions of the same story. Read one, look at its image, and
 <p><strong>Possible failure:</strong> the route is based on an old location or stale traffic data.</p>
 </div>
 
-<img src={`${import.meta.env.BASE_URL}images/day1-maps-search.png`} alt="A fictional map search showing a place search, a loading state, a route, and an old-location warning." />
+<img src={`${import.meta.env.BASE_URL}/images/day1-maps-search.png`} alt="A fictional map search showing a place search, a loading state, a route, and an old-location warning." />
 
 *The route is not just a line on a map. It is a claim about a destination, a starting point, and information that may become stale.*
 
@@ -136,7 +136,7 @@ Here are a few more versions of the same story. Read one, look at its image, and
 <p><strong>Possible failure:</strong> the screen says failed even though the balance changed.</p>
 </div>
 
-<img src={`${import.meta.env.BASE_URL}images/day1-bank-transfer.png`} alt="A fictional banking transfer showing review, processing, completed, and a failed message with a changed balance." />
+<img src={`${import.meta.env.BASE_URL}/images/day1-bank-transfer.png`} alt="A fictional banking transfer showing review, processing, completed, and a failed message with a changed balance." />
 
 *This is a high-stakes example of why feedback and saved data need to agree. If the message says “failed,” checking the balance and activity history matters.*
 
@@ -151,7 +151,7 @@ Here are a few more versions of the same story. Read one, look at its image, and
 <p><strong>Possible failure:</strong> the video is published but still cannot be played.</p>
 </div>
 
-<img src={`${import.meta.env.BASE_URL}images/day1-youtube-upload.png`} alt="A fictional video upload showing choosing a video, uploading, processing, publishing, and playback unavailable." />
+<img src={`${import.meta.env.BASE_URL}/images/day1-youtube-upload.png`} alt="A fictional video upload showing choosing a video, uploading, processing, publishing, and playback unavailable." />
 
 *“Published” and “playable” are different claims. The first status does not automatically prove the second.*
 
@@ -166,13 +166,13 @@ Here are a few more versions of the same story. Read one, look at its image, and
 <p><strong>Possible failure:</strong> the result list is old and misses a message that just arrived.</p>
 </div>
 
-<img src={`${import.meta.env.BASE_URL}images/day1-gmail-search.png`} alt="A fictional email search showing search, loading, results, and a new message missing until refresh." />
+<img src={`${import.meta.env.BASE_URL}/images/day1-gmail-search.png`} alt="A fictional email search showing search, loading, results, and a new message missing until refresh." />
 
 *Search results can be useful and still be stale. “I got results” is not exactly the same claim as “I got every current result.”*
 
 The names change, but the shape keeps repeating: a person wants something, the app handles data, rules limit what can happen, and feedback helps the person decide what to do next.
 
-<img src={`${import.meta.env.BASE_URL}images/day1-action-storyboard.png`} alt="A fictional message app storyboard showing user, action, sending, sent, and the flow from user to feedback." />
+<img src={`${import.meta.env.BASE_URL}/images/day1-action-storyboard.png`} alt="A fictional message app storyboard showing user, action, sending, sent, and the flow from user to feedback." />
 
 *Figure 1. A fictional example of one action moving through an app. Notice that “sending” is useful feedback before the final result exists.*
 
@@ -212,7 +212,7 @@ Examples:
 
 One important warning: visible does not automatically mean saved. A filter can be visible while you are using it and disappear when you refresh. A sent message can remain visible because the app saved it and can retrieve it later.
 
-<img src={`${import.meta.env.BASE_URL}images/day1-temporary-vs-saved.png`} alt="A fictional shopping app comparison showing a temporary size filter disappearing after refresh and a saved order remaining visible." />
+<img src={`${import.meta.env.BASE_URL}/images/day1-temporary-vs-saved.png`} alt="A fictional shopping app comparison showing a temporary size filter disappearing after refresh and a saved order remaining visible." />
 
 *Figure 2. “Visible now” and “saved for later” are different claims. A refresh is a simple way to learn which claim you are actually seeing.*
 
