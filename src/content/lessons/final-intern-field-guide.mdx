@@ -1,0 +1,157 @@
+---
+title: "The Intern Field Guide: 10 rules for safe AI-assisted building"
+section: "Course Reference · Intern Field Guide"
+order: 99
+estimatedTime: "20 minutes"
+mentalModel: "AI can make a polished first draft, but a human must understand the problem, check the result, and remain responsible for the decision."
+verificationFocus: "Use the working cycle, inspect evidence, deliberately try failures, preserve a way back, and ask for help when the risk is too high."
+description: "A practical reference for working safely and thoughtfully with AI while building software."
+---
+
+This page is meant to stay useful after the course. Return to it whenever an AI-generated change looks impressive, a bug is confusing, or you are unsure whether it is safe to continue.
+
+## The most important working routine
+
+Teach yourself to follow this cycle:
+
+<ol class="mental-model-steps">
+<li><strong>Describe:</strong> explain the user, the problem, the smallest useful change, and what must not change.</li>
+<li><strong>Build small:</strong> ask AI to make one understandable change.</li>
+<li><strong>Check:</strong> compare the result with observable acceptance criteria.</li>
+<li><strong>Break it on purpose:</strong> try blank input, strange input, refresh, repeated actions, and the wrong order.</li>
+<li><strong>Save:</strong> create a clear Git save point after the change passes its checks.</li>
+</ol>
+
+Do not skip the checking or deliberate-failure steps just because the result looks polished.
+
+## The 10 rules an intern should remember
+
+### 1. Do not trust something just because it looks professional
+
+AI can produce polished-looking work that quietly does the wrong thing. Ask it to explain what it made, then check the result yourself.
+
+A neat screen is not evidence that the rules, saved data, permissions, or error handling are correct.
+
+### 2. Try more than the perfect example
+
+Do not click a button once and say, “It works.” Try leaving fields blank, entering strange information, refreshing the page, repeating an action, and doing things in the wrong order.
+
+The happy case is only one part of the behavior you need to understand.
+
+### 3. Give small, clear instructions
+
+“Build me an app” is too vague. Say:
+
+<ul class="question-list">
+<li>who the app is for;</li>
+<li>what problem the person is experiencing;</li>
+<li>what the app must do;</li>
+<li>what the app must not do; and</li>
+<li>how you will know it is finished.</li>
+</ul>
+
+Small instructions produce changes that are easier to understand, check, and undo.
+
+### 4. When something breaks, describe exactly what happened
+
+Never just say, “It doesn’t work.” Record:
+
+<ul class="question-list">
+<li>what you expected;</li>
+<li>what actually happened;</li>
+<li>the exact error message;</li>
+<li>what you changed immediately beforehand; and</li>
+<li>the evidence you inspected.</li>
+</ul>
+
+A precise description gives AI something concrete to investigate. A guess gives it something easy to misunderstand.
+
+### 5. Do one change at a time
+
+Do not ask AI to redesign the page, change the saved data, add login, and fix three bugs in one go.
+
+Small changes make it easier to tell which change caused a new behavior. They also make it easier to undo one mistake without losing unrelated progress.
+
+### 6. Save a working copy before every big change
+
+Treat a Git save point like saving a game before a difficult level. If AI ruins something, you should be able to return to the last working version.
+
+Before a large or risky change, make sure the current version works, record a clear commit, and know how to get back to it.
+
+### 7. Never paste passwords or private information into AI
+
+This includes login details, secret keys, customer information, private company code, and confidential documents.
+
+Replace real information with fake examples. If you are unsure whether something is private, stop and ask for help before sharing it.
+
+### 8. A login screen does not automatically mean the app is secure
+
+An app must also check what each person is allowed to see and change. Otherwise, someone may be able to view another person’s information simply by changing a link or number.
+
+If an app involves accounts, permissions, private information, or money, do not assume that a working login makes it safe to publish.
+
+### 9. Be suspicious when AI keeps changing its answer
+
+AI may be using outdated instructions or may have lost track of the project. If its answers keep contradicting one another, start a fresh conversation and clearly restate the current situation.
+
+Include the current goal, the files or documents that matter, what you already tried, the exact evidence, and the remaining question.
+
+### 10. Do not keep adding more code forever
+
+AI often solves every new problem by adding another file or another workaround. Over time, this can create a fragile mess.
+
+Regularly ask:
+
+<aside class="model-purpose">
+<p><strong>Can anything be removed or simplified?</strong></p>
+<p>Is this the smallest understandable solution that solves the user’s actual problem?</p>
+</aside>
+
+More code is not automatically more progress.
+
+When a feature works, use this prompt before asking AI to add more:
+
+```text
+As a staff engineer, take a step back and think through what could be simplified or refactored.
+```
+
+Ask AI to inspect the current implementation, explain the tradeoffs in plain English, and suggest only changes that make the project easier to understand or safer to change. Do not accept a refactor merely because it sounds more sophisticated; ask what problem it solves and how you would verify that existing behavior still works.
+
+## Before accepting an AI-generated change
+
+You should be able to answer all five questions:
+
+<ol class="mental-model-steps">
+<li><strong>What did it change?</strong></li>
+<li><strong>Why did it change it?</strong></li>
+<li><strong>How did I check that it works?</strong></li>
+<li><strong>What happens when something goes wrong?</strong></li>
+<li><strong>Can I easily undo it?</strong></li>
+</ol>
+
+If you cannot answer one of these, pause and ask AI to explain the change or ask a mentor for help.
+
+## When to stop and ask for help
+
+Do not publish something alone if it involves:
+
+<ul class="observation-checklist">
+<li>customer or employee information;</li>
+<li>payments or financial calculations;</li>
+<li>user accounts and permissions;</li>
+<li>file uploads;</li>
+<li>medical, legal, or other sensitive information; or</li>
+<li>important company systems.</li>
+</ul>
+
+These situations need review from someone responsible for the organization, product, security, or relevant professional advice. “The AI said it was safe” is not sufficient evidence.
+
+## Leave yourself with this sentence
+
+<blockquote>
+<p>Use AI to make the first draft, not the final decision.</p>
+</blockquote>
+
+<Response id="intern-field-guide-explain-back" prompt="Explain the working cycle in your own words. Which rule would be easiest for you to forget, and what reminder or habit could help you follow it?" rows={10} />
+
+<Checkpoint id="intern-field-guide-complete">I can use the Describe → Build small → Check → Break it on purpose → Save cycle, recognize when to ask for help, and explain why AI-generated work still requires my judgment.</Checkpoint>
