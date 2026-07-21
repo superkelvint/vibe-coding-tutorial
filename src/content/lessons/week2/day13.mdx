@@ -1,0 +1,525 @@
+---
+title: "Day 13: Give each version of the app the right settings"
+section: "Week 2 · Day 13"
+order: 19
+estimatedTime: "150 minutes"
+mentalModel: "The code describes what the app does; configuration tells it which outside resources to use where it is running."
+verificationFocus: "Keep the database connection server-only, compare local, preview, and production settings, and prove that a small preview change can be tested without changing production first."
+description: "Learn why the same app needs different settings on your laptop, in a preview, and at its main online address."
+---
+
+Yesterday, your online app learned how to ask Supabase for shared chores.
+
+That created a new practical problem. The app can now run in several places:
+
+<ul class="question-list">
+<li>on your laptop while you are building it;</li>
+<li>at a temporary preview address while you check a change; and</li>
+<li>at the main address that other people use.</li>
+</ul>
+
+Those three versions run the same kind of code, but they still need to know where to find the database. They also need to keep the database connection private.
+
+<aside class="model-purpose">
+<p><strong>Today’s goal:</strong> learn how one app can use the right private settings in each place it runs.</p>
+<p>You will make one small change, test it at a preview address, deliberately break only the preview connection, repair it, and confirm that production was not changed by the experiment.</p>
+</aside>
+
+<p><strong>What is intentionally out of scope:</strong> you are not adding a new product feature, creating a second real database, or building a complicated release system. You are learning one useful habit: make a small change, test it somewhere temporary, and protect the main version until you trust the result.</p>
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day13-environments.svg`} alt="Diagram showing the same application code running locally, in a Vercel preview, and in production, with a separate set of settings for each place and a private database connection kept on the server side." />
+<p class="image-caption"><strong>What to notice:</strong> the app’s behavior can stay the same while the settings around it change. The database connection belongs to the server in every environment, never to the browser.</p>
+
+<Track type="product" title="Product Judgment">
+
+## Start with the situation you can already see
+
+Imagine you improve the loading message on the Family Chore Board. You want to check that improvement before changing the main online version.
+
+You need two things at once:
+
+<ol class="mental-model-steps">
+<li>A way to try the change at a temporary online address.</li>
+<li>A way to make sure that temporary version still uses the right database connection.</li>
+</ol>
+
+If the temporary version cannot find its database, the loading message is not the only thing you are testing. You may be looking at a configuration problem instead of a product change.
+
+That is why we are learning this now. A preview is useful only if you understand what it is connected to and what it is safe to change there.
+
+<Response id="week2-day13-situation-prediction" prompt="Before changing anything, predict what should happen if the same app is run on your laptop, at a temporary preview address, and at the main online address. What should stay the same, and what might need different settings?" rows={12} />
+
+## Decide what counts as success
+
+You will know today went well when you can observe all of these things:
+
+<ul class="observation-checklist">
+<li>The local server reads the private value named <code>DATABASE_URL</code>.</li>
+<li>The local secret file is ignored and does not appear as a file to commit.</li>
+<li>The browser does not receive the database connection value.</li>
+<li>A small, recognizable change appears at a temporary Preview URL.</li>
+<li>The existing chore workflows still work in Preview: load, add, reject a blank title, mark one chore done, and refresh.</li>
+<li>Production still shows the old behavior until you intentionally choose to update it.</li>
+<li>A missing Preview setting produces an honest failure that you can repair using evidence.</li>
+</ul>
+
+<Response id="week2-day13-acceptance" prompt="Write down the evidence you expect for each success condition. Which browser request, Vercel result, or visible behavior will prove it?" rows={12} />
+
+## What does “configuration” mean?
+
+Configuration means information that tells an app about the place where it is running or the outside service it should use.
+
+Think of a music app on your phone. The app’s buttons and rules are part of the app. The Wi-Fi password is not part of the app’s behavior; it is a setting that lets this phone reach one particular network.
+
+The Family Chore Board has the same distinction:
+
+<table>
+<thead><tr><th>The app’s code</th><th>Its configuration</th></tr></thead>
+<tbody>
+<tr><td>Reject a blank chore title.</td><td>Which database the server should contact.</td></tr>
+<tr><td>Show a saving message.</td><td>The private connection information for that database.</td></tr>
+<tr><td>Ask for the current chores.</td><td>Whether this run is local, preview, or production.</td></tr>
+<tr><td>Show an error when saving fails.</td><td>Other values that differ between your laptop and Vercel.</td></tr>
+</tbody>
+</table>
+
+The code describes behavior. Configuration supplies values that may change depending on where that code runs.
+
+<dl class="definition-list">
+<div><dt>Code</dt><dd>The instructions that describe what the app does.</dd></div>
+<div><dt>Configuration</dt><dd>Settings that tell those instructions which outside resource or environment to use.</dd></div>
+<div><dt>Environment</dt><dd>One place where the app runs, such as your laptop, a temporary preview, or the main online version.</dd></div>
+<div><dt>Preview</dt><dd>A temporary online version used to check a proposed change before it becomes the main version.</dd></div>
+<div><dt>Production</dt><dd>The main online version intended for normal use.</dd></div>
+</dl>
+
+<Response id="week2-day13-code-configuration" prompt="Give one example of a rule that belongs in the app’s code and one value that belongs in configuration. Why would it be a mistake to hard-code the database password into the page?" rows={10} />
+
+## The three places the app can run
+
+Use this simple map:
+
+<ol class="mental-model-steps">
+<li><strong>Local:</strong> the version running on your laptop while you build and investigate.</li>
+<li><strong>Preview:</strong> a temporary online version made from a proposed change.</li>
+<li><strong>Production:</strong> the main online version that should remain dependable.</li>
+</ol>
+
+<table>
+<thead><tr><th>Place</th><th>What it is for</th><th>What you should protect</th></tr></thead>
+<tbody>
+<tr><td>Local</td><td>Build and debug on your own computer.</td><td>Your local connection file and fictional teaching data.</td></tr>
+<tr><td>Preview</td><td>Check one proposed change through a real online address.</td><td>Its private settings and the fact that it may share disposable teaching data.</td></tr>
+<tr><td>Production</td><td>Serve the main version after the change is trusted.</td><td>Its private settings and the stability of the main workflow.</td></tr>
+</tbody>
+</table>
+
+The code can be the same in all three places. The setting that tells the server where to find Supabase may be different.
+
+<Response id="week2-day13-environment-map" prompt="In plain English, what is the difference between a local run, a preview, and production? Which one should you experiment with first, and why?" rows={10} />
+
+## One important limitation for this teaching project
+
+For this beginner project, Preview and Production may use the same disposable Supabase database. That keeps the setup manageable, but it has a consequence: a chore you add while testing Preview may also appear in Production.
+
+That is acceptable only because the chores are fictional teaching data. In a real application, a preview would usually need carefully separated data or carefully limited access so that testing could not change real users’ information.
+
+<aside class="model-purpose">
+<p><strong>Do not confuse “a different online address” with “a different database.”</strong></p>
+<p>Preview and Production can be separate versions of the app while still pointing at the same saved rows. Check which arrangement this project is using before you test.</p>
+</aside>
+
+<Response id="week2-day13-database-isolation" prompt="Does this teaching project use the same Supabase rows for Preview and Production? What could happen if you add or complete a chore in Preview? Why is that acceptable here, and when would it be unacceptable?" rows={12} />
+
+</Track>
+
+## Keep the database connection away from the browser
+
+Yesterday you placed the private connection value in <code>.env.local</code> so the server could read it. Today, make the rule more precise:
+
+<aside class="model-purpose">
+<p><strong>The browser must never receive the database connection.</strong></p>
+<p>The browser can receive the page, the chore rows it is allowed to display, and honest success or failure feedback. It must not receive the password or private connection information that lets the server reach Supabase.</p>
+</aside>
+
+The server reads the setting. The browser does not.
+
+<table>
+<thead><tr><th>Safe place</th><th>Unsafe place for <code>DATABASE_URL</code></th></tr></thead>
+<tbody>
+<tr><td><code>.env.local</code> used by the server on your laptop.</td><td>A React component or browser JavaScript file.</td></tr>
+<tr><td>Vercel’s private environment settings.</td><td>A variable deliberately included in the browser build, such as <code>VITE_DATABASE_URL</code>.</td></tr>
+<tr><td>Server code that reads <code>process.env.DATABASE_URL</code>.</td><td>A browser response, console message, screenshot, README, or Git commit.</td></tr>
+</tbody>
+</table>
+
+<p>Remember: “server-only” describes who can read the value. It does not mean the value is magically harmless. Treat it like a password.</p>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+## Ask Codex to inspect the current setup before changing it
+
+Do not guess whether the project already has the right environment-variable setup. Ask Codex to inspect first.
+
+```text
+I am a beginner working on the Family Chore Board.
+
+Today I need to understand the project’s configuration before making a preview deployment.
+
+Please inspect the project without editing anything.
+
+Tell me in plain English:
+- where the local server reads the Supabase connection setting;
+- whether the setting is named DATABASE_URL;
+- where the local environment file is expected to live;
+- whether that file is ignored by Git;
+- whether any browser/client code reads DATABASE_URL;
+- which Vercel environment settings the server route expects;
+- how this project starts locally and how it creates a preview deployment with the existing Vercel CLI workflow.
+
+Do not print or reveal any real secret value.
+Do not read secret values aloud or include them in your report.
+Do not edit code, configuration, or deployment settings yet.
+
+Point out anything that is missing or unsafe, and explain the smallest next step.
+```
+
+Read the report before you let Codex edit anything. You are checking whether the project’s current arrangement matches the mental model.
+
+<Response id="week2-day13-inspection-prediction" prompt="Before running the inspection prompt, predict where the local database setting should be read and where it must not be read. What would count as an unsafe finding?" rows={10} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+## Set up the three environments
+
+Use the following as a map. You do not need to memorize the dashboard language.
+
+<ol class="mental-model-steps">
+<li><strong>Local:</strong> use the project’s ignored <code>.env.local</code> file. It should contain the variable name <code>DATABASE_URL</code> and your real private value.</li>
+<li><strong>Preview:</strong> in the Vercel project, open <strong>Settings → Environment Variables</strong>. Add <code>DATABASE_URL</code> for Preview and paste the private value into Vercel’s private field.</li>
+<li><strong>Production:</strong> add the same variable name for Production using Vercel’s private field. Do not paste the value into the repository or into the client.</li>
+</ol>
+
+If you are unsure which Supabase connection option belongs in <code>DATABASE_URL</code>, ask Codex to check the current official Supabase guidance for this project. Do not paste the real value into the chat.
+
+After adding or changing a Vercel setting, create a new deployment. A running deployment does not always pick up a setting that was changed after it was built.
+
+Use this small configuration prompt if Codex finds that the project needs a fix:
+
+```text
+Make the smallest safe configuration fix for the Family Chore Board.
+
+Required arrangement:
+- the server/Vercel Function reads the server-only variable DATABASE_URL;
+- local development reads it from the ignored .env.local file;
+- Vercel Preview and Production can provide the same variable privately;
+- no React/client/browser file reads or imports DATABASE_URL;
+- no secret value is printed, returned, committed, or included in a build report.
+
+Before editing, inspect the current project and explain the exact file that needs changing.
+Do not redesign the app.
+Do not add login, new database tables, or new product behavior.
+
+After editing:
+- run the existing checks and production build;
+- confirm the browser bundle does not contain the real connection value;
+- report file names and configuration names only, never secret values;
+- explain what still needs to be configured in the Vercel dashboard by hand.
+```
+
+<Checkpoint id="week2-day13-configuration-ready" label="Configuration is ready">
+The local file is ignored, the server uses <code>DATABASE_URL</code>, Vercel has private Preview and Production settings, and no real value appears in project files or reports.
+</Checkpoint>
+
+## Make one small preview change
+
+Now create a change that is easy to recognize. For example, improve the text shown while chores are loading. Do not add a new feature.
+
+Before you change it, check the current production page and write down:
+
+<ul class="observation-checklist">
+<li>the current loading message;</li>
+<li>the current production URL;</li>
+<li>whether the existing chores load;</li>
+<li>whether Add and Done still work; and</li>
+<li>one screenshot or written observation that shows the starting point.</li>
+</ul>
+
+Use the existing local Git workflow to make a save point and a separate branch if that is already how the project has been taught. You do not need GitHub for this exercise. The Vercel CLI can create a preview deployment from the project folder.
+
+Ask Codex to implement one milestone:
+
+```text
+Implement one small preview milestone for the Family Chore Board.
+
+Change only this user-facing behavior:
+[describe the loading-message change]
+
+Keep unchanged:
+- loading the saved chores;
+- adding a valid chore;
+- rejecting a blank title;
+- marking only the selected chore done;
+- persistence after refresh;
+- the server-only DATABASE_URL arrangement.
+
+Before editing:
+- inspect the current implementation and existing checks;
+- identify the exact file(s) that should change;
+- state what should be visible locally and in the preview.
+
+After editing:
+- run the project’s existing checks and production build;
+- tell me the exact command to create a Vercel preview deployment with the project’s existing setup;
+- do not deploy to production yet;
+- do not print, inspect aloud, or commit secret values.
+
+Report:
+- files changed;
+- checks run and their results;
+- the expected preview behavior;
+- all existing regression checks that should be run after the preview is live;
+- anything still unverified.
+```
+
+<Response id="week2-day13-preview-prediction" prompt="What one visible change do you expect in the preview? What five older behaviors must remain unchanged?" rows={10} />
+
+## Create and inspect the preview
+
+Run the preview command Codex confirmed for this project. In the usual Vercel CLI workflow, <code>vercel</code> creates a preview deployment and <code>vercel --prod</code> is reserved for a production deployment. Use the project’s documented command if it differs.
+
+When the command finishes, do not stop at “deployment succeeded.” Find the generated preview URL and open it in a fresh browser tab.
+
+Check four things:
+
+<ol class="mental-model-steps">
+<li><strong>Find it:</strong> copy the preview URL from the terminal or Vercel dashboard.</li>
+<li><strong>See the change:</strong> confirm the new loading message appears.</li>
+<li><strong>Check the connection:</strong> open the browser Network panel and confirm the chore request reaches the expected online route and returns a successful response.</li>
+<li><strong>Run regressions:</strong> load chores, add one valid chore, reject a blank title, mark one chore done, and refresh.</li>
+</ol>
+
+Compare the preview URL with the production URL. Production should still show the old loading message until you deliberately deploy the approved change.
+
+<Response id="week2-day13-preview-evidence" prompt="Record the preview URL, the visible change, the chore request status, and the result of every regression check. What evidence shows that production was unchanged? What remains unverified?" rows={16} />
+
+## Deliberately break the preview connection
+
+This is a safe way to learn what configuration is doing. Use only the disposable teaching project. Do not change production first, and do not use a real customer database.
+
+Temporarily remove or misspell <code>DATABASE_URL</code> for Preview only. Do not delete the value from your local file or Production settings.
+
+Predict before creating the broken preview:
+
+<ul class="prediction-list">
+<li>The page files may still load.</li>
+<li>The server route may still be reachable.</li>
+<li>The route that asks Supabase for chores should fail honestly.</li>
+<li>Production should continue working because its setting was not changed.</li>
+</ul>
+
+Create a new preview deployment and inspect:
+
+<ul class="observation-checklist">
+<li>the page load;</li>
+<li>the Network request and response status;</li>
+<li>the visible error or failure feedback;</li>
+<li>the Vercel function log, without exposing the secret value; and</li>
+<li>the production page in a separate tab.</li>
+</ul>
+
+Then restore the Preview setting, create a new preview deployment, and prove that the chore request works again.
+
+## If Preview works but Production fails
+
+Preview and Production are separate deployments. A successful Preview does not automatically prove that Production has the same code, environment setting, database connection, or deployment timing.
+
+If Preview works but Production fails, compare them in this order:
+
+<ol class="mental-model-steps">
+<li>Which commit is running in each deployment?</li>
+<li>Does each environment have a variable named <code>DATABASE_URL</code>?</li>
+<li>Was a new deployment created after the setting changed?</li>
+<li>Does the browser send the same request path in both places?</li>
+<li>Does the Vercel Function fail before contacting Supabase, while contacting it, or after receiving its answer?</li>
+</ol>
+
+Do not “fix” this by copying a secret into source code. Compare the setting’s name, environment, presence, and behavior without revealing its value.
+
+<Response id="week2-day13-preview-production-difference" prompt="If Preview works but Production fails, what would you compare first? Which evidence would distinguish the wrong commit, missing setting, stale deployment, wrong request path, and database connection failure?" rows={14} />
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+Use this prompt only after you have collected the evidence:
+
+```text
+I intentionally changed only the Preview database configuration for a disposable teaching project.
+
+Environment:
+Preview
+
+What I expected:
+The page can load, and the server returns the chores from Supabase.
+
+What actually happened:
+[describe the visible page result]
+
+Browser evidence:
+- page URL:
+- request URL:
+- request status:
+- response body or visible error:
+
+Vercel evidence:
+- deployment status:
+- function log message, with all secret values removed:
+
+Production comparison:
+- production URL:
+- did production still load chores?
+
+Please:
+- identify the first layer where reality differs from the expected path;
+- explain whether this is a missing setting, a wrong variable name, a deployment timing issue, or a database connection problem;
+- tell me the smallest repair;
+- do not ask me to paste a secret value;
+- do not change production;
+- do not claim it is fixed until a new Preview deployment proves the repair.
+```
+
+The useful question is not “Why is Vercel broken?” It is “Which version of the app was running, what setting did it have, and where did the request stop?”
+
+<Response id="week2-day13-broken-preview" prompt="What failed first when Preview lost its database setting? Did the page files, server route, database connection, or screen feedback fail? What evidence supports your answer?" rows={12} />
+
+## If a secret ever enters a tracked file
+
+Do not use a real secret to practice this. You only need to understand the response.
+
+If a real database password or connection string is ever committed to Git, deleting the line is not enough. The value may still exist in the project’s history, so stop and tell a mentor. The credential should be replaced, or “rotated,” so the old value no longer works.
+
+For this lesson, the safe rule is simpler:
+
+<ul class="question-list">
+<li>Keep real values in <code>.env.local</code> and private Vercel settings.</li>
+<li>Commit only the variable name or a fake example, never the real value.</li>
+<li>Run <code>git status</code> and confirm that the local secret file is not listed.</li>
+<li>Never paste the value into Codex, a screenshot, a README, or a browser response.</li>
+</ul>
+
+If you want to see what Git would notice, use a clearly fake value only:
+
+<ol class="mental-model-steps">
+<li>Create a temporary file such as <code>scratch-secret.txt</code> containing <code>FAKE_DATABASE_URL=not-a-real-secret</code>.</li>
+<li>Run <code>git status</code> and observe that the file is visible as an untracked file.</li>
+<li>Delete the temporary file without committing it.</li>
+<li>Run <code>git status</code> again and confirm that it is gone.</li>
+</ol>
+
+This exercise demonstrates why <code>.env.local</code> is ignored. It does not make a real secret safe after it has been committed. If a real secret ever enters Git history, stop and ask a mentor to help replace it.
+
+## Your configuration checklist
+
+Before accepting today’s work, ask Codex to inspect the configuration and coverage critically:
+
+```text
+Take a step back as a staff engineer and review today’s configuration work.
+
+Check:
+- the local server reads DATABASE_URL only on the server side;
+- .env.local and other real secret files are ignored by Git;
+- the client bundle and API responses do not contain the database connection value;
+- Preview and Production have the required variable name configured privately;
+- the preview deployment used the intended commit;
+- the preview change is visible;
+- all regression checks from Days 8 through 12 were run, not only the new loading-message check;
+- the missing-Preview-variable failure was observed and repaired;
+- the checks are meaningful and could not pass merely because the old sample data remained;
+- happy cases and edge cases are both represented;
+- no required behavior from the existing implementation plan was skipped.
+
+Report:
+- what passed;
+- what failed;
+- what was not run;
+- what evidence supports each conclusion;
+- what remains unverified;
+- whether Preview and Production use the same disposable database, and the risk of that choice.
+
+Do not print or reveal secret values.
+```
+
+<Response id="week2-day13-review" prompt="Read Codex’s report critically. Which checks prove real database behavior rather than a lucky page display? Which happy case, edge case, or regression remains unverified?" rows={14} />
+
+</Track>
+
+## Save your Day 13 evidence
+
+Create:
+
+```text
+week2-day13-environments-and-preview.md
+```
+
+Include:
+
+<ol class="mental-model-steps">
+<li>A plain-English definition of configuration.</li>
+<li>A code-versus-configuration comparison.</li>
+<li>The local, Preview, and Production settings by name, without secret values.</li>
+<li>Evidence that the local secret file is ignored.</li>
+<li>The preview branch or saved project version and preview URL.</li>
+<li>The production URL and evidence that it did not change before approval.</li>
+<li>The visible preview change and all regression results.</li>
+<li>The missing-setting failure, evidence, repair, and new successful Preview result.</li>
+<li>Whether Preview and Production share the same disposable Supabase rows.</li>
+<li>What remains unverified.</li>
+</ol>
+
+<Response id="week2-day13-deliverable" prompt="Plan your Day 13 evidence file. Which exact observation supports each section, and which item must be marked not run if you did not check it?" rows={12} />
+
+## Explain it back
+
+Complete these sentences in your own words:
+
+<ul class="example-list">
+<li><strong>Code is...</strong></li>
+<li><strong>Configuration is...</strong></li>
+<li><strong>Local means...</strong></li>
+<li><strong>Preview is useful because...</strong></li>
+<li><strong>Production should not change until...</strong></li>
+<li><strong>The database connection belongs...</strong></li>
+<li><strong>The missing Preview setting failed at...</strong></li>
+</ul>
+
+The most important idea is not the dashboard vocabulary. It is this:
+
+> The same code can run in different places, but each place needs the right private settings. A preview lets you test a change before you put it in front of everyone using the main version.
+
+<Response id="week2-day13-explain-back" prompt="Explain local, Preview, and Production to a mentor using the Family Chore Board. Show the preview evidence, describe the deliberate failure and repair, and say what you still do not know." rows={14} />
+
+<Checkpoint id="week2-day13-mentor-pause" label="Pause with a mentor">
+Show your mentor the three environment settings by name, the preview URL, the production URL, the Network evidence, and the repaired Preview failure. Explain which values stayed private and what is still unverified.
+</Checkpoint>
+
+## Done when
+
+<ul class="observation-checklist">
+<li>You can explain code versus configuration in plain English.</li>
+<li>You can distinguish local, Preview, and Production.</li>
+<li>The local secret file is ignored by Git.</li>
+<li>The client does not receive the database connection value.</li>
+<li>A small change appears in a Vercel preview deployment.</li>
+<li>All earlier regression checks were run against the preview.</li>
+<li>Production remained unchanged before the approved deployment.</li>
+<li>You observed and repaired a missing Preview setting using evidence.</li>
+<li>You stated honestly whether Preview and Production share one disposable database.</li>
+<li>You explained what remains unverified instead of calling the app “done” automatically.</li>
+</ul>
+
+<Checkpoint id="week2-day13-complete" label="Day 13 complete">
+I can explain how the same app uses private configuration in local, Preview, and Production. I tested one visible change in Preview, checked all earlier workflows, deliberately broke and repaired the Preview connection, and recorded what remains unverified.
+</Checkpoint>

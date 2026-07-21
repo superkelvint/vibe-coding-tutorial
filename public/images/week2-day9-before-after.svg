@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">Day 9 before and after</title>
+  <desc id="desc">Before Day 9, the browser, React client, Node server, and SQLite file all run on one laptop. After Day 9, the React client is served publicly by Vercel while the Node server and SQLite file remain on the developer's laptop.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#286c67"/>
+    </marker>
+    <style>
+      .title { font: 700 30px system-ui, sans-serif; fill: #263238; }
+      .subtitle { font: 500 18px system-ui, sans-serif; fill: #627177; }
+      .label { font: 700 19px system-ui, sans-serif; fill: #263238; }
+      .small { font: 500 15px system-ui, sans-serif; fill: #627177; }
+      .device { fill: #f2eadf; stroke: #bda98f; stroke-width: 2; }
+      .client { fill: #e6f1ee; stroke: #286c67; stroke-width: 2; }
+      .server { fill: #e8f0f8; stroke: #587da3; stroke-width: 2; }
+      .data { fill: #fffaf2; stroke: #bda98f; stroke-width: 2; }
+      .public { fill: #e6f1ee; stroke: #286c67; stroke-width: 2; }
+      .arrow { stroke: #286c67; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .divider { stroke: #dbe2df; stroke-width: 2; stroke-dasharray: 8 8; }
+      .scope { fill: #fff3f1; stroke: #b42318; stroke-width: 2; }
+    </style>
+  </defs>
+  <rect width="1200" height="650" rx="24" fill="#fbfaf7"/>
+  <text x="60" y="58" class="title">Day 9: move only the client</text>
+  <text x="60" y="90" class="subtitle">The product stays the same. One part becomes publicly reachable.</text>
+  <line x1="600" y1="125" x2="600" y2="570" class="divider"/>
+
+  <text x="300" y="150" text-anchor="middle" class="title">Before</text>
+  <text x="300" y="180" text-anchor="middle" class="subtitle">Everything runs on one laptop.</text>
+  <rect x="65" y="215" width="470" height="285" rx="22" class="device"/>
+  <text x="300" y="250" text-anchor="middle" class="label">Developer laptop</text>
+
+  <rect x="95" y="285" width="125" height="72" rx="12" class="device"/>
+  <text x="157" y="317" text-anchor="middle" class="label">Browser</text>
+  <text x="157" y="341" text-anchor="middle" class="small">local user</text>
+  <rect x="240" y="285" width="125" height="72" rx="12" class="client"/>
+  <text x="302" y="317" text-anchor="middle" class="label">React</text>
+  <text x="302" y="341" text-anchor="middle" class="small">client</text>
+  <rect x="385" y="285" width="125" height="72" rx="12" class="server"/>
+  <text x="447" y="317" text-anchor="middle" class="label">Node</text>
+  <text x="447" y="341" text-anchor="middle" class="small">server</text>
+  <rect x="240" y="395" width="125" height="72" rx="12" class="data"/>
+  <text x="302" y="427" text-anchor="middle" class="label">SQLite</text>
+  <text x="302" y="451" text-anchor="middle" class="small">file</text>
+
+  <path d="M220 321 L240 321" class="arrow"/>
+  <path d="M365 321 L385 321" class="arrow"/>
+  <path d="M447 357 L365 395" class="arrow"/>
+  <text x="300" y="535" text-anchor="middle" class="small">Only this laptop can provide the whole system.</text>
+
+  <text x="900" y="150" text-anchor="middle" class="title">After today</text>
+  <text x="900" y="180" text-anchor="middle" class="subtitle">Only the client is publicly reachable.</text>
+
+  <rect x="660" y="215" width="180" height="90" rx="16" class="public"/>
+  <text x="750" y="252" text-anchor="middle" class="label">Vercel</text>
+  <text x="750" y="278" text-anchor="middle" class="small">public React client</text>
+
+  <rect x="900" y="215" width="230" height="285" rx="22" class="device"/>
+  <text x="1015" y="250" text-anchor="middle" class="label">Developer laptop</text>
+  <rect x="935" y="285" width="160" height="72" rx="12" class="server"/>
+  <text x="1015" y="317" text-anchor="middle" class="label">Node server</text>
+  <text x="1015" y="341" text-anchor="middle" class="small">still local</text>
+  <rect x="935" y="395" width="160" height="72" rx="12" class="data"/>
+  <text x="1015" y="427" text-anchor="middle" class="label">SQLite file</text>
+  <text x="1015" y="451" text-anchor="middle" class="small">still local</text>
+
+  <rect x="660" y="395" width="180" height="72" rx="12" class="public"/>
+  <text x="750" y="427" text-anchor="middle" class="label">Public URL</text>
+  <text x="750" y="451" text-anchor="middle" class="small">another browser</text>
+
+  <path d="M750 305 L750 395" class="arrow"/>
+  <path d="M840 431 L900 431" class="arrow"/>
+  <path d="M1015 357 L1015 395" class="arrow"/>
+
+  <rect x="250" y="585" width="700" height="42" rx="10" class="scope"/>
+  <text x="600" y="612" text-anchor="middle" class="small">Today: client moves. Server and database stay local until later days.</text>
+</svg>

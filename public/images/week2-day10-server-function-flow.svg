@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">Day 10 server responsibility before and after</title>
+  <desc id="desc">Before, the public client cannot reach the local Node server reliably. After, the public client asks Vercel Functions for a health response and temporary chores, while the database is still not connected.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#286c67"/></marker>
+    <style>
+      .title { font: 700 30px system-ui, sans-serif; fill: #263238; }
+      .subtitle { font: 500 18px system-ui, sans-serif; fill: #627177; }
+      .label { font: 700 18px system-ui, sans-serif; fill: #263238; }
+      .small { font: 500 15px system-ui, sans-serif; fill: #627177; }
+      .code { font: 700 15px ui-monospace, monospace; fill: #286c67; }
+      .public { fill: #e6f1ee; stroke: #286c67; stroke-width: 2; }
+      .local { fill: #f2eadf; stroke: #bda98f; stroke-width: 2; }
+      .host { fill: #e8f0f8; stroke: #587da3; stroke-width: 2; }
+      .data { fill: #fffaf2; stroke: #bda98f; stroke-width: 2; }
+      .warning { fill: #fff3f1; stroke: #b42318; stroke-width: 2; }
+      .arrow { stroke: #286c67; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .bad { stroke: #b42318; stroke-width: 3; stroke-dasharray: 9 8; fill: none; }
+      .divider { stroke: #dbe2df; stroke-width: 2; stroke-dasharray: 8 8; }
+    </style>
+  </defs>
+  <rect width="1200" height="680" rx="24" fill="#fbfaf7"/>
+  <text x="60" y="58" class="title">Day 10: move the server responsibility</text>
+  <text x="60" y="90" class="subtitle">The screen is already public. Today, one request can reach hosted server code.</text>
+  <line x1="600" y1="125" x2="600" y2="590" class="divider"/>
+
+  <text x="300" y="145" text-anchor="middle" class="title">Before</text>
+  <text x="300" y="176" text-anchor="middle" class="subtitle">The public client has no public server yet.</text>
+  <rect x="70" y="225" width="210" height="90" rx="16" class="public"/>
+  <text x="175" y="260" text-anchor="middle" class="label">Public client</text>
+  <text x="175" y="288" text-anchor="middle" class="small">served by Vercel</text>
+  <rect x="330" y="225" width="210" height="90" rx="16" class="local"/>
+  <text x="435" y="260" text-anchor="middle" class="label">Node server</text>
+  <text x="435" y="288" text-anchor="middle" class="small">only on laptop</text>
+  <path d="M280 270 L330 270" class="bad"/>
+  <text x="305" y="248" text-anchor="middle" class="small">not public</text>
+  <rect x="180" y="390" width="250" height="90" rx="16" class="warning"/>
+  <text x="305" y="425" text-anchor="middle" class="label">Data requests fail</text>
+  <text x="305" y="453" text-anchor="middle" class="small">for other visitors</text>
+  <path d="M280 315 C280 345 305 355 305 390" class="bad"/>
+  <text x="300" y="545" text-anchor="middle" class="small">The page may load, but the server-backed action is missing.</text>
+
+  <text x="900" y="145" text-anchor="middle" class="title">After today</text>
+  <text x="900" y="176" text-anchor="middle" class="subtitle">Vercel runs one small server function per request.</text>
+  <rect x="660" y="225" width="170" height="90" rx="16" class="public"/>
+  <text x="745" y="260" text-anchor="middle" class="label">Public client</text>
+  <text x="745" y="288" text-anchor="middle" class="small">React in browser</text>
+  <rect x="880" y="190" width="250" height="250" rx="18" class="host"/>
+  <text x="1005" y="230" text-anchor="middle" class="label">Vercel Functions</text>
+  <text x="1005" y="258" text-anchor="middle" class="small">server code runs</text>
+  <rect x="915" y="285" width="180" height="55" rx="10" class="public"/>
+  <text x="1005" y="319" text-anchor="middle" class="code">/api/health</text>
+  <rect x="915" y="360" width="180" height="55" rx="10" class="public"/>
+  <text x="1005" y="394" text-anchor="middle" class="code">/api/chores</text>
+  <path d="M830 270 L880 270" class="arrow"/>
+  <path d="M830 270 C850 320 880 388 915 388" class="arrow"/>
+  <text x="850" y="246" text-anchor="middle" class="small">request</text>
+  <rect x="660" y="390" width="170" height="90" rx="16" class="data"/>
+  <text x="745" y="425" text-anchor="middle" class="label">Temporary data</text>
+  <text x="745" y="453" text-anchor="middle" class="small">fixed sample rows</text>
+  <path d="M915 388 L830 435" class="arrow"/>
+  <rect x="680" y="535" width="430" height="54" rx="12" class="warning"/>
+  <text x="895" y="568" text-anchor="middle" class="small">SQLite/database is still not connected today.</text>
+</svg>

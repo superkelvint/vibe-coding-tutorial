@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">The complete hosted request path</title>
+  <desc id="desc">The browser asks the Vercel page, the page asks a Vercel Function, the function asks the Supabase Postgres database, and the answer travels back. The database connection stays on the server side.</desc>
+  <defs>
+    <marker id="path-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#286c67"/></marker>
+    <style>
+      .title { font: 700 30px system-ui, sans-serif; fill: #263238; }
+      .subtitle { font: 500 18px system-ui, sans-serif; fill: #627177; }
+      .label { font: 700 19px system-ui, sans-serif; fill: #263238; }
+      .small { font: 500 15px system-ui, sans-serif; fill: #627177; }
+      .page { fill: #e6f1ee; stroke: #286c67; stroke-width: 2; }
+      .server { fill: #e8f0f8; stroke: #587da3; stroke-width: 2; }
+      .data { fill: #fffaf2; stroke: #bda98f; stroke-width: 2; }
+      .secret { fill: #fff3f1; stroke: #b42318; stroke-width: 2; }
+      .arrow { stroke: #286c67; stroke-width: 3; fill: none; marker-end: url(#path-arrow); }
+      .return { stroke: #587da3; stroke-width: 3; fill: none; stroke-dasharray: 8 7; marker-end: url(#path-arrow); }
+    </style>
+  </defs>
+  <rect width="1200" height="540" rx="24" fill="#fbfaf7"/>
+  <text x="60" y="56" class="title">One shared chore request</text>
+  <text x="60" y="88" class="subtitle">The browser asks the page. Only the online program asks the database.</text>
+
+  <rect x="55" y="175" width="190" height="100" rx="16" class="page"/>
+  <text x="150" y="216" text-anchor="middle" class="label">Browser</text>
+  <text x="150" y="244" text-anchor="middle" class="small">person sees the page</text>
+  <rect x="330" y="175" width="220" height="100" rx="16" class="page"/>
+  <text x="440" y="216" text-anchor="middle" class="label">Vercel page</text>
+  <text x="440" y="244" text-anchor="middle" class="small">React client</text>
+  <rect x="635" y="175" width="235" height="100" rx="16" class="server"/>
+  <text x="752" y="216" text-anchor="middle" class="label">Vercel Function</text>
+  <text x="752" y="244" text-anchor="middle" class="small">server program</text>
+  <rect x="955" y="175" width="190" height="100" rx="16" class="data"/>
+  <text x="1050" y="216" text-anchor="middle" class="label">Supabase</text>
+  <text x="1050" y="244" text-anchor="middle" class="small">Postgres rows</text>
+
+  <path d="M245 225 L330 225" class="arrow"/>
+  <path d="M550 225 L635 225" class="arrow"/>
+  <path d="M870 225 L955 225" class="arrow"/>
+  <path d="M955 325 L870 325" class="return"/>
+  <path d="M635 325 L550 325" class="return"/>
+  <path d="M330 325 L245 325" class="return"/>
+  <text x="600" y="330" text-anchor="middle" class="small">rows and answers return this way</text>
+
+  <rect x="365" y="410" width="470" height="68" rx="14" class="secret"/>
+  <text x="600" y="438" text-anchor="middle" class="label">Private database connection</text>
+  <text x="600" y="463" text-anchor="middle" class="small">stays with the Vercel Function, never in browser code</text>
+</svg>

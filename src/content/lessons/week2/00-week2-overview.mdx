@@ -1,0 +1,152 @@
+---
+title: "Week 2 overview: From one laptop to a reachable system"
+section: "Week 2 · Overview"
+order: 13
+estimatedTime: "20 minutes"
+mentalModel: "Week 2 does not rebuild the product; it moves the jobs performed by one laptop onto reachable hosted services, one responsibility at a time."
+verificationFocus: "Name what moves, where it moves, what request connects it, and what evidence would prove the move worked."
+description: "Understand the relocation journey before learning the first hosted-system idea."
+---
+
+You finished Week 1 with a Family Chore Board that works on one computer. Week 2 asks a new question:
+
+<aside class="model-purpose">
+<p><strong>What has to change so another person can reach the same application through the internet?</strong></p>
+</aside>
+
+This is not a new feature sprint. The product stays the same. The goal is to move the jobs currently performed by your laptop onto services that other people can reach.
+
+## Where you are starting
+
+<pre class="astro-code"><code>One laptop
+├── browser
+├── React client
+├── Node server
+└── SQLite database file</code></pre>
+
+The current board should still let someone view chores, add a chore, assign it, mark it done, reject invalid input, see useful feedback, refresh and recover saved chores, and open the same teaching data from another browser.
+
+## Where you are going
+
+By the end of Week 2, the system should tell this story:
+
+<ol class="mental-model-steps">
+<li>A person enters a public URL.</li>
+<li>The browser finds the hosted application.</li>
+<li>Vercel sends the client files to the browser.</li>
+<li>The browser runs React.</li>
+<li>React sends a request to a server route.</li>
+<li>Vercel runs the server code for that request.</li>
+<li>The server validates the request.</li>
+<li>The server queries a Postgres database hosted by Supabase.</li>
+<li>Supabase returns rows or an error.</li>
+<li>The server sends a response.</li>
+<li>React updates browser state and the screen.</li>
+<li>The user receives accurate success or failure feedback.</li>
+</ol>
+
+The architecture is still one application because requests connect its parts.
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-relocation-before-after.svg`} alt="Before-and-after architecture diagram: one laptop runs the browser, React client, Node server, and SQLite file; after relocation, a user browser reaches the React client and server functions on Vercel, which reaches Postgres data on Supabase." />
+
+## The names in the diagram
+
+The diagram introduces three names that may be new. For now, think of them as hosted services taking over jobs your laptop currently performs:
+
+<table>
+<thead><tr><th>Name</th><th>Plain-language meaning</th><th>What it does for us in Week 2</th></tr></thead>
+<tbody>
+<tr><td><strong><a href="https://vercel.com/">Vercel</a></strong></td><td>A service that can build and make web application files reachable through a public URL.</td><td>Hosts the React client and, later, the server request code.</td></tr>
+<tr><td><strong><a href="https://www.postgresql.org/">Postgres</a></strong></td><td>An open-source database that stores structured data in tables and rows.</td><td>A replacement for the SQLite database.</td></tr>
+<tr><td><strong><a href="https://supabase.com/">Supabase</a></strong></td><td>A managed Postgres SaaS (software-as-a-service).</td><td>Hosts a Postgres database for us.</td></tr>
+</tbody>
+</table>
+
+You do not need to memorize these names yet. The important question is: <strong>which job is each service taking over from the laptop?</strong>
+
+<aside class="model-purpose">
+<p><strong>SQLite and Postgres solve the same broad problem—storing structured data—but they fit different situations.</strong> SQLite keeps the database in a local file, which is convenient on one laptop. Postgres runs as a database service that a hosted server can reach, making it a better fit when the application and its shared data need to be available to people on different devices.</p>
+</aside>
+
+## The seven-day map
+
+<table>
+<thead><tr><th>Day</th><th>Question</th><th>What moves or becomes clear</th></tr></thead>
+<tbody>
+<tr><td>8</td><td>What happens when a browser opens a local or public address?</td><td>Understand URLs, localhost, ports, hosts, paths, requests, responses, and the current local system.</td></tr>
+<tr><td>9</td><td>What happens if only the client is deployed?</td><td>Deploy the client and observe what moved and what is still local.</td></tr>
+<tr><td>10</td><td>Where can the server request handlers run?</td><td>Move the server responsibility onto Vercel Functions.</td></tr>
+<tr><td>11</td><td>Why can’t the local SQLite file simply come along?</td><td>Create a hosted Supabase Postgres database while preserving the existing data model.</td></tr>
+<tr><td>12</td><td>How does the hosted server reach the hosted database?</td><td>Connect the server to Supabase and restore the complete workflow.</td></tr>
+<tr><td>13</td><td>How do local, preview, and production systems know their settings?</td><td>Understand environment variables, server-only secrets, and configuration boundaries.</td></tr>
+<tr><td>14</td><td>Does the hosted system tell one consistent story?</td><td>Trace, verify, explain, test, and hand off the complete system.</td></tr>
+</tbody>
+</table>
+
+## What this week deliberately does not add
+
+This week relocates the existing teaching application. It does not add:
+
+<ul class="example-list">
+<li>login, sessions, or password recovery;</li>
+<li>family invitations, roles, or private per-user data;</li>
+<li>browser-to-database access;</li>
+<li>realtime subscriptions;</li>
+<li>custom domains, analytics, payments, or file uploads;</li>
+<li>background jobs, edge functions, or mobile apps; or</li>
+<li>claims that this prototype is ready for private family information.</li>
+</ul>
+
+You do not need to memorize a long list of cloud vocabulary before starting. Each service will be introduced as an answer to a specific problem.
+
+<table>
+<thead><tr><th>Question</th><th>Answer for this week</th></tr></thead>
+<tbody>
+<tr><td>Where can the client files and server code run so another person can reach them?</td><td><a href="https://vercel.com/">Vercel</a>.</td></tr>
+<tr><td>Where can shared data live so it does not depend on one local SQLite file?</td><td>A hosted Postgres database on <a href="https://supabase.com/">Supabase</a>.</td></tr>
+</tbody>
+</table>
+
+The important thing is not to say “the cloud does it.” You should be able to name which part moved, where it moved, what request connects it, what data crosses the connection, and what evidence proves it worked.
+
+## How the support will fade
+
+<table>
+<thead><tr><th>Day</th><th>Support you should expect</th></tr></thead>
+<tbody>
+<tr><td>8</td><td>The lesson supplies the mental-model exercises and explanation prompts.</td></tr>
+<tr><td>9</td><td>You predict deployment behavior and complete a guided deployment prompt.</td></tr>
+<tr><td>10</td><td>You write acceptance criteria for one hosted server route.</td></tr>
+<tr><td>11</td><td>You explain the storage limitation before creating hosted database resources.</td></tr>
+<tr><td>12</td><td>You write most of the connection and debugging prompt.</td></tr>
+<tr><td>13</td><td>You identify configuration boundaries and write the preview test plan.</td></tr>
+<tr><td>14</td><td>You write the system explanation, verification report, and handoff.</td></tr>
+</tbody>
+</table>
+
+## The working rhythm
+
+Each day follows the same pattern:
+
+<ol class="mental-model-steps">
+<li>Understand the current system.</li>
+<li>Define success.</li>
+<li>Inspect what already exists.</li>
+<li>Predict what should happen.</li>
+<li>Move one responsibility.</li>
+<li>Run focused checks.</li>
+<li>Inspect the evidence.</li>
+<li>Test the deployed environment.</li>
+<li>Break one connection on purpose.</li>
+<li>Explain what happened.</li>
+<li>Save the work.</li>
+</ol>
+
+<aside class="mantra-callout">
+<p>Do not begin with dashboards, accounts, keys, or deployment buttons.</p>
+<p>Begin with the limitation you can already observe: the application works only while your laptop is acting as the whole world.</p>
+</aside>
+
+<Response id="week2-overview-prediction" prompt="Before Day 8, explain what you think must move from the laptop so another person can reach the Family Chore Board. Which part do you expect to be easiest to misunderstand?" rows={10} />
+
+<Checkpoint id="week2-overview-complete">I understand that Week 2 relocates the existing application one responsibility at a time, and I can describe the questions Days 8–14 will answer.</Checkpoint>

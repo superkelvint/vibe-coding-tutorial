@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">Two different things deployed to Vercel</title>
+  <desc id="desc">Vercel hosts both a public React client delivered to the browser and a server-side Vercel Function that can keep a private database connection. The browser can call the function, but cannot receive its private settings.</desc>
+  <defs>
+    <marker id="vercel-boundary-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#286c67"/></marker>
+    <style>
+      .title { font: 700 30px system-ui, sans-serif; fill: #263238; }
+      .subtitle { font: 500 18px system-ui, sans-serif; fill: #627177; }
+      .label { font: 700 19px system-ui, sans-serif; fill: #263238; }
+      .small { font: 500 15px system-ui, sans-serif; fill: #627177; }
+      .public { fill: #e6f1ee; stroke: #286c67; stroke-width: 2; }
+      .server { fill: #e8f0f8; stroke: #587da3; stroke-width: 2; }
+      .data { fill: #fffaf2; stroke: #bda98f; stroke-width: 2; }
+      .warning { fill: #fff3f1; stroke: #b42318; stroke-width: 2; }
+      .vercel { fill: #ffffff; stroke: #8da7a2; stroke-width: 2; }
+      .arrow { stroke: #286c67; stroke-width: 3; fill: none; marker-end: url(#vercel-boundary-arrow); }
+      .dash { stroke: #b42318; stroke-width: 3; stroke-dasharray: 8 7; fill: none; }
+      .divider { stroke: #dbe2df; stroke-width: 2; stroke-dasharray: 8 8; }
+    </style>
+  </defs>
+  <rect width="1200" height="650" rx="24" fill="#fbfaf7"/>
+  <text x="60" y="56" class="title">Vercel hosts two different things</text>
+  <text x="60" y="88" class="subtitle">They are both deployed to Vercel, but they do not have the same security job.</text>
+
+  <rect x="320" y="125" width="560" height="420" rx="24" class="vercel"/>
+  <text x="600" y="165" text-anchor="middle" class="label">Vercel</text>
+  <text x="600" y="190" text-anchor="middle" class="small">same hosting service, two different responsibilities</text>
+  <line x1="600" y1="215" x2="600" y2="520" class="divider"/>
+
+  <text x="460" y="235" text-anchor="middle" class="label">Public React client</text>
+  <text x="460" y="260" text-anchor="middle" class="small">downloaded into every browser</text>
+  <rect x="355" y="285" width="210" height="100" rx="16" class="public"/>
+  <text x="460" y="322" text-anchor="middle" class="label">Allowed</text>
+  <text x="460" y="348" text-anchor="middle" class="small">buttons, page, visible data</text>
+  <text x="460" y="370" text-anchor="middle" class="small">asks the server for results</text>
+  <rect x="355" y="410" width="210" height="82" rx="16" class="warning"/>
+  <text x="460" y="443" text-anchor="middle" class="label">Never put here</text>
+  <text x="460" y="468" text-anchor="middle" class="small">passwords or DB access</text>
+
+  <text x="740" y="235" text-anchor="middle" class="label">Server / Vercel Function</text>
+  <text x="740" y="260" text-anchor="middle" class="small">runs away from the browser</text>
+  <rect x="635" y="285" width="210" height="100" rx="16" class="server"/>
+  <text x="740" y="322" text-anchor="middle" class="label">Allowed</text>
+  <text x="740" y="348" text-anchor="middle" class="small">checks requests, queries DB</text>
+  <text x="740" y="370" text-anchor="middle" class="small">keeps private settings</text>
+  <rect x="635" y="410" width="210" height="82" rx="16" class="server"/>
+  <text x="740" y="443" text-anchor="middle" class="label">Private</text>
+  <text x="740" y="468" text-anchor="middle" class="small">DATABASE_URL stays here</text>
+
+  <rect x="55" y="285" width="180" height="100" rx="16" class="public"/>
+  <text x="145" y="322" text-anchor="middle" class="label">Browser</text>
+  <text x="145" y="348" text-anchor="middle" class="small">can inspect client</text>
+  <text x="145" y="370" text-anchor="middle" class="small">and send requests</text>
+  <path d="M235 335 L320 335" class="arrow"/>
+  <path d="M565 335 L635 335" class="arrow"/>
+
+  <rect x="940" y="285" width="205" height="100" rx="16" class="data"/>
+  <text x="1042" y="322" text-anchor="middle" class="label">Supabase</text>
+  <text x="1042" y="348" text-anchor="middle" class="small">shared database</text>
+  <text x="1042" y="370" text-anchor="middle" class="small">server asks for rows</text>
+  <path d="M880 335 L940 335" class="arrow"/>
+
+  <rect x="165" y="570" width="870" height="48" rx="12" class="warning"/>
+  <text x="600" y="600" text-anchor="middle" class="small">Being hosted by the same company does not make the public client a safe place for secrets.</text>
+</svg>

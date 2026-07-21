@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">One app in three environments</title>
+  <desc id="desc">The same app code runs locally, in a Vercel preview, and in production. Each environment has private configuration. The server uses the database connection, while the browser receives only the client.</desc>
+  <rect width="1200" height="650" fill="#ffffff"/>
+  <text x="600" y="52" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#20312f">Same app code, different settings</text>
+  <text x="600" y="84" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#526461">The browser never receives the private database connection.</text>
+
+  <rect x="60" y="135" width="330" height="405" rx="18" fill="#fffaf2" stroke="#8da7a2" stroke-width="3"/>
+  <text x="225" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#20312f">Local</text>
+  <text x="225" y="208" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#526461">your laptop</text>
+  <rect x="105" y="245" width="240" height="68" rx="12" fill="#ffffff" stroke="#d0a25a" stroke-width="2"/>
+  <text x="225" y="276" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#20312f">React client</text>
+  <text x="225" y="299" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#526461">visible in your browser</text>
+  <rect x="105" y="350" width="240" height="68" rx="12" fill="#ffffff" stroke="#6e9c94" stroke-width="2"/>
+  <text x="225" y="381" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#20312f">Server</text>
+  <text x="225" y="404" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#526461">reads DATABASE_URL</text>
+  <path d="M225 315v35" stroke="#d0a25a" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="105" y="460" width="240" height="45" rx="10" fill="#ffffff" stroke="#8da7a2" stroke-width="2"/>
+  <text x="225" y="489" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#20312f">.env.local (private)</text>
+
+  <rect x="435" y="135" width="330" height="405" rx="18" fill="#f7fbfa" stroke="#8da7a2" stroke-width="3"/>
+  <text x="600" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#20312f">Preview</text>
+  <text x="600" y="208" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#526461">temporary Vercel URL</text>
+  <rect x="480" y="245" width="240" height="68" rx="12" fill="#ffffff" stroke="#d0a25a" stroke-width="2"/>
+  <text x="600" y="276" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#20312f">React client</text>
+  <text x="600" y="299" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#526461">visible in any browser</text>
+  <rect x="480" y="350" width="240" height="68" rx="12" fill="#ffffff" stroke="#6e9c94" stroke-width="2"/>
+  <text x="600" y="381" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#20312f">Server</text>
+  <text x="600" y="404" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#526461">reads private setting</text>
+  <path d="M600 315v35" stroke="#d0a25a" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="480" y="460" width="240" height="45" rx="10" fill="#ffffff" stroke="#8da7a2" stroke-width="2"/>
+  <text x="600" y="489" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#20312f">Preview setting (private)</text>
+
+  <rect x="810" y="135" width="330" height="405" rx="18" fill="#fffaf2" stroke="#8da7a2" stroke-width="3"/>
+  <text x="975" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#20312f">Production</text>
+  <text x="975" y="208" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#526461">main Vercel URL</text>
+  <rect x="855" y="245" width="240" height="68" rx="12" fill="#ffffff" stroke="#d0a25a" stroke-width="2"/>
+  <text x="975" y="276" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#20312f">React client</text>
+  <text x="975" y="299" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#526461">visible in any browser</text>
+  <rect x="855" y="350" width="240" height="68" rx="12" fill="#ffffff" stroke="#6e9c94" stroke-width="2"/>
+  <text x="975" y="381" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#20312f">Server</text>
+  <text x="975" y="404" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#526461">reads private setting</text>
+  <path d="M975 315v35" stroke="#d0a25a" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="855" y="460" width="240" height="45" rx="10" fill="#ffffff" stroke="#8da7a2" stroke-width="2"/>
+  <text x="975" y="489" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#20312f">Production setting (private)</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#d0a25a"/>
+    </marker>
+  </defs>
+</svg>

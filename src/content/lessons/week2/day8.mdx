@@ -1,0 +1,341 @@
+---
+title: "Day 8: What happens when you open a website?"
+section: "Week 2 · Day 8"
+order: 14
+estimatedTime: "120 minutes"
+mentalModel: "A browser uses an address to send a request; a local or hosted program receives it and returns files, data, or an error."
+verificationFocus: "Predict which computer and program each address reaches, inspect Network evidence, deliberately stop one dependency at a time, and explain the failure."
+description: "Build the minimum useful mental model of how a browser reaches a local or public application before deploying anything."
+---
+
+Today is about understanding what happens when a browser loads a URL such as https://instagram.com or http://localhost:5173.
+
+The important difference is between:
+
+<ul class="example-list">
+<li>a file saved on this device;</li>
+<li>a program listening on this computer; and</li>
+<li>a service reachable through a public address.</li>
+</ul>
+
+<aside class="model-purpose">
+<p><strong>The browser does not contain the website in advance.</strong></p>
+<p>It uses an address to ask for something. A program receives that request and sends files, data, or an error back. The browser reads the response and shows the result.</p>
+</aside>
+
+
+<Track type="s" title="ChatGPT Prompting and Debugging">
+
+Ask ChatGPT for an explanation before asking it to change anything.
+
+Predict first. A useful answer should explain the literal technical story in plain English, distinguish a saved file from a running program, and name what can fail without drowning you in DNS record types, TCP packet details, or certificate administration.
+
+Use this prompt:
+
+```text
+I am a complete beginner learning how a web application is served.
+
+Do not write code.
+
+Explain these addresses in plain English:
+- a file:// address
+- http://localhost:5173
+- http://localhost:3000/api/chores
+- a public https:// URL
+
+For each one, explain:
+1. which computer the browser is asking
+2. which program must respond
+3. what kind of response may come back
+4. what could make the request fail
+
+Then explain this request story:
+URL → host lookup → request → response → browser display.
+
+Do not teach DNS record types, TCP packet details, or certificate administration.
+Use one simple analogy, but also give the literal technical explanation.
+```
+
+Before you send it, write down what you expect to learn. Afterward, record which parts are now clear and which words still need explanation.
+
+<details>
+  <summary>Hint: ask “which computer?” before asking “which framework?”</summary>
+
+The first question is where the browser sends the request. Only after that should you ask which program handles it.
+</details>
+
+<Response id="week2-day8-codex-evidence" prompt="Record the useful evidence from ChatGPT's explanation. Which address can you now label, which dependency can you now name, and what remains uncertain?" rows={9} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+### The request story
+
+Start with the simplest version:
+
+<ol class="mental-model-steps">
+<li><strong>The browser asks for something.</strong></li>
+<li><strong>A program answers.</strong></li>
+</ol>
+
+Now apply that to one familiar action: opening the local Family Chore Board and seeing the chore list.
+
+<ol class="mental-model-steps">
+<li>The browser uses the URL address to ask for the page.</li>
+<li>The client files come back.</li>
+<li>React runs in the browser.</li>
+<li>React asks the server for the saved chores.</li>
+<li>The server asks SQLite for the saved rows.</li>
+<li>The response comes back.</li>
+<li>The browser displays the chores.</li>
+</ol>
+
+The words are simple on purpose:
+
+<table>
+<thead><tr><th>Word</th><th>Plain-language meaning</th></tr></thead>
+<tbody>
+<tr><td><strong>Request</strong></td><td>What the browser asks for.</td></tr>
+<tr><td><strong>Response</strong></td><td>What comes back: files, data, or an error.</td></tr>
+</tbody>
+</table>
+
+The useful mantra is:
+
+<aside class="mantra-callout">
+<p>Browser asks.</p>
+<p>Program answers.</p>
+<p>The URL address decides where the question goes.</p>
+</aside>
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day8-local-request-flow.svg`} alt="Diagram of a local Add Chore request flowing from the browser to the React client, Node server, and SQLite file, then returning as visible feedback." />
+
+### Compare familiar addresses
+
+<table>
+<thead><tr><th>Address</th><th>What the browser is asking</th></tr></thead>
+<tbody>
+<tr><td><code>file:///.../index.html</code></td><td>Read a file from this device.</td></tr>
+<tr><td><code>http://localhost:5173</code></td><td>Ask a program listening on port 5173 on this device.</td></tr>
+<tr><td><code>http://localhost:3000/api/chores</code></td><td>Ask a local server route on this device.</td></tr>
+<tr><td><code>https://example.com</code></td><td>Ask a publicly reachable host.</td></tr>
+<tr><td><code>https://example.com/api/chores</code></td><td>Ask a specific route on a publicly reachable host.</td></tr>
+</tbody>
+</table>
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day8-addresses.svg`} alt="Diagram comparing three addresses: file reads a saved file on this device, localhost asks a local program on this computer, and a public URL asks a hosted service through the internet." />
+
+<aside class="model-purpose">
+<p><strong><code>localhost</code> is a special kind of host name.</strong> It does not mean “find a website called localhost.” It means “ask this same device.”</p>
+<p>That is different from a public host such as <code>cnn.com</code>. A public host name identifies a service that can be reached through the internet. When you open <code>localhost:5173</code>, your browser asks your own computer; when you open <code>cnn.com</code>, it asks the public service associated with that name.</p>
+</aside>
+
+### Label a URL
+
+Use:
+
+```text
+https://chores-example.vercel.app/api/chores
+```
+
+Label it:
+
+<table>
+<thead><tr><th>Part</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>https</code></td><td>The communication method.</td></tr>
+<tr><td><code>chores-example.vercel.app</code></td><td>The host the browser is asking.</td></tr>
+<tr><td><code>/api/chores</code></td><td>The path identifying the requested route.</td></tr>
+</tbody>
+</table>
+
+Now compare:
+
+```text
+http://localhost:5173
+```
+
+Here:
+
+<table>
+<thead><tr><th>Part</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>http</code></td><td>The communication method.</td></tr>
+<tr><td><code>localhost</code></td><td>This computer.</td></tr>
+<tr><td><code>5173</code></td><td>The port that identifies which local program should receive the request.</td></tr>
+</tbody>
+</table>
+
+You do not need to memorize every URL feature. The key idea is that changing the host changes which computer or service receives the request.
+
+<Response id="week2-day8-url-prediction" prompt="Label the protocol, host, port if present, and path in http://localhost:3000/api/chores and https://chores-example.vercel.app/api/chores. Predict which computer each request reaches." rows={10} />
+
+<details>
+  <summary>What happens underneath a public URL?</summary>
+
+You do not need these details before you understand the simple request story. At a higher level:
+
+<ol class="mental-model-steps">
+<li>A person enters a URL.</li>
+<li>The browser identifies the host and path.</li>
+<li>A naming system helps locate the host.</li>
+<li>The browser sends a request.</li>
+<li>A hosted service returns files, data, or an error.</li>
+<li>The browser reads the response and may send additional requests.</li>
+</ol>
+
+The naming system is what helps turn a human-friendly host name into a reachable destination. You do not need to learn record types or packet details today.
+</details>
+
+### Map the current Chore Board
+
+Draw this system before running it:
+
+```text
+Developer laptop
+├── browser
+├── React development process
+├── Node server process
+└── SQLite file
+```
+
+For one action such as Add Chore, trace:
+
+```text
+browser click
+→ React handler
+→ request to local server
+→ server validation
+→ SQLite insert
+→ server response
+→ React state update
+→ visible feedback
+```
+
+Then answer:
+
+<ul class="question-list">
+<li>What stops working if the React process stops?</li>
+<li>What stops working if the Node server stops?</li>
+<li>What stops working if the SQLite file is missing?</li>
+<li>What stops working when the laptop closes?</li>
+<li>Which part could a person on another device currently reach?</li>
+</ul>
+
+<Response id="week2-day8-architecture-prediction" prompt="Before running the Chore Board, predict what will fail if the client stops, if the server stops, if SQLite is missing, and if the laptop closes. Explain why." rows={12} />
+
+### Observe the actual requests
+
+Use the exact start commands documented by your project’s README or Day 7 handoff. If the project uses the Week 1 commands, you will need the client and server running in separate terminals:
+
+```bash
+npm run dev
+npm run server
+```
+
+Do not guess if your project uses different commands. Ask Codex to inspect `package.json` and the README and tell you the exact commands before running them.
+
+Open the local client address in the browser. Open the browser’s Network panel, then reload the page.
+
+Look for:
+
+<ul class="observation-checklist">
+<li>the request for the main page;</li>
+<li>one JavaScript file;</li>
+<li>one CSS file, if present;</li>
+<li>one request to the local API;</li>
+<li>the host and port for each request; and</li>
+<li>the response status for each request.</li>
+</ul>
+
+The visible screen may depend on several separate requests. The Network panel is evidence of what the browser actually asked for; it is more useful than guessing from the screen alone.
+
+<Checkpoint id="week2-day8-network-observed">I identified the main page request, at least one asset request, the local API request, each host and port, and the response status.</Checkpoint>
+
+### Break one connection at a time
+
+Make a prediction before each experiment. Record the result in your deliverable.
+
+#### Failure 1: Stop the client process
+
+Stop the process serving the client files, then refresh the local client address.
+
+Expected result: the browser cannot retrieve the client files from the local development address.
+
+Restart the client before continuing.
+
+#### Failure 2: Start the client but stop the server
+
+Leave the client running, stop the server, and refresh or perform an action that needs chores.
+
+Expected result: the page may load, but server-backed chore requests fail.
+
+Restart the server before continuing.
+
+#### Failure 3: Use the wrong port
+
+Change only the port in the local address, then try to open it.
+
+Expected result: the browser asks a place where no expected program is listening.
+
+Restore the correct address before continuing.
+
+#### Failure 4: Open localhost on a phone
+
+If you have a phone and a safe local network setup, open the same localhost address on it.
+
+Expected result: the phone interprets localhost as the phone itself, not the developer’s laptop.
+
+If you cannot run this experiment, record it as not run rather than pretending it was verified.
+
+#### Failure 5: Disconnect the network
+
+Compare a local address, a public address, and resources the browser may already have cached.
+
+Do not over-study caching. The point is to observe that local and public requests depend on different connections.
+
+If disconnecting the network would interfere with your work or you cannot safely test it, record it as not run.
+
+<Response id="week2-day8-failure-predictions" prompt="For each controlled failure, predict which request should fail, what evidence you expect in the browser, and which process or connection you will restore afterward." rows={15} />
+
+### Explain back
+
+Without looking at your notes, explain:
+
+<ul class="observation-checklist">
+<li>A URL tells the browser where to send a request.</li>
+<li>Localhost means this computer.</li>
+<li>A port identifies which local program should receive the request.</li>
+<li>A public host can be reached by other devices through the internet.</li>
+<li>The browser receives files or data in responses.</li>
+<li>The browser can load the client even while a separate server request fails.</li>
+<li>The current app depends on processes and a database file on the laptop.</li>
+</ul>
+
+<Response id="week2-day8-explain-back" prompt="Explain the complete local request story in plain English, then explain what would have to move before another person could reach the same application. Name one thing you verified and one thing that remains uncertain." rows={14} />
+
+<details>
+  <summary>Mentor pause</summary>
+
+Show your mentor the address comparison, URL labels, local architecture diagram, Network evidence, controlled-failure notes, and deliverable. Explain whether each claim is verified, partly verified, or not run.
+</details>
+
+<Checkpoint id="week2-day8-mentor-pause">I explained the local request story, showed my evidence, and clearly separated verified observations from experiments I did not run.</Checkpoint>
+
+## Done when
+
+You are finished when you can:
+
+<ul class="observation-checklist">
+<li>explain why localhost works only while the local program runs;</li>
+<li>distinguish a client-file request from an API request;</li>
+<li>label the protocol, host, port, and path in simple addresses;</li>
+<li>use the Network panel to identify a request and response;</li>
+<li>explain why a public URL must point to a reachable hosted service; and</li>
+<li>say that you have not yet configured Vercel or Supabase.</li>
+</ul>
+
+<Checkpoint id="week2-day8-complete">I completed Day 8 and can explain which computer and program a browser asks for a local or public address, using evidence rather than deployment ritual.</Checkpoint>
+
+</Track>

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">Vercel deployment pipeline</title>
+  <desc id="desc">A local project folder is sent by the Vercel command-line tool to Vercel, which installs dependencies, runs the build, creates client files, and returns a public URL.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#286c67"/>
+    </marker>
+    <style>
+      .title { font: 700 30px system-ui, sans-serif; fill: #263238; }
+      .subtitle { font: 500 18px system-ui, sans-serif; fill: #627177; }
+      .label { font: 700 18px system-ui, sans-serif; fill: #263238; }
+      .small { font: 500 15px system-ui, sans-serif; fill: #627177; }
+      .code { font: 700 16px ui-monospace, monospace; fill: #286c67; }
+      .local { fill: #f2eadf; stroke: #bda98f; stroke-width: 2; }
+      .tool { fill: #fffaf2; stroke: #bda98f; stroke-width: 2; }
+      .host { fill: #e6f1ee; stroke: #286c67; stroke-width: 2; }
+      .result { fill: #e8f0f8; stroke: #587da3; stroke-width: 2; }
+      .arrow { stroke: #286c67; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1200" height="560" rx="24" fill="#fbfaf7"/>
+  <text x="60" y="58" class="title">What happens when you run <tspan class="code">vercel</tspan>?</text>
+  <text x="60" y="90" class="subtitle">A local project is built elsewhere and given a public address.</text>
+
+  <rect x="55" y="190" width="190" height="145" rx="18" class="local"/>
+  <text x="150" y="230" text-anchor="middle" class="label">Project folder</text>
+  <text x="150" y="260" text-anchor="middle" class="small">your local files</text>
+  <text x="150" y="298" text-anchor="middle" class="code">vercel</text>
+  <text x="150" y="322" text-anchor="middle" class="small">run from here</text>
+
+  <rect x="310" y="190" width="180" height="145" rx="18" class="tool"/>
+  <text x="400" y="230" text-anchor="middle" class="label">Vercel CLI</text>
+  <text x="400" y="260" text-anchor="middle" class="small">sends the project</text>
+  <text x="400" y="290" text-anchor="middle" class="small">to your account</text>
+
+  <rect x="555" y="140" width="300" height="245" rx="20" class="host"/>
+  <text x="705" y="180" text-anchor="middle" class="label">Vercel</text>
+  <text x="705" y="215" text-anchor="middle" class="small">1. installs dependencies</text>
+  <text x="705" y="250" text-anchor="middle" class="small">2. runs the build</text>
+  <text x="705" y="285" text-anchor="middle" class="small">3. creates client files</text>
+  <text x="705" y="320" text-anchor="middle" class="small">4. serves the result</text>
+
+  <rect x="920" y="190" width="225" height="145" rx="18" class="result"/>
+  <text x="1032" y="230" text-anchor="middle" class="label">Public URL</text>
+  <text x="1032" y="265" text-anchor="middle" class="code">https://...</text>
+  <text x="1032" y="300" text-anchor="middle" class="small">another browser can ask</text>
+
+  <path d="M245 262 L310 262" class="arrow"/>
+  <path d="M490 262 L555 262" class="arrow"/>
+  <path d="M855 262 L920 262" class="arrow"/>
+
+  <rect x="245" y="455" width="710" height="54" rx="12" class="tool"/>
+  <text x="600" y="489" text-anchor="middle" class="small">This moves the client build. It does not move the Node server or SQLite file.</text>
+</svg>

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">Tracing Add Chore from click to saved row</title>
+  <desc id="desc">A user submits a chore, the page shows saving, the server checks it, Postgres saves the row, the server returns the created row, and the page shows the confirmed chore.</desc>
+  <defs>
+    <marker id="trace-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#286c67"/></marker>
+    <style>
+      .title { font: 700 30px system-ui, sans-serif; fill: #263238; }
+      .subtitle { font: 500 18px system-ui, sans-serif; fill: #627177; }
+      .label { font: 700 18px system-ui, sans-serif; fill: #263238; }
+      .small { font: 500 15px system-ui, sans-serif; fill: #627177; }
+      .user { fill: #f2eadf; stroke: #bda98f; stroke-width: 2; }
+      .page { fill: #e6f1ee; stroke: #286c67; stroke-width: 2; }
+      .server { fill: #e8f0f8; stroke: #587da3; stroke-width: 2; }
+      .data { fill: #fffaf2; stroke: #bda98f; stroke-width: 2; }
+      .arrow { stroke: #286c67; stroke-width: 3; fill: none; marker-end: url(#trace-arrow); }
+      .return { stroke: #587da3; stroke-width: 3; fill: none; stroke-dasharray: 8 7; marker-end: url(#trace-arrow); }
+      .line { stroke: #dbe2df; stroke-width: 2; }
+    </style>
+  </defs>
+  <rect width="1200" height="560" rx="24" fill="#fbfaf7"/>
+  <text x="60" y="56" class="title">What happens when you add one chore?</text>
+  <text x="60" y="88" class="subtitle">Follow one action instead of treating the whole app as a mystery.</text>
+  <line x1="90" y1="170" x2="1110" y2="170" class="line"/>
+  <line x1="90" y1="385" x2="1110" y2="385" class="line"/>
+
+  <rect x="65" y="205" width="160" height="95" rx="14" class="user"/>
+  <text x="145" y="244" text-anchor="middle" class="label">Click Add</text>
+  <text x="145" y="270" text-anchor="middle" class="small">user action</text>
+  <rect x="275" y="205" width="180" height="95" rx="14" class="page"/>
+  <text x="365" y="244" text-anchor="middle" class="label">Show Saving…</text>
+  <text x="365" y="270" text-anchor="middle" class="small">page sends data</text>
+  <rect x="505" y="205" width="180" height="95" rx="14" class="server"/>
+  <text x="595" y="244" text-anchor="middle" class="label">Check rules</text>
+  <text x="595" y="270" text-anchor="middle" class="small">server validates</text>
+  <rect x="735" y="205" width="180" height="95" rx="14" class="data"/>
+  <text x="825" y="244" text-anchor="middle" class="label">Save row</text>
+  <text x="825" y="270" text-anchor="middle" class="small">Postgres stores it</text>
+  <rect x="965" y="205" width="170" height="95" rx="14" class="page"/>
+  <text x="1050" y="244" text-anchor="middle" class="label">Show chore</text>
+  <text x="1050" y="270" text-anchor="middle" class="small">confirmed answer</text>
+  <path d="M225 252 L275 252" class="arrow"/>
+  <path d="M455 252 L505 252" class="arrow"/>
+  <path d="M685 252 L735 252" class="arrow"/>
+  <path d="M915 252 L965 252" class="return"/>
+
+  <rect x="245" y="425" width="710" height="72" rx="14" class="data"/>
+  <text x="600" y="455" text-anchor="middle" class="label">Refresh later</text>
+  <text x="600" y="480" text-anchor="middle" class="small">The row appears again because Postgres saved it—not because the page remembered it.</text>
+</svg>

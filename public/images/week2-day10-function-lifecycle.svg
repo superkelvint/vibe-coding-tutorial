@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
+  <title id="title">One request through a Vercel Function</title>
+  <desc id="desc">A browser requests the health route, Vercel runs the function, the function returns a response, and evidence can be found in the browser and function logs.</desc>
+  <defs>
+    <marker id="lifecycle-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#286c67"/>
+    </marker>
+    <style>
+      .title { font: 700 30px system-ui, sans-serif; fill: #263238; }
+      .subtitle { font: 500 18px system-ui, sans-serif; fill: #627177; }
+      .label { font: 700 20px system-ui, sans-serif; fill: #263238; }
+      .small { font: 500 16px system-ui, sans-serif; fill: #627177; }
+      .browser { fill: #e6f1ee; stroke: #286c67; stroke-width: 2; }
+      .function { fill: #e8f0f8; stroke: #587da3; stroke-width: 2; }
+      .response { fill: #fffaf2; stroke: #bda98f; stroke-width: 2; }
+      .evidence { fill: #f2eadf; stroke: #bda98f; stroke-width: 2; }
+      .arrow { stroke: #286c67; stroke-width: 3; fill: none; marker-end: url(#lifecycle-arrow); }
+      .note { fill: #fff3f1; stroke: #b42318; stroke-width: 2; }
+    </style>
+  </defs>
+  <rect width="1200" height="500" rx="24" fill="#fbfaf7"/>
+  <text x="60" y="56" class="title">One request, from question to evidence</text>
+  <text x="60" y="88" class="subtitle">The function runs only because a request reaches its route.</text>
+
+  <rect x="55" y="160" width="220" height="105" rx="16" class="browser"/>
+  <text x="165" y="202" text-anchor="middle" class="label">Browser</text>
+  <text x="165" y="230" text-anchor="middle" class="small">GET /api/health</text>
+
+  <rect x="340" y="160" width="245" height="105" rx="16" class="function"/>
+  <text x="462" y="202" text-anchor="middle" class="label">Vercel Function</text>
+  <text x="462" y="230" text-anchor="middle" class="small">server code runs</text>
+
+  <rect x="650" y="160" width="220" height="105" rx="16" class="response"/>
+  <text x="760" y="202" text-anchor="middle" class="label">Response</text>
+  <text x="760" y="230" text-anchor="middle" class="small">{ "status": "ok" }</text>
+
+  <rect x="935" y="160" width="210" height="105" rx="16" class="evidence"/>
+  <text x="1040" y="202" text-anchor="middle" class="label">Evidence</text>
+  <text x="1040" y="230" text-anchor="middle" class="small">Network + logs</text>
+
+  <path d="M275 212 L340 212" class="arrow"/>
+  <path d="M585 212 L650 212" class="arrow"/>
+  <path d="M870 212 L935 212" class="arrow"/>
+
+  <rect x="190" y="340" width="820" height="75" rx="16" class="note"/>
+  <text x="600" y="372" text-anchor="middle" class="label">What this proves</text>
+  <text x="600" y="398" text-anchor="middle" class="small">The public request reached hosted server code and received an honest answer.</text>
+</svg>

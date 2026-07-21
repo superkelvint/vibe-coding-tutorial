@@ -49,6 +49,105 @@ Prefer this rhythm:
 
 Do not front-load many response boxes. The learner should notice something before being asked to document it. Combine related questions into one meaningful response where possible.
 
+### Teach from the learner’s question
+
+Every new technology, service, command, or vocabulary word must earn its place in the lesson. Do not begin with a provider, dashboard, account, CLI, framework, or database just because it is the next implementation step.
+
+Use this order:
+
+1. Start with a problem the learner can already understand or observe.
+2. Ask the natural question that problem creates.
+3. Introduce the tool or concept as an answer to that question.
+4. Define it in plain English before asking the learner to use it.
+5. Show what the learner will do, what should happen, and what evidence to look for.
+
+For example, do not begin with “Today we will use Vercel.” Begin with: “The app works only while your laptop is open. How could another person reach the screen?” Then explain Vercel as one answer to that problem.
+
+Do not mention tools that the learner has not yet needed. If a diagram introduces a service such as Vercel, Supabase, or Postgres, explain each name immediately below the diagram. Do not introduce GitHub, a provider account, or a hosted database merely because a common industry workflow uses one.
+
+### Beginner-comprehension gate: concrete situation before architecture language
+
+“Use plain language” is not enough. Before introducing an architectural term, first describe the concrete situation the learner can picture. A beginner should never have to decode several unfamiliar abstractions in the same sentence.
+
+Do not begin with phrases such as:
+
+- “the public screen cannot reach the public server”;
+- “move the server responsibility to hosted infrastructure”;
+- “the client needs a hosted route”; or
+- “the browser needs to communicate with the backend.”
+
+These may be accurate, but they are not a starting explanation. They contain words whose meaning depends on other words the learner has not learned yet.
+
+Use the concrete pattern instead:
+
+1. Say what the learner already has: “The page is online.”
+2. Say what is happening now: “The page gets chore data from a program running on your laptop.”
+3. Say why that becomes a problem: “That works for you, but another person’s browser cannot reach a program on your computer.”
+4. Ask what must become possible: “We need that program to run somewhere the other browser can reach.”
+5. Only then name the technology: “A Vercel Function is one way to run that server code there.”
+
+Apply this same pattern to every new concept, including client, server, database, deployment, API, route, host, localhost, framework, and cloud service. If the first explanation would still make sense after removing the technical nouns, it is probably concrete enough. If it becomes vague or meaningless, rewrite it.
+
+Before finalizing a lesson, perform the **beginner translation test**: read each new concept as a person who has never built a web app. Ask, “What would this person picture happening on their screen or computer?” If the answer is “I would need to know what several other terms mean,” the lesson has introduced the term too early.
+
+Do not use “the user’s problem is not…” as a substitute for explaining the problem. State the problem directly in terms of what the learner can observe. Do not make the learner distinguish “public screen,” “public server,” “hosted route,” or “server responsibility” before the lesson has explained the actual page, laptop program, browser, and missing connection.
+
+### Make technical lessons feel navigable
+
+At the top of a technical lesson, tell the learner directly:
+
+- what they will accomplish today;
+- what will intentionally remain unfinished;
+- what the successful result will look like; and
+- where they should look if the result differs from the prediction.
+
+Use “you” and concrete instructions. Avoid writing as if the learner is an anonymous student completing a compliance checklist. Replace phrases such as “the learner should demonstrate” with “you will check” or “you should be able to explain.”
+
+For a multi-step technical process, show a before-and-after diagram near the top. Label which part moves, which parts stay where they are, and which connection is expected to work or fail today. A later detail diagram can explain a subtle distinction, but the first visual should answer “What am I doing today?”
+
+When teaching a hosted or command-line workflow, explain all four moments:
+
+1. how to sign up or install what is needed;
+2. how to start the action and recognize that it finished;
+3. how to open or inspect the result; and
+4. where to troubleshoot build, page-loading, asset, browser-request, or running-server errors.
+
+Never leave a learner with “the deployment succeeded” and no instructions for finding the URL, opening it in a fresh browser, checking the Network or Console evidence, reading build logs, or knowing what remains unverified.
+
+### Translate unavoidable technical language
+
+If a technical term is necessary, define it immediately in the sentence where it first appears. A small glossary near the beginning is appropriate when a lesson introduces several related terms.
+
+Prefer:
+
+```text
+Deploy means put a working version somewhere another browser can reach it.
+```
+
+over:
+
+```text
+Today we will deploy the application.
+```
+
+Prefer “the browser asks for data” before “the browser makes an API request.” Prefer “the final check that prepares files for publishing” before “the production build.” Prefer “text showing what happened during the build” before “build logs.”
+
+Do not remove accurate technical vocabulary forever. Introduce it after the learner understands the concrete behavior it names.
+
+### Make incomplete results honest and useful
+
+An intentionally incomplete result must be explained as a success condition, not presented as a mysterious failure. Say exactly what should work, what should not work, why that is expected, and what later lesson will move the missing responsibility.
+
+For example:
+
+```text
+The public screen may load today.
+The shared data request may still fail for another person.
+That is expected because the server is still on your laptop.
+```
+
+Explain subtle differences that change the result. For example, a public client that asks for `localhost` may still reach the developer’s local server when opened on the developer’s laptop, while another person’s browser sends `localhost` to that person’s own device. This distinction deserves a diagram or explicit example.
+
 ## The five-part app model
 
 Use the model:
@@ -263,6 +362,17 @@ Every `Response` and `Checkpoint` ID must be stable, descriptive, and globally u
 Before handing off a lesson:
 
 - Read it as a beginner in their early twenties. Does it sound like a person helping them?
+- Does the lesson begin with a problem or question the learner can understand before naming a tool?
+- Can a beginner picture the concrete page, device, program, or action before encountering each new technical term?
+- Does every new concept pass the beginner translation test without requiring the learner to decode several other abstractions?
+- Have vague phrases such as “public screen,” “public server,” “hosted route,” and “server responsibility” been replaced with concrete descriptions until they are explicitly defined?
+- Is every new service, command, account, framework, and technical term defined before use?
+- Does the lesson avoid introducing tools that are not needed yet, including tools from a common but out-of-scope workflow?
+- Does the opening say what the learner will accomplish, what remains unfinished, and what success will look like?
+- Does the lesson address the learner directly with concrete “you” instructions?
+- If the lesson moves part of a system, is there a before-and-after visual near the top showing what moves and what stays?
+- If the lesson uses a dashboard or CLI, does it explain setup, how to recognize completion, how to view the result, and where to troubleshoot?
+- If the lesson produces an intentionally incomplete result, does it explain why the incomplete result is expected and useful?
 - Does it explain why the lesson matters before asking for work?
 - Is the product/user-problem stance explicit?
 - Is the mantra “You are not here to create software. You are here to solve user problems.” reinforced?

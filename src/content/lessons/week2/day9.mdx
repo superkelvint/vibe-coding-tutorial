@@ -1,0 +1,541 @@
+---
+title: "Day 9: Deploy only the client and observe the missing pieces"
+section: "Week 2 · Day 9"
+order: 15
+estimatedTime: "150 minutes"
+mentalModel: "You can put the app’s screen on a public URL without moving the code that saves and loads its data."
+verificationFocus: "Predict what will work and fail, identify the saved project sent to Vercel, inspect the result in the browser, deliberately create a build error, and confirm local behavior remains unchanged."
+description: "Move only the React client to Vercel and use the partial result to understand what deployment did—and did not—move."
+---
+
+Today you will learn what Vercel is for, then deploy only the React client to it.
+
+By the end, you will have a public URL that another person can open. The screen may appear there, while chore data still works only from your laptop. That is the expected result today—not a mistake.
+
+## A few words you will hear today
+
+<table>
+<thead><tr><th>Word</th><th>What it means here</th></tr></thead>
+<tbody>
+<tr><td><strong>Deploy</strong></td><td>Put a working version somewhere another browser can reach it.</td></tr>
+<tr><td><strong>Build</strong></td><td>Turn the project files into the browser files that can be served.</td></tr>
+<tr><td><strong>Client</strong></td><td>The part that creates the screen and runs in the browser.</td></tr>
+<tr><td><strong>Server</strong></td><td>The part that receives data requests and applies rules.</td></tr>
+<tr><td><strong>Database</strong></td><td>The place where saved chore rows live.</td></tr>
+<tr><td><strong>Preview</strong></td><td>A test version of the deployed app, before treating it as the final version.</td></tr>
+</tbody>
+</table>
+
+## First, what problem is Vercel solving?
+
+Right now, the Family Chore Board works because your laptop is doing several jobs: it runs the client, it runs the server, and it holds the SQLite file.
+
+But what happens when you want another person to open the client while your laptop is closed?
+
+Your laptop cannot be the public home of the application. We need another computer, already connected to the internet, to build and serve the client files.
+
+<aside class="model-purpose">
+<p><strong>Vercel is a service that can take a saved version of your project, build the client files, and make those files reachable through a public URL.</strong></p>
+<p>Today Vercel takes over only the job of serving the React client. It does not automatically take over the Node server or the SQLite file.</p>
+</aside>
+
+### Git and Vercel have different jobs
+
+These tools are not the same thing:
+
+<table>
+<thead><tr><th>Tool</th><th>Job</th></tr></thead>
+<tbody>
+<tr><td><strong>Git</strong></td><td>Keeps understandable save points in your project history.</td></tr>
+<tr><td><strong>Vercel account</strong></td><td>Gives you a place to manage hosted deployments.</td></tr>
+<tr><td><strong>Vercel CLI</strong></td><td>Lets you send the project from your terminal to Vercel and receive a deployment URL.</td></tr>
+<tr><td><strong>Vercel</strong></td><td>Builds the client from the project and serves the result through a public URL.</td></tr>
+</tbody>
+</table>
+
+You do not need to memorize every Vercel setting today. The important question is: <strong>which job is Vercel taking over from the laptop?</strong>
+
+The goal is not to make the whole application work from the public URL yet. The goal is to prove:
+
+<aside class="model-purpose">
+<p><strong>The client can be publicly reachable while the server and database are still local.</strong></p>
+</aside>
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day9-before-after.svg`} alt="Before-and-after Day 9 diagram: before, the browser, React client, Node server, and SQLite file all run on one laptop; after, Vercel serves the React client publicly while the Node server and SQLite file remain local." />
+
+Do not hide the incomplete part. Seeing exactly what did not move is the lesson.
+
+<Track type="product" title="Product Judgment">
+
+## What should happen when only the client moves?
+
+Start with the current system:
+
+<pre class="astro-code"><code>React client
+→ local Node server
+→ local SQLite file</code></pre>
+
+Before sending anything to Vercel, predict:
+
+<ul class="question-list">
+<li>Which parts should work if only the client is deployed?</li>
+<li>Will the page structure and styling appear?</li>
+<li>Will browser-only interactions work?</li>
+<li>Can a public webpage call someone else’s <code>localhost</code>?</li>
+<li>Will the SQLite database appear on Vercel automatically?</li>
+</ul>
+
+Your prediction should be:
+
+<ul class="observation-checklist">
+<li>The built screen may load.</li>
+<li>Client-side interactions may still work.</li>
+<li>Requests aimed at <code>localhost</code> will fail or ask the visitor’s own device.</li>
+<li>The local Node server will remain on the developer’s laptop.</li>
+<li>The SQLite file will remain on the developer’s laptop.</li>
+</ul>
+
+Write this prediction before sending the project. A successful build is not evidence that the whole product works.
+
+<Response id="week2-day9-prediction" prompt="Before deploying, write your prediction: what should work at the public URL, what should fail, and which parts should remain on the developer’s laptop?" rows={10} />
+
+<Response id="week2-day9-acceptance-criteria" prompt="Write observable acceptance criteria for today. Include the deployed client, the local Git save point or project version sent, the expected missing-server failure, unchanged local behavior, and one piece of evidence for each claim." rows={10} />
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+### Ask for a narrow relocation plan
+
+Use this prompt after looking through the current project and its instructions. It asks Codex for a careful plan; it does not ask Codex to hide the missing server:
+
+```text
+Relocation goal:
+Move only the React client from the local development process to Vercel.
+
+Current architecture:
+The React client, Node server, and SQLite database all run on my laptop.
+
+Target architecture for this step:
+The client files are built and served by Vercel.
+The Node server and SQLite database remain local and are expected not to work from the public deployment.
+
+What must remain unchanged:
+- the current user interface
+- existing client behavior
+- existing API request shape
+- existing local development workflow
+
+Constraints:
+- do not migrate the server yet
+- do not migrate the database yet
+- do not add authentication
+- do not replace the framework
+- do not hide failed requests
+
+Acceptance criteria:
+- the project builds successfully
+- Vercel produces a generated URL
+- the public URL loads the client interface
+- the local Git save point or project version sent to Vercel can be identified
+- server-backed actions fail honestly if they still point to localhost
+- local behavior remains unchanged
+
+Verification:
+- run existing tests
+- run type checking and linting if available
+- run the production build
+- open the generated URL in a private window
+- open it on a second device if available
+- inspect failed API requests in the Network panel
+
+Evidence:
+Report what passed, what failed, and what is intentionally incomplete.
+Do not claim the whole application works.
+```
+
+Before sending it, predict what Codex should preserve and what it must not “fix” yet.
+
+<Response id="week2-day9-prompt-prediction" prompt="Predict what a safe client-only relocation prompt should prevent Codex from doing. What would count as an over-broad answer?" rows={9} />
+
+<details>
+  <summary>What does “only the client” mean?</summary>
+
+It means the files and browser code that create the user-facing screen move to Vercel. The Node server and SQLite file remain local. If the public browser still requests a local API, that request is expected to fail until a later day moves the server.
+</details>
+
+### Keep the failure visible
+
+Do not ask Codex to silently replace a failed API with fake data or pretend a save succeeded. The point is to observe which layer is missing.
+
+If the public page fails, give Codex exact evidence:
+
+```text
+I deployed the client only.
+
+Expected:
+[what I predicted would load]
+
+Actual:
+[what the public page showed]
+
+Deployment URL:
+[exact URL]
+
+Local project version sent:
+[Git save point or description of the project version]
+
+Network evidence:
+[request URL, status, or connection error]
+
+Local behavior:
+[what still works locally]
+
+Do not migrate the server or database yet.
+Help me identify whether this is a build failure, a client loading failure, or a runtime API request failure.
+Use the evidence rather than guessing.
+```
+
+<Response id="week2-day9-evidence-prediction" prompt="Before debugging a public failure, predict which evidence distinguishes a build failure, a client loading failure, and a runtime API request failure." rows={9} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+## Create a Vercel account
+
+You need a Vercel account before you can create a hosted deployment. An account gives you a place to manage your deployments; it does not change the code in your project.
+
+Open the official [Vercel sign-up page](https://vercel.com/signup) and create an account using an email address or a supported sign-in provider. Use an account you control and can access again later.
+
+The CLI connects your local project folder to your Vercel account. It does not mean Vercel has moved your server or database.
+
+You do not need a Vercel account to run the application locally. You need one for today’s hosted deployment step.
+
+<Checkpoint id="week2-day9-vercel-account">I created or signed into a Vercel account and can explain that it manages deployments while the project source remains in my local project folder.</Checkpoint>
+
+Install the Vercel command-line tool from your terminal:
+
+```bash
+npm install --global vercel
+vercel --version
+```
+
+The first command installs the `vercel` command. The second confirms that your terminal can find it. Then connect the CLI to your account:
+
+```bash
+vercel login
+```
+
+Follow the instructions it gives you. Do not paste passwords, one-time codes, or secret values into Codex. Keep those private.
+
+<Checkpoint id="week2-day9-vercel-cli">I installed the Vercel CLI, confirmed its version, and signed it into my Vercel account without sharing private login information.</Checkpoint>
+
+## Before deploying from the project folder
+
+Inspect the repository and run the checks it actually provides:
+
+<ul class="observation-checklist">
+<li>the test command;</li>
+<li>the type-check command, if present;</li>
+<li>the lint command, if present; and</li>
+<li>the final build check that prepares files for publishing; and</li>
+<li>the local project folder from which the Vercel CLI will run.</li>
+</ul>
+
+Record each result:
+
+<table>
+<thead><tr><th>Command</th><th>Result</th><th>What it proves</th><th>What it does not prove</th></tr></thead>
+<tbody>
+<tr><td>Exact command from the repository</td><td>Pass, fail, or not run</td><td>What the command actually checks</td><td>What remains outside its evidence</td></tr>
+</tbody>
+</table>
+
+The final build check proves that the client can be prepared locally. It does not prove that the public version has the same settings or that data requests will work.
+
+## What Vercel is doing today
+
+Use this narrow explanation:
+
+<ol class="mental-model-steps">
+<li>The Vercel CLI sends the local project folder to Vercel.</li>
+<li>Vercel creates a deployment from the project version you sent.</li>
+<li>Vercel installs the extra packages the project needs.</li>
+<li>Vercel runs the configured build.</li>
+<li>The build produces client files.</li>
+<li>Vercel makes those files reachable through a generated URL.</li>
+</ol>
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day9-vercel-deployment-pipeline.svg`} alt="Diagram showing a local project folder sent by the Vercel CLI to Vercel, where dependencies are installed and the client is built before a public URL is created." />
+
+Connect this to Git:
+
+<table>
+<thead><tr><th>Thing</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>Git commit</td><td>An identified save point in the project history.</td></tr>
+<tr><td>Deployment</td><td>A public copy built from a saved project version.</td></tr>
+</tbody>
+</table>
+
+Before deploying, be able to answer:
+
+<ul class="question-list">
+<li>Which local project folder will be sent?</li>
+<li>Which Git save point or project version did I send?</li>
+<li>What build command should run?</li>
+<li>Did the build pass?</li>
+<li>What generated URL will point to this deployment?</li>
+</ul>
+
+## Deployment sequence
+
+Use a guided sequence:
+
+<ol class="mental-model-steps">
+<li>Confirm the working tree is clean or intentionally understood.</li>
+<li>Confirm the latest local save point contains the intended client.</li>
+<li>Open the terminal in the project folder.</li>
+<li>Run <code>vercel</code> to create a preview, which is a test version with its own URL.</li>
+<li>Read each question and ask Codex to explain an unfamiliar setting before accepting it.</li>
+<li>Inspect the build result.</li>
+<li>Open the generated URL.</li>
+<li>Test the visible client.</li>
+<li>Inspect the API requests.</li>
+<li>Record what moved and what did not.</li>
+</ol>
+
+Do not click through unfamiliar configuration without asking Codex to explain what it controls.
+
+## Open the deployed page and find the evidence
+
+When the `vercel` command finishes successfully, it prints a public URL. It will look similar to:
+
+```text
+https://your-project-example.vercel.app
+```
+
+Copy that exact URL into a browser. Use a private or incognito window—a fresh browser window that does not reuse your normal page history—so you can see what a new visitor would see.
+
+Check the page in this order:
+
+<ol class="mental-model-steps">
+<li>Does the URL open at all?</li>
+<li>Does the page structure and styling appear?</li>
+<li>Does the browser show the expected client files loading?</li>
+<li>Does the page make an API request when it needs chores?</li>
+<li>Does that request target <code>localhost</code> or a public host?</li>
+<li>What status or error does the request show?</li>
+</ol>
+
+If you lose the URL, list recent deployments from the project folder:
+
+```bash
+vercel list
+```
+
+To inspect one public copy from the terminal, use its URL:
+
+```bash
+vercel inspect https://your-project-example.vercel.app --logs
+```
+
+You can also open the [Vercel dashboard](https://vercel.com/dashboard), choose the project, open **Deployments**, and select the public copy. The page contains the build result and build logs—text showing what Vercel did and where it stopped.
+
+<Checkpoint id="week2-day9-deployment-observed">I copied the generated URL, opened it in a fresh browser window, identified the visible client result, inspected the API request, and recorded what remained local.</Checkpoint>
+
+## Where to troubleshoot when something goes wrong
+
+Start with the first place where the evidence differs from your prediction. Do not guess that the whole app is broken:
+
+<table>
+<thead><tr><th>What you see</th><th>Where to look first</th><th>What it may mean</th></tr></thead>
+<tbody>
+<tr><td>The <code>vercel</code> command ends with an error and no URL.</td><td>Read the terminal output from the command.</td><td>Vercel could not install the packages, prepare the files, or create the public copy.</td></tr>
+<tr><td>The public copy exists but the page does not open.</td><td>Read the public-copy status and build logs in Vercel.</td><td>The build may have failed, the URL may be wrong, or access may be restricted.</td></tr>
+<tr><td>The page opens but looks blank or has no styling.</td><td>Open the browser’s Network and Console panels. These show file requests and browser error messages.</td><td>The screen files may have loaded incompletely, or a file path may be wrong.</td></tr>
+<tr><td>The page opens but the chore request fails.</td><td>Open the browser’s Network panel and copy the request URL, status, and error.</td><td>The client may still be asking <code>localhost</code>, which now means the visitor’s device.</td></tr>
+<tr><td>A hosted server request later returns an error.</td><td>Read Vercel’s running-app logs and the request evidence in the browser.</td><td>The server code, its settings, or a later database connection may be failing.</td></tr>
+</tbody>
+</table>
+
+Do not jump straight to “Vercel is broken.” First identify whether the problem happened while preparing the files, while opening the page, or when the browser asked for data.
+
+<Response id="week2-day9-troubleshooting-plan" prompt="For one problem you observed, write the exact evidence you would collect from the terminal, Vercel deployment logs, browser Network panel, or browser Console. Which layer do you think failed, and what remains uncertain?" rows={12} />
+
+## The important partial failure
+
+At the public URL, a useful result is:
+
+<ul class="observation-checklist">
+<li>The screen loads from Vercel.</li>
+<li>The request to a <code>localhost</code> API fails.</li>
+</ul>
+
+The browser is now running on the visitor’s device. When that browser requests <code>localhost</code>, it means the visitor’s device—not the developer’s laptop.
+
+This is why the server must also be hosted.
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day9-partial-deployment.svg`} alt="Diagram showing the public React client on Vercel. The developer’s browser may still reach the local Node server, while another person’s browser sends localhost to their own device and fails." />
+
+## Inspect the Network evidence
+
+At the public URL, identify:
+
+<ul class="question-list">
+<li>the document request;</li>
+<li>the JavaScript asset request;</li>
+<li>the API request;</li>
+<li>the host used by each request;</li>
+<li>the response status or connection error; and</li>
+<li>the visible feedback shown to the user.</li>
+</ul>
+
+Ask:
+
+<ul class="question-list">
+<li>Did the client load?</li>
+<li>Did the API request leave the browser?</li>
+<li>Which host did it target?</li>
+<li>Could that host possibly refer to the developer’s local server from this device?</li>
+</ul>
+
+<Response id="week2-day9-network-evidence" prompt="Record the document, asset, and API request evidence from the public URL. For each, write the host, status or error, and what that evidence proves." rows={12} />
+
+## Break one connection on purpose
+
+### Failure 1: Create a controlled build failure
+
+With a working commit preserved, ask Codex to introduce one obvious, reversible syntax or import error in a controlled local change. Predict:
+
+<ul class="question-list">
+<li>The deployment should fail during the build.</li>
+<li>No successful new deployment should replace the working deployment.</li>
+</ul>
+
+Inspect the failed build step, exact error message, file and line if provided, and previous working deployment. Do not leave the deliberate error in the working branch.
+
+Fix it locally, run the local build, commit the fix, run <code>vercel</code> again, and verify a successful deployment.
+
+### Failure 2: Observe a wrong client API base URL
+
+Use evidence from the current deployment or a controlled test to identify what happens when the client points at the wrong API host or path.
+
+The client files can still load while only the data request fails. This distinguishes a build failure from a runtime request failure.
+
+Do not silently replace the failed request with fake success.
+
+<Response id="week2-day9-failure-predictions" prompt="For each controlled failure, predict which stage should fail, what evidence you expect, how you will restore the working version, and what remains unverified." rows={14} />
+
+## Student deliverable
+
+Create:
+
+```text
+week2-day9-client-deployment.md
+```
+
+Include:
+
+<ol class="mental-model-steps">
+<li>The generated deployment URL.</li>
+<li>The local Git save point or project version sent to Vercel.</li>
+<li>The build command and result.</li>
+<li>A before-and-after architecture diagram.</li>
+<li>The written prediction from before deployment.</li>
+<li>What worked at the public URL.</li>
+<li>What failed at the public URL.</li>
+<li>Network evidence for the failed API request.</li>
+<li>Evidence from one failed build and its repair.</li>
+<li>A statement of what remains local.</li>
+</ol>
+
+Use this prompt if you want Codex to organize your observations:
+
+```text
+I deployed only the React client for Day 9.
+
+Create or update week2-day9-client-deployment.md from my notes.
+
+Do not invent observations or claim that the whole application works.
+Include:
+- generated deployment URL
+- local Git save point or project version sent to Vercel
+- build command and result
+- before-and-after architecture
+- my prediction
+- what worked publicly
+- what failed publicly
+- Network evidence for the API request
+- one failed build and its repair
+- what remains local
+
+Mark anything I did not run as not run.
+Preserve exact error messages, statuses, and URLs.
+```
+
+<Response id="week2-day9-deliverable-plan" prompt="Write a plan for your deployment report. Which exact evidence will support each required section, and which claims must be marked not run?" rows={12} />
+
+## Verification focus
+
+Verify separate claims:
+
+<table>
+<thead><tr><th>Claim</th><th>Focused evidence</th></tr></thead>
+<tbody>
+<tr><td>The intended local project version was sent.</td><td>Git history or a recorded description of the local save point, plus the CLI deployment output.</td></tr>
+<tr><td>The client build passes.</td><td>The local production-build output and hosted build log.</td></tr>
+<tr><td>Vercel created a deployment from that project version.</td><td>The deployment record and generated URL.</td></tr>
+<tr><td>The generated URL is reachable.</td><td>Open it in a fresh or private browser window.</td></tr>
+<tr><td>The client interface renders.</td><td>Visible screen plus document and asset requests.</td></tr>
+<tr><td>The API failure is visible and understandable.</td><td>Network request evidence plus honest UI feedback.</td></tr>
+<tr><td>The local application still works.</td><td>Run the established local workflow and all regression checks through Day 8.</td></tr>
+<tr><td>The SQLite file has not moved.</td><td>Inspect the local data directory and state what the deployment can access.</td></tr>
+</tbody>
+</table>
+
+Do not treat a green deployment as proof that every application workflow works. Ask what remains unverified.
+
+<Response id="week2-day9-evidence-review" prompt="Review the deployment evidence critically. Which claims are fully supported, which are only partly supported, and what remains unverified about the public app, server, database, and local regressions?" rows={13} />
+
+## Explain back
+
+Without notes, explain:
+
+<ul class="observation-checklist">
+<li>Vercel built the React client from the local project version sent by the CLI.</li>
+<li>The generated URL lets another browser request those built files.</li>
+<li>The client can load even though the server is missing.</li>
+<li>A <code>localhost</code> API URL on the public page does not point back to the developer’s laptop.</li>
+<li>The SQLite database did not move when the client deployed.</li>
+<li>A green deployment means the build succeeded; it does not prove every application workflow succeeds.</li>
+</ul>
+
+<Response id="week2-day9-explain-back" prompt="Explain what Vercel moved, what it did not move, why localhost behaves differently on a public page, and what evidence proves the deployment succeeded only as far as it actually did." rows={14} />
+
+<details>
+  <summary>Mentor pause</summary>
+
+Show your mentor the before-and-after architecture, prediction, local project version sent, build log, public URL, Network evidence, controlled build failure, repair, local regression result, and limitations. Explain what is working, what is incomplete, and what remains unverified.
+</details>
+
+<Checkpoint id="week2-day9-mentor-pause">I explained what the client-only deployment moved and did not move, showed the evidence, and stated the remaining uncertainty.</Checkpoint>
+
+## Done when
+
+You are finished when you can:
+
+<ul class="observation-checklist">
+<li>identify the local project version sent and generated URL;</li>
+<li>open the public client in a fresh browser;</li>
+<li>predict and explain the missing-server failure;</li>
+<li>distinguish a build failure from a runtime request failure;</li>
+<li>show that the local application still works;</li>
+<li>show that the SQLite file remains local; and</li>
+<li>say that no server or database migration was hidden inside today’s work.</li>
+</ul>
+
+<Checkpoint id="week2-day9-complete">I completed Day 9 and can explain a client-only deployment as a partial relocation rather than proof that the whole application is hosted.</Checkpoint>
+
+</Track>

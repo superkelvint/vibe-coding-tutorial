@@ -1,0 +1,506 @@
+---
+title: "Day 14: Prove, explain, and hand off the hosted app"
+section: "Week 2 · Day 14"
+order: 20
+estimatedTime: "180 minutes"
+mentalModel: "A working hosted app is a chain of connected responsibilities, and each important claim needs evidence."
+verificationFocus: "Test the complete hosted workflow from a clean browser, trace one action through every layer, check a controlled failure, and create a truthful handoff."
+description: "Finish Week 2 by verifying the hosted Family Chore Board and explaining exactly how its pieces fit together."
+---
+
+You have spent this week moving the Family Chore Board from one laptop to a hosted setup.
+
+Today is not about adding another feature. It is about answering a more important question:
+
+> If you gave this project to another person, could they understand what it does, run it, check it, and know what is still unfinished?
+
+That means we will test the app as a real person would use it, then look underneath the screen to see whether the right things happened.
+
+<aside class="model-purpose">
+<p><strong>Today’s goal:</strong> replace “it seems to work” with evidence.</p>
+<p>You will use a clean browser, test the whole chore workflow, inspect the browser request, confirm the saved row, deliberately create one safe failure, and write down the system’s real limitations.</p>
+</aside>
+
+<p><strong>What is intentionally out of scope:</strong> do not add login, permissions, real family data, a new feature, a new framework, or a complicated release system today. The product stays boring so you can understand and verify the system you already built.</p>
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day14-complete-system.svg`} alt="A complete hosted Family Chore Board flow: a person opens the production URL, the browser runs the React client, the client asks a Vercel server function, the function uses private configuration to reach Supabase Postgres, and the result returns to the screen." />
+<p class="image-caption"><strong>What to notice:</strong> the app is one experience, but several responsibilities carry it. Today you will check each connection instead of trusting the final screen alone.</p>
+
+<Track type="product" title="Product Judgment">
+
+## Start with the person using the app
+
+Imagine that someone opens the production URL without watching you build the project.
+
+They do not care that the app uses React, Vercel, or Supabase. They care about simple questions:
+
+<ul class="question-list">
+<li>Can I see the chores?</li>
+<li>Can I add one?</li>
+<li>Can I tell whether saving worked?</li>
+<li>Can I mark the right chore done?</li>
+<li>Will the result still be there when I come back?</li>
+<li>What does the app tell me when something goes wrong?</li>
+</ul>
+
+You are not here to create software for its own sake. You are here to solve a user problem and produce evidence that the solution actually helps.
+
+Today, the user problem is modest: a family needs one shared place to see fictional chores and record completion. The product is only a teaching prototype, so we must not pretend that it provides private family coordination or real security.
+
+## Make the final claims before checking them
+
+Write down what you think will happen before opening the production URL in a fresh browser. A useful prediction might look like this:
+
+<ul class="prediction-list">
+<li>The page will load without using anything remembered from my previous browser session.</li>
+<li>The saved fictional chores will appear after the page asks the server for them.</li>
+<li>A valid new chore will appear only after the server and database confirm it.</li>
+<li>A refresh will request the chores again and bring the saved row back.</li>
+<li>Only the chore I selected will become done.</li>
+<li>A blank title will be rejected instead of being saved.</li>
+<li>If the server or database fails, the page will not claim that the change succeeded.</li>
+</ul>
+
+<Response id="week2-day14-final-prediction" prompt="Before testing, write your predictions for loading, adding, refreshing, marking done, blank input, and one failure. Which observation would prove each prediction wrong?" rows={16} />
+
+## What counts as a trustworthy finish?
+
+Today’s acceptance criteria are observable:
+
+<ul class="observation-checklist">
+<li>The production page opens in a fresh browser.</li>
+<li>The existing fictional chores load.</li>
+<li>A valid fictional chore can be added and confirmed.</li>
+<li>The new chore survives a refresh.</li>
+<li>Only the selected chore changes when it is marked done.</li>
+<li>A blank chore is rejected with useful feedback.</li>
+<li>A second browser can reach the same shared fictional data.</li>
+<li>The browser request, server response, and database row agree about what happened.</li>
+<li>One controlled failure is observed and repaired.</li>
+<li>The README and handoff describe what exists without claiming security or features that do not exist.</li>
+</ul>
+
+<Response id="week2-day14-acceptance" prompt="Which piece of evidence will you collect for each acceptance criterion? Mark anything you cannot check today instead of quietly assuming it works." rows={16} />
+
+## Say the limitation out loud
+
+This is still a public teaching prototype. It does not have login or per-person permissions. Someone who can reach the exposed routes may be able to read or change the fictional chores.
+
+Do not put any of these into the app:
+
+<ul class="question-list">
+<li>real family names or addresses;</li>
+<li>private responsibilities;</li>
+<li>customer or employee information;</li>
+<li>passwords, database connection strings, or private keys; or</li>
+<li>anything that would cause harm if another person could see or change it.</li>
+</ul>
+
+The app can be a successful teaching project while still being unsuitable for real private use. A truthful limitation is part of a good handoff, not an embarrassing footnote.
+
+<Response id="week2-day14-public-prototype" prompt="Explain to a friend what this prototype can demonstrate and what information must never be entered into it. Why is “it has a login-looking page” not enough to call an app private?" rows={12} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+## Test from a clean browser
+
+Use a private window or a fresh browser profile. This matters because your normal browser may remember old page state, cached files, or a previous login-like session. We want to test what a new person would actually receive.
+
+Open the production URL and collect evidence as you work. Do not change the app while the first test is in progress.
+
+<ol class="mental-model-steps">
+<li>Open the production URL in a private window or fresh browser profile.</li>
+<li>Watch the initial loading message.</li>
+<li>Confirm that the saved fictional chores appear.</li>
+<li>Add one fictional chore with a clear title and assigned person.</li>
+<li>Watch for saving feedback, then confirm the chore appears as saved.</li>
+<li>Refresh the page.</li>
+<li>Confirm the new chore returns after the refresh.</li>
+<li>Mark one chore done.</li>
+<li>Confirm that only that chore changes.</li>
+<li>Refresh again and confirm the done state returns.</li>
+<li>Try a blank title and confirm that the app rejects it.</li>
+<li>Write down the exact visible result, including any confusing or misleading moment.</li>
+</ol>
+
+<Response id="week2-day14-clean-browser" prompt="Record the result of every step in the clean-browser test. Include the URL, visible feedback, saved-data result after each refresh, and anything that did not behave as expected." rows={20} />
+
+## Trace one Add Chore action
+
+The final screen is not enough evidence by itself. Choose the chore you just added and trace its trip through the system:
+
+<ol class="mental-model-steps">
+<li><strong>Person:</strong> someone types a title and chooses an assigned person.</li>
+<li><strong>Browser:</strong> React notices the submit action and shows saving feedback.</li>
+<li><strong>Request:</strong> the browser sends <code>POST /api/chores</code>.</li>
+<li><strong>Server:</strong> the Vercel Function checks the request.</li>
+<li><strong>Database:</strong> Supabase Postgres saves one row.</li>
+<li><strong>Response:</strong> the server sends the created row or an honest error.</li>
+<li><strong>Screen:</strong> React shows the confirmed result.</li>
+<li><strong>Refresh:</strong> the browser asks again and receives the saved row from the database.</li>
+</ol>
+
+Open the browser’s Network panel and inspect the request. Record:
+
+<table>
+<thead><tr><th>What to inspect</th><th>What you are trying to prove</th></tr></thead>
+<tbody>
+<tr><td>Request method and path</td><td>The browser sent the intended operation to the intended server route.</td></tr>
+<tr><td>Request body</td><td>The title and assigned person arrived in the expected shape. Do not copy private settings.</td></tr>
+<tr><td>Response status</td><td>The server clearly reported success or failure.</td></tr>
+<tr><td>Response body</td><td>The answer contains the saved chore or a useful error, not a secret or a false success.</td></tr>
+<tr><td>Supabase row</td><td>The database contains the row that the server claimed to save.</td></tr>
+</tbody>
+</table>
+
+The goal is not to memorize Network-panel vocabulary. The goal is to connect what the person saw with what the browser asked, what the server did, and what the database remembers.
+
+<Response id="week2-day14-add-trace" prompt="Trace the chore you added from the button click to the saved database row. Which evidence came from the browser, which came from Vercel, and which came from Supabase? What part remains uncertain?" rows={16} />
+
+## Check each layer separately
+
+When the full workflow works, check the pieces individually too:
+
+<table>
+<thead><tr><th>Layer</th><th>Evidence to collect</th></tr></thead>
+<tbody>
+<tr><td>Client delivery</td><td>The production URL returns the page and its files.</td></tr>
+<tr><td>Client runtime</td><td>The browser Console has no unexplained fatal error.</td></tr>
+<tr><td>Request</td><td>The expected API request appears in Network.</td></tr>
+<tr><td>Hosted server</td><td>The Vercel Function receives the request and returns a matching response.</td></tr>
+<tr><td>Database</td><td>The expected row exists or changes in Supabase.</td></tr>
+<tr><td>Response</td><td>The status and JSON shape match what the client expects.</td></tr>
+<tr><td>Screen feedback</td><td>The page shows confirmed success only after the server confirms it.</td></tr>
+<tr><td>Persistence</td><td>A refresh requests the data again and receives the saved result.</td></tr>
+<tr><td>Shared reachability</td><td>A second browser can load the same fictional data.</td></tr>
+</tbody>
+</table>
+
+## Check from a second browser
+
+Open the production URL in another browser or on another device. You are not checking whether the app looks identical in every browser. You are checking whether both browsers reach the same hosted system and shared teaching data.
+
+<ol class="mental-model-steps">
+<li>Open the production URL.</li>
+<li>Confirm that the fictional chore you added is visible.</li>
+<li>Confirm that its done state is the same.</li>
+<li>Do not enter any real personal information.</li>
+</ol>
+
+If the second browser sees different data, record that fact. It may reveal a client-only state, the wrong database connection, stale data, or a request that never reached the shared server.
+
+<Response id="week2-day14-second-browser" prompt="What did the second browser see? What does that observation prove about shared reachability, and what does it still not prove about security or permissions?" rows={10} />
+
+## Let another person try the workflow
+
+When possible, ask someone who did not build the app to use the production URL. Tell them:
+
+<aside class="model-purpose">
+<p>This is a public teaching prototype using fictional data.</p>
+<p>Without explaining the controls, please find the chore list, add one fictional chore, assign it, mark it done, and refresh to see whether it stayed saved.</p>
+</aside>
+
+Watch without rescuing them immediately:
+
+<ul class="observation-checklist">
+<li>What did they click first?</li>
+<li>Did they understand when the page was loading?</li>
+<li>Did they know when saving was confirmed?</li>
+<li>Did they hesitate after an error?</li>
+<li>Did they believe a local screen change was saved before confirmation?</li>
+<li>Did the public-prototype warning make sense?</li>
+</ul>
+
+Ask, “Where did the workflow confuse or mislead you?” rather than, “What features should we add?” Their confusion is product evidence about the current experience, not an automatic request for more features.
+
+<Response id="week2-day14-real-user" prompt="If another person tried the app, what did they understand, where did they hesitate, and what evidence did you collect? If you could not find someone, mark this as not run and say what remains unknown." rows={14} />
+
+## Try one safe failure
+
+Choose one contained failure. Use the disposable teaching setup, never real user data, and do not break Production first.
+
+Good choices include:
+
+<ul class="question-list">
+<li>temporarily remove the Preview <code>DATABASE_URL</code> setting;</li>
+<li>use a safe test environment with the wrong API path;</li>
+<li>ask Codex to return an intentional server error without changing the database; or</li>
+<li>use a deliberately invalid input that the server should reject.</li>
+</ul>
+
+Before causing the failure, predict what should still work and what should fail. Afterward, restore the working configuration and verify the repair.
+
+Record the incident in this format:
+
+<table>
+<thead><tr><th>Question</th><th>Your evidence-based answer</th></tr></thead>
+<tbody>
+<tr><td>What did you expect?</td><td>What should have happened before you broke the connection.</td></tr>
+<tr><td>What actually happened?</td><td>The exact page result, request status, and visible feedback.</td></tr>
+<tr><td>Which environment was affected?</td><td>Local, Preview, or Production.</td></tr>
+<tr><td>What could the user see?</td><td>The practical effect on the person using the page.</td></tr>
+<tr><td>What was the last layer that worked?</td><td>The last confirmed successful step in the request path.</td></tr>
+<tr><td>Where did it first fail?</td><td>The first layer where evidence differed from your prediction.</td></tr>
+<tr><td>What fixed it?</td><td>The smallest repair, not a list of unrelated changes.</td></tr>
+<tr><td>How did you verify the repair?</td><td>The new request, response, row, and screen evidence.</td></tr>
+<tr><td>What remains uncertain?</td><td>Anything you did not actually check.</td></tr>
+</tbody>
+</table>
+
+<Response id="week2-day14-controlled-failure" prompt="Write the controlled-failure note. Identify the last working layer, the first failing layer, the evidence that led you there, and what remains unverified after the repair." rows={18} />
+
+</Track>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+## Ask Codex to review the whole system
+
+Now ask Codex to reconstruct the architecture from the actual repository. This is not permission for Codex to rewrite the project. It is a critical review of what exists.
+
+```text
+Review the hosted Family Chore Board as a senior engineer teaching a complete beginner.
+
+Do not rewrite the project and do not add features.
+
+First inspect the actual repository and reconstruct:
+- how the React client is built and delivered;
+- which Vercel server routes exist;
+- how the server reads the server-only DATABASE_URL setting;
+- how the server reaches Supabase Postgres;
+- where the chores schema or migration is recorded;
+- which tests, checks, and build commands are available;
+- which environment settings are required for local, Preview, and Production.
+
+Then compare the implementation with the project’s intended Family Chore Board workflow:
+- load saved chores;
+- add a valid chore;
+- reject a blank title;
+- mark only the selected chore done;
+- preserve the result after refresh;
+- return honest loading, success, and failure feedback.
+
+Be critical about:
+- client behavior;
+- server request validation;
+- database consistency;
+- secret handling;
+- environment configuration;
+- missing regression checks;
+- happy cases versus edge cases;
+- checks that could pass for the wrong reason;
+- unnecessary complexity;
+- documentation that claims more than the project proves.
+
+For every issue:
+1. cite the relevant file, command, or observed behavior;
+2. explain why it matters in plain English;
+3. identify the evidence needed;
+4. recommend the smallest safe next step.
+
+Do not add authentication, permissions, realtime behavior, new tables, or a framework migration.
+Do not print or reveal any secret value.
+
+End with:
+- what passed;
+- what failed;
+- what was not run;
+- what was checked manually;
+- what remains unverified;
+- exactly one issue worth fixing before handoff.
+```
+
+<Response id="week2-day14-codex-review" prompt="Read Codex’s review critically. Which finding is supported by direct evidence? Which finding needs more checking? Is Codex claiming that the app is secure or production-ready without proof?" rows={14} />
+
+## Make one final small improvement
+
+Choose only one issue supported by evidence. Examples:
+
+<ul class="example-list">
+<li>the loading message is confusing;</li>
+<li>a database error produces a blank screen;</li>
+<li>the README omits the local start command;</li>
+<li>one important route has no meaningful focused check;</li>
+<li>the client shows success before the server confirms it; or</li>
+<li>the public-prototype warning is missing.</li>
+</ul>
+
+Ask Codex to make the smallest change, then run all available checks and the complete manual workflow again. The point is to experience a safe final improvement, not to start a new feature sprint.
+
+<details>
+<summary>Prompt for the final small improvement</summary>
+
+```text
+Make only this evidence-supported improvement:
+[describe one issue]
+
+Before editing:
+- inspect the current behavior and the evidence that shows the issue;
+- identify the smallest file change;
+- state what must remain unchanged.
+
+After editing:
+- run focused checks for the changed behavior;
+- run all existing regression checks from Week 2, not only the new check;
+- run the production build;
+- repeat the relevant local, Preview, or Production manual check;
+- report what passed, failed, was not run, and remains unverified.
+
+Do not add product features, login, permissions, new tables, or new services.
+Do not claim success before the server and database evidence support it.
+```
+</details>
+
+## Create the handoff documents
+
+The project should not depend on the original builder remembering every detail. Ask Codex to create or update three plain-text documents:
+
+<dl class="definition-list">
+<div><dt>README.md</dt><dd>The quick starting point: what the project is, how to run it, how to check it, and what limitations matter.</dd></div>
+<div><dt>docs/hosted-architecture.md</dt><dd>The map of the local and hosted system, including who is responsible for each job.</dd></div>
+<div><dt>week2-final-handoff.md</dt><dd>The evidence from this week: URLs, commits, checks, failures, limitations, and unfinished questions.</dd></div>
+</dl>
+
+These are not decorative documents. They prevent the next person—or the next Codex conversation—from having to guess how the client, server, database, and configuration fit together.
+
+Use this prompt:
+
+```text
+Create or update the final handoff documentation for the hosted Family Chore Board.
+
+Read the actual repository, existing README, approved project documents, and the verification evidence I provide below.
+
+The documentation must explain in plain English:
+- the user problem this teaching prototype demonstrates;
+- what the Chore Board can do now;
+- the local Week 1 architecture;
+- the hosted Week 2 architecture;
+- where the React client runs;
+- where the Vercel server code runs;
+- where the Supabase Postgres database runs;
+- the request flow for loading chores;
+- the request flow for adding and completing a chore;
+- the environment names and required variable names, without values;
+- where the schema or migration is recorded;
+- how to install dependencies and run locally;
+- how to run the available checks and production build;
+- how to create a Preview deployment with the existing Vercel CLI workflow;
+- how to inspect Network evidence, function logs, and database rows;
+- what fictional data is safe to use;
+- what is deliberately not built;
+- the public-prototype, security, and data-isolation limitations;
+- what questions are deferred to a later week.
+
+Create or update only:
+- README.md
+- docs/hosted-architecture.md
+- week2-final-handoff.md
+
+Do not invent URLs, commands, deployment status, test results, schema details, or security guarantees.
+Do not include actual secret values.
+Do not claim authentication, private user data protection, or separate Preview and Production databases unless the repository and evidence prove those claims.
+
+Verification evidence:
+[paste the evidence from today here, with all secrets removed]
+
+After writing the documents, report:
+- files changed;
+- every command you verified;
+- every command or workflow you could not verify;
+- any claim that still needs human confirmation.
+```
+
+Review Codex’s documents as a human. The documents are AI-generated, but you are responsible for deciding whether they tell the truth.
+
+<Response id="week2-day14-document-review" prompt="Read the generated README, architecture document, and handoff. Find one claim that is supported by evidence and one claim that needs correction or more evidence. Are any secret values present?" rows={16} />
+
+## Review tests instead of admiring a green checkmark
+
+Ask Codex to examine whether the available tests are meaningful:
+
+<ul class="observation-checklist">
+<li>Does a unit test reject a blank title?</li>
+<li>Does a server test reject an unknown chore id?</li>
+<li>Does an end-to-end check prove that a chore survives refresh?</li>
+<li>Does a check prove that only the selected chore becomes done?</li>
+<li>Do failure checks verify that the app does not claim success when saving failed?</li>
+<li>Do the checks run against the real path that the app uses, rather than an unused helper?</li>
+<li>Which edge cases are still not covered?</li>
+</ul>
+
+A green result is evidence that the checks passed. It is not evidence that the checks covered every important behavior. Ask Codex to be skeptical, especially about the happy case versus edge cases.
+
+<Response id="week2-day14-test-skepticism" prompt="Which important happy cases and edge cases are covered by code checks? Which are manual only? Which important behavior remains unverified?" rows={14} />
+
+</Track>
+
+## Explain the complete story
+
+Tell the story without looking at the code:
+
+<ol class="mental-model-steps">
+<li>A person opens the production URL.</li>
+<li>Vercel sends the built React client to the browser.</li>
+<li>React asks the server for the current chores.</li>
+<li>Vercel runs the server function.</li>
+<li>The server reads its private configuration and asks Supabase Postgres for rows.</li>
+<li>Postgres returns rows or an error.</li>
+<li>The server sends an HTTP answer back.</li>
+<li>React updates browser state and the screen.</li>
+<li>When the person adds a chore, the same path validates and saves the change.</li>
+<li>Refresh works because the browser asks the database for the saved rows again.</li>
+<li>A second browser can reach the same fictional shared data.</li>
+<li>The result is still a public teaching prototype, not a private family application.</li>
+</ol>
+
+<Response id="week2-day14-explain-back" prompt="Explain the complete hosted request story to a mentor. Show the architecture diagram, describe the evidence from one Add action, explain the controlled failure, and say what remains unverified." rows={18} />
+
+<Checkpoint id="week2-day14-mentor-pause" label="Pause with a mentor">
+Show your mentor the clean-browser evidence, Network request, database row, controlled-failure note, and handoff documents. Explain one limitation without hiding it behind technical vocabulary.
+</Checkpoint>
+
+## Final handoff summary
+
+Complete this summary and save it with the project:
+
+<table>
+<thead><tr><th>Handoff item</th><th>Your answer</th></tr></thead>
+<tbody>
+<tr><td>What changed during Week 2?</td><td>How the local system became reachable online.</td></tr>
+<tr><td>Why did the architecture change?</td><td>What problem the hosted client, server, and database each solved.</td></tr>
+<tr><td>Production URL</td><td>The URL you actually tested.</td></tr>
+<tr><td>Production commit</td><td>The saved project version you actually tested.</td></tr>
+<tr><td>Client responsibility</td><td>What the browser-facing React code does.</td></tr>
+<tr><td>Server responsibility</td><td>What the Vercel Function checks and does privately.</td></tr>
+<tr><td>Database responsibility</td><td>What Supabase Postgres stores and returns.</td></tr>
+<tr><td>Required setting names</td><td>Names only, such as <code>DATABASE_URL</code>; never values.</td></tr>
+<tr><td>Checks run</td><td>Commands, manual workflows, and deployed evidence.</td></tr>
+<tr><td>Controlled failure</td><td>What you broke, what failed first, and how you repaired it.</td></tr>
+<tr><td>Known limitations</td><td>Public prototype, fictional data, shared database choice, and missing permissions.</td></tr>
+<tr><td>Deferred work</td><td>Questions for a later week, not promises that are already solved.</td></tr>
+</tbody>
+</table>
+
+<Response id="week2-day14-handoff-summary" prompt="Complete the handoff summary using only evidence you actually collected. Where are you tempted to write “works” without saying what you checked? Replace that vague claim with a specific result." rows={18} />
+
+## Report what happened honestly
+
+Finish the week with this short verification report. Do not turn “not run” into “passed” just because the expected result seems obvious.
+
+<table>
+<thead><tr><th>Category</th><th>Record</th></tr></thead>
+<tbody>
+<tr><td>Passed</td><td>Checks and workflows that produced the expected evidence.</td></tr>
+<tr><td>Failed</td><td>Checks or workflows that did not produce the expected result.</td></tr>
+<tr><td>Not run</td><td>Checks you did not perform, with the reason.</td></tr>
+<tr><td>Manual only</td><td>Important behavior checked through a browser, dashboard, or observation rather than automated code.</td></tr>
+<tr><td>Remaining uncertainty</td><td>Questions the evidence did not answer.</td></tr>
+</tbody>
+</table>
+
+<Response id="week2-day14-verification-report" prompt="Complete the Passed, Failed, Not run, Manual only, and Remaining uncertainty sections. Which claim about the hosted app is still based on an assumption rather than direct evidence?" rows={16} />
+
+<Checkpoint id="week2-day14-complete" label="Week 2 complete">
+I tested the hosted Family Chore Board from a clean browser, traced one action through the client, server, database, and response, checked a second browser, broke and repaired one safe connection, reviewed the tests and documentation critically, and recorded what remains unverified.
+</Checkpoint>

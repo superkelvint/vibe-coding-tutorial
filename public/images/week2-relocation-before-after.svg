@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">Before and after architecture for Week 2</title>
+  <desc id="desc">Before: a browser, React client, Node server, and SQLite file all run on one laptop. After: a user's browser reaches the React client and server functions on Vercel, which reaches a Postgres database on Supabase.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#286c67"/>
+    </marker>
+    <style>
+      .title { font: 700 30px system-ui, sans-serif; fill: #263238; }
+      .subtitle { font: 500 18px system-ui, sans-serif; fill: #627177; }
+      .label { font: 700 20px system-ui, sans-serif; fill: #263238; }
+      .small { font: 500 16px system-ui, sans-serif; fill: #627177; }
+      .box { fill: #fff; stroke: #8da7a2; stroke-width: 2; }
+      .laptop { fill: #f2eadf; stroke: #bda98f; stroke-width: 2; }
+      .host { fill: #e6f1ee; stroke: #286c67; stroke-width: 2; }
+      .data { fill: #fffaf2; stroke: #bda98f; stroke-width: 2; }
+      .arrow { stroke: #286c67; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .divider { stroke: #dbe2df; stroke-width: 2; stroke-dasharray: 8 8; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="680" rx="24" fill="#fbfaf7"/>
+  <text x="70" y="62" class="title">Week 2 relocation: the product stays the same</text>
+  <text x="70" y="94" class="subtitle">The jobs performed by one laptop move onto reachable hosted services.</text>
+  <line x1="600" y1="130" x2="600" y2="615" class="divider"/>
+
+  <text x="300" y="155" text-anchor="middle" class="title">Before: one laptop</text>
+  <text x="300" y="185" text-anchor="middle" class="subtitle">Everything depends on this computer.</text>
+  <rect x="70" y="215" width="460" height="340" rx="22" class="laptop"/>
+  <text x="300" y="250" text-anchor="middle" class="label">Developer laptop</text>
+
+  <rect x="130" y="285" width="160" height="76" rx="12" class="box"/>
+  <text x="210" y="318" text-anchor="middle" class="label">Browser</text>
+  <text x="210" y="344" text-anchor="middle" class="small">user-facing screen</text>
+
+  <rect x="310" y="285" width="160" height="76" rx="12" class="box"/>
+  <text x="390" y="318" text-anchor="middle" class="label">React client</text>
+  <text x="390" y="344" text-anchor="middle" class="small">local process</text>
+
+  <rect x="130" y="405" width="160" height="76" rx="12" class="box"/>
+  <text x="210" y="438" text-anchor="middle" class="label">Node server</text>
+  <text x="210" y="464" text-anchor="middle" class="small">local process</text>
+
+  <rect x="310" y="405" width="160" height="76" rx="12" class="data"/>
+  <text x="390" y="438" text-anchor="middle" class="label">SQLite file</text>
+  <text x="390" y="464" text-anchor="middle" class="small">local saved data</text>
+
+  <path d="M290 323 L310 323" class="arrow"/>
+  <path d="M210 361 L210 405" class="arrow"/>
+  <path d="M290 443 L310 443" class="arrow"/>
+
+  <text x="300" y="595" text-anchor="middle" class="small">Close the laptop: the system is unreachable.</text>
+
+  <text x="900" y="155" text-anchor="middle" class="title">After: hosted system</text>
+  <text x="900" y="185" text-anchor="middle" class="subtitle">Different devices can reach the application.</text>
+
+  <rect x="660" y="215" width="180" height="100" rx="16" class="box"/>
+  <text x="750" y="255" text-anchor="middle" class="label">User's browser</text>
+  <text x="750" y="282" text-anchor="middle" class="small">runs React</text>
+
+  <rect x="880" y="215" width="230" height="220" rx="18" class="host"/>
+  <text x="995" y="255" text-anchor="middle" class="label">Vercel</text>
+  <text x="995" y="282" text-anchor="middle" class="small">hosted application</text>
+  <rect x="910" y="315" width="170" height="76" rx="12" class="box"/>
+  <text x="995" y="348" text-anchor="middle" class="label">Client files</text>
+  <text x="995" y="374" text-anchor="middle" class="small">built React app</text>
+
+  <rect x="660" y="405" width="180" height="100" rx="16" class="host"/>
+  <text x="750" y="445" text-anchor="middle" class="label">Server functions</text>
+  <text x="750" y="472" text-anchor="middle" class="small">hosted request code</text>
+
+  <rect x="880" y="485" width="230" height="100" rx="18" class="data"/>
+  <text x="995" y="525" text-anchor="middle" class="label">Supabase</text>
+  <text x="995" y="552" text-anchor="middle" class="small">hosted Postgres data</text>
+
+  <path d="M840 265 L880 265" class="arrow"/>
+  <path d="M995 435 L995 485" class="arrow"/>
+  <path d="M840 455 L880 535" class="arrow"/>
+
+  <text x="900" y="625" text-anchor="middle" class="small">The request connects the parts into one application.</text>
+</svg>

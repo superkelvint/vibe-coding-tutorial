@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Client-only deployment and localhost behavior</title>
+  <desc id="desc">A public React client is served by Vercel. The developer's browser can still reach a local server on the developer's laptop, but another person's browser sends localhost to their own device and cannot reach the developer's server.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#286c67"/>
+    </marker>
+    <style>
+      .title { font: 700 30px system-ui, sans-serif; fill: #263238; }
+      .subtitle { font: 500 18px system-ui, sans-serif; fill: #627177; }
+      .label { font: 700 18px system-ui, sans-serif; fill: #263238; }
+      .small { font: 500 15px system-ui, sans-serif; fill: #627177; }
+      .code { font: 700 15px ui-monospace, monospace; fill: #286c67; }
+      .public { fill: #e6f1ee; stroke: #286c67; stroke-width: 2; }
+      .device { fill: #f2eadf; stroke: #bda98f; stroke-width: 2; }
+      .server { fill: #e8f0f8; stroke: #587da3; stroke-width: 2; }
+      .data { fill: #fffaf2; stroke: #bda98f; stroke-width: 2; }
+      .good { stroke: #286c67; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .bad { stroke: #b42318; stroke-width: 3; stroke-dasharray: 9 8; fill: none; }
+      .warning { fill: #fff3f1; stroke: #b42318; stroke-width: 2; }
+    </style>
+  </defs>
+  <rect width="1200" height="760" rx="24" fill="#fbfaf7"/>
+  <text x="60" y="58" class="title">The client moved, but the server did not</text>
+  <text x="60" y="90" class="subtitle">The same public client behaves differently depending on whose browser opens it.</text>
+
+  <rect x="465" y="140" width="270" height="115" rx="18" class="public"/>
+  <text x="600" y="180" text-anchor="middle" class="label">Vercel</text>
+  <text x="600" y="212" text-anchor="middle" class="small">public React client</text>
+  <text x="600" y="238" text-anchor="middle" class="code">https://...vercel.app</text>
+
+  <text x="300" y="315" text-anchor="middle" class="label">Developer's laptop</text>
+  <rect x="85" y="340" width="430" height="290" rx="22" class="device"/>
+  <rect x="135" y="385" width="160" height="82" rx="14" class="device"/>
+  <text x="215" y="420" text-anchor="middle" class="label">Developer browser</text>
+  <text x="215" y="447" text-anchor="middle" class="code">localhost</text>
+  <rect x="335" y="385" width="140" height="82" rx="14" class="server"/>
+  <text x="405" y="420" text-anchor="middle" class="label">Node server</text>
+  <text x="405" y="447" text-anchor="middle" class="small">still local</text>
+  <rect x="205" y="515" width="210" height="70" rx="14" class="data"/>
+  <text x="310" y="545" text-anchor="middle" class="label">SQLite file</text>
+  <text x="310" y="570" text-anchor="middle" class="small">still local</text>
+  <path d="M295 426 L335 426" class="good"/>
+  <path d="M405 467 L350 515" class="good"/>
+  <path d="M520 245 C390 270 290 320 215 385" class="good"/>
+  <text x="345" y="300" text-anchor="middle" class="small">public client loads</text>
+  <text x="300" y="665" text-anchor="middle" class="small">If the local server is running, this browser may still get data.</text>
+
+  <text x="900" y="315" text-anchor="middle" class="label">Another person's device</text>
+  <rect x="685" y="340" width="430" height="290" rx="22" class="device"/>
+  <rect x="735" y="385" width="160" height="82" rx="14" class="device"/>
+  <text x="815" y="420" text-anchor="middle" class="label">Visitor browser</text>
+  <text x="815" y="447" text-anchor="middle" class="code">localhost</text>
+  <rect x="935" y="385" width="140" height="82" rx="14" class="warning"/>
+  <text x="1005" y="420" text-anchor="middle" class="label">No server</text>
+  <text x="1005" y="447" text-anchor="middle" class="small">to answer</text>
+  <path d="M680 245 C790 270 840 320 815 385" class="good"/>
+  <text x="850" y="300" text-anchor="middle" class="small">public client loads</text>
+  <path d="M895 426 L935 426" class="bad"/>
+  <text x="915" y="405" text-anchor="middle" class="small">fails</text>
+  <rect x="755" y="515" width="290" height="70" rx="14" class="warning"/>
+  <text x="900" y="545" text-anchor="middle" class="label">Visitor's own device</text>
+  <text x="900" y="570" text-anchor="middle" class="small">localhost means here</text>
+  <path d="M815 467 L850 515" class="bad"/>
+
+  <rect x="300" y="705" width="600" height="40" rx="10" class="warning"/>
+  <text x="600" y="731" text-anchor="middle" class="small">A public client does not make a local server public.</text>
+</svg>

@@ -1,0 +1,534 @@
+---
+title: "Day 10: Let the public page reach server code"
+section: "Week 2 · Day 10"
+order: 16
+estimatedTime: "150 minutes"
+mentalModel: "A page online needs a program online to provide its data."
+verificationFocus: "Check that the online page receives an answer from an online program, then check what is and is not saved."
+description: "Connect the online page to one small server response before connecting saved data."
+---
+
+You put the app’s page online in Day 9. But the page still gets its chore data from a program running on your laptop.
+
+That works for you while the program is running on your laptop. It cannot work for someone else’s browser, because their browser cannot reach a program running on your computer.
+
+Today you will give that small program a place to run online, then prove that a browser can receive its answer.
+
+The database is not part of today’s move.
+
+<aside class="model-purpose">
+<p><strong>Today’s success is not “the whole app works.”</strong></p>
+<p>Today’s success is: a browser asks for something, a program running online answers, and you can check what happened.</p>
+</aside>
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day10-server-function-flow.svg`} alt="Before-and-after Day 10 diagram: before, the online page cannot reliably reach the program on the laptop; after, the page can ask a program running online for a health answer and a sample chore, while saved data remains unconnected." />
+
+<Track type="product" title="Product Judgment">
+
+## What problem are we solving today?
+
+The problem we are solving today is simple:
+
+> The page is online, but the program that supplies its chore data is still running only on your laptop.
+
+Today, we will move that small program online too.
+
+Today we will test the smallest useful step: can the page ask a small server program running online for an answer?
+
+We will not connect the database today because that would make it hard to tell what went wrong. A problem could come from the page, the online program, the saved data, or the connection between them. One step at a time keeps the result understandable.
+
+<Response id="week2-day10-product-problem" prompt="Explain today’s real problem in your own words. What should the online page be able to ask for, and why are we deliberately leaving saved data alone?" rows={9} />
+
+## Define success before building
+
+Write acceptance criteria you can observe:
+
+<ul class="observation-checklist">
+<li>The page can ask the small program for a health check.</li>
+<li>The answer says <code>{`{ "status": "ok" }`}</code>.</li>
+<li>The check works while you are running the app on your laptop.</li>
+<li>The check works through the page’s online address.</li>
+<li>You can see evidence that the online program received the question.</li>
+<li>The page still behaves as it did before.</li>
+</ul>
+
+<Response id="week2-day10-acceptance-criteria" prompt="Write down what you expect to see when the page asks for a health check on your laptop and through the online page. Include the answer you expect, the evidence you will inspect, and one older behavior that must still work." rows={10} />
+
+</Track>
+
+## One answer: put the program somewhere the page can contact it
+
+The problem creates a natural question:
+
+> If the page is online but the program is only on your laptop, where can the program run so that the page can contact it?
+
+One answer is a **Vercel Function**. A Vercel Function is a small program that Vercel runs when a browser asks it a question. You do not keep the program running on your own laptop; Vercel starts it, lets it prepare an answer, and sends that answer back to the browser.
+
+The program still does the same basic job:
+
+<ol class="mental-model-steps">
+<li>Receive a question from the page.</li>
+<li>Read what the page asked for.</li>
+<li>Apply the rules.</li>
+<li>Use saved data later, when we connect a database.</li>
+<li>Send an answer back.</li>
+</ol>
+
+Only the place and timing change:
+
+<table>
+<thead><tr><th>Program on your laptop</th><th>Vercel Function</th></tr></thead>
+<tbody>
+<tr><td>You start the program on your laptop.</td><td>Vercel runs the small program when a browser asks for an answer.</td></tr>
+<tr><td>The program waits for questions while it is running.</td><td>Vercel starts the program when it is needed.</td></tr>
+<tr><td>It can use the saved file on your laptop.</td><td>Today’s function returns a simple answer or temporary sample data.</td></tr>
+</tbody>
+</table>
+
+We still have the same kind of server program. We are changing where and when it runs so the online page can contact it.
+
+## See the smallest possible example
+
+Before asking Codex to change the project, look at what a Vercel Function can be at its simplest. Imagine a file called <code>api/health.js</code>:
+
+```js
+export default function handler(request, response) {
+  response.status(200).json({ status: "ok" });
+}
+```
+
+That is the whole idea:
+
+<ol class="mental-model-steps">
+<li>The browser asks for <code>/api/health</code>.</li>
+<li>Vercel runs this small function.</li>
+<li><code>request</code> represents the browser’s question.</li>
+<li><code>response</code> sends an answer back.</li>
+<li><code>status(200)</code> says the answer succeeded.</li>
+<li><code>{`json({ status: "ok" })`}</code> sends the answer in a format the page can read.</li>
+</ol>
+
+You do not need to memorize this code. The important idea is that a Vercel Function is not mysterious: it is a small piece of code that receives a question and sends back an answer. Codex will inspect this project and decide whether this exact shape, or the project’s existing equivalent, is the right way to add the health check.
+
+<p><a href="https://vercel.com/docs/functions/runtimes/node-js">Vercel’s Node.js Function documentation</a> shows the same request-and-response idea in its official examples.</p>
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day10-function-lifecycle.svg`} alt="Diagram of a browser asking a small program running online a question, receiving an answer, and checking the browser and Vercel records to see what happened." />
+<p class="image-caption"><strong>What to notice:</strong> the browser asks a question, the small program runs, an answer comes back, and the browser and Vercel show you evidence of what happened.</p>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+## Ask Codex to move one small answer at a time
+
+Do not ask Codex to move every server job in one request. Start with one tiny answer that can prove the online program is reachable.
+
+Three small terms appear in the prompt below:
+
+<dl class="definition-list">
+<div><dt>GET</dt><dd>Ask a program to give you something.</dd></div>
+<div><dt><code>/api/health</code></dt><dd>The address for this particular question. It is called a route.</dd></div>
+<div><dt>JSON</dt><dd>A simple text format that lets a program send structured information to a browser.</dd></div>
+</dl>
+
+Use this prompt:
+
+```text
+I am a beginner moving one small server program onto Vercel.
+
+Current situation:
+The page is online, but the program that supplies its data still runs only on my laptop.
+
+Goal:
+Create one online GET /api/health route that returns JSON.
+
+Expected response:
+{ "status": "ok" }
+
+Please:
+- inspect the current repository before editing;
+- explain where the program currently handles questions;
+- explain how this project should run one Vercel Function;
+- create only the health route first;
+- preserve the local development workflow where practical;
+- do not connect the saved data yet;
+- do not add login or a new framework;
+- do not move every existing route;
+- inspect the existing checks and local commands before editing;
+- add the smallest focused test only if the project already has a matching test pattern.
+
+Acceptance criteria:
+- GET /api/health returns a 2xx response;
+- the JSON body is { "status": "ok" };
+- the route works locally;
+- the route works at the public Vercel URL;
+- evidence can be inspected to show that the small program ran.
+
+Report:
+- exact files changed;
+- exact commands run;
+- local request and response;
+- public request and response;
+- what evidence proves the small program ran;
+- what remains unverified.
+
+Do not claim the database is connected.
+```
+
+Before sending it, predict what Codex should add and what it must leave alone.
+
+<Response id="week2-day10-prompt-prediction" prompt="Predict what a safe one-small-answer prompt should cause Codex to change. What would count as Codex making the task too large?" rows={10} />
+
+<details>
+  <summary>Why start with a health check?</summary>
+
+The health check is a tiny answer whose only job is to tell us, “Can the online program receive a question and answer it?” It does not involve chores, saved data, passwords, or product rules. That makes it a clean first test.
+</details>
+
+## If it fails, collect clues before asking for help
+
+If the health check does not work, do not ask Codex to rewrite the whole application. First record these clues:
+
+<ul class="question-list">
+<li>the exact URL you requested;</li>
+<li>whether the request was local or public;</li>
+<li>the response status;</li>
+<li>the response body or error;</li>
+<li>the browser’s list of questions and answers;</li>
+<li>the terminal output or Vercel’s record of what the program did; and</li>
+<li>what you changed immediately beforehand.</li>
+</ul>
+
+Use this prompt:
+
+```text
+I am investigating one online answer.
+
+Expected:
+[status and response body]
+
+Actual:
+[status, body, or error]
+
+Request URL:
+[exact URL]
+
+Where I tested it:
+[local browser, public browser, or terminal]
+
+Evidence:
+[browser question-and-answer entry, terminal output, or Vercel log]
+
+What I changed immediately beforehand:
+[one change]
+
+Do not rewrite the application.
+Help me decide whether the problem is:
+1. the address;
+2. the small program setup;
+3. the laptop or online page address;
+4. the answer; or
+5. putting the changed files online.
+Explain your reasoning from the evidence.
+```
+
+<Response id="week2-day10-debug-prediction" prompt="Before using the debugging prompt, predict which clues would tell you whether the address is wrong, the small program failed, or the online copy is out of date." rows={10} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+## Create the health check first
+
+Use the existing local development instructions and the Vercel CLI from Day 9.
+
+Test locally:
+
+<table>
+<thead><tr><th>Request</th><th>Expected result</th></tr></thead>
+<tbody>
+<tr><td>Ask <code>http://localhost:[port]/api/health</code> on your laptop</td><td>A successful answer with <code>{`{ "status": "ok" }`}</code>.</td></tr>
+</tbody>
+</table>
+
+The exact port depends on your project. Ask Codex to inspect the README and <code>package.json</code> rather than guessing.
+
+Then deploy the changed project with the Vercel CLI:
+
+```bash
+vercel
+```
+
+Copy the public URL that the command prints. Test:
+
+```text
+GET https://[deployment-host]/api/health
+```
+
+Look at:
+
+<ul class="question-list">
+<li>the exact request URL;</li>
+<li>the response status;</li>
+<li>the response body;</li>
+<li>the browser’s request result;</li>
+<li>Vercel’s record showing that the small program ran; and</li>
+<li>whether the existing page still behaves as before.</li>
+</ul>
+
+<Checkpoint id="week2-day10-health-route">I tested the health check on my laptop and through the online page, recorded both answers, and inspected evidence that the online program ran.</Checkpoint>
+
+## Add one answer that lists the chores
+
+After the health check works, move only this second answer:
+
+```text
+GET /api/chores
+```
+
+For today, it may return this small temporary array:
+
+```json
+[
+  {
+    "id": 1,
+    "title": "Take out recycling",
+    "assigned_to": "Sam",
+    "done": false
+  }
+]
+```
+
+This answer comes from the online program, but it is not saved data. The function returns a fixed teaching value so you can check the page-to-program connection separately from saving information.
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day10-temporary-data.svg`} alt="Diagram showing the browser asking a Vercel Function for chores, receiving a fixed sample answer, and not reaching saved data." />
+<p class="image-caption"><strong>What to notice:</strong> receiving a chore proves that the program answered. It does not prove that anything was saved.</p>
+
+<aside class="model-purpose">
+<p><strong>A successful answer does not prove that the data was saved.</strong></p>
+<p>Today the small program can return the same sample chore again because saved data is not connected yet.</p>
+</aside>
+
+## Tell the page where to ask for chores
+
+Change the page so it asks for chores at this address:
+
+```text
+/api/chores
+```
+
+A path that starts with <code>/</code> means:
+
+> Ask the same host that served this page, but use the <code>/api/chores</code> path.
+
+Compare:
+
+```text
+http://localhost:3000/api/chores
+```
+
+with:
+
+```text
+/api/chores
+```
+
+Hard-coding <code>localhost</code> into the page asks the visitor’s own device. Starting with <code>/api/chores</code> asks the same online address that provided the page.
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day10-localhost-trap.svg`} alt="Comparison showing localhost working from the developer’s laptop but failing from another visitor’s device, while a relative API path asks the public host." />
+<p class="image-caption"><strong>What to notice:</strong> the word <code>localhost</code> changes meaning with the device. A relative path avoids asking a visitor to find a server on their own laptop.</p>
+
+<Response id="week2-day10-client-path" prompt="Explain why /api/chores is safer for the online page than hard-coding http://localhost:3000/api/chores. Which computer will each one ask?" rows={10} />
+
+## Break one connection on purpose
+
+### Failure 1: Use the wrong route path
+
+Change the page’s request from:
+
+```text
+/api/chores
+```
+
+to:
+
+```text
+/api/chore
+```
+
+Predict what should happen, then inspect:
+
+<ul class="question-list">
+<li>the requested URL;</li>
+<li>the response status;</li>
+<li>the visible error feedback; and</li>
+<li>whether the function ran.</li>
+</ul>
+
+Restore the correct path before continuing.
+
+### Failure 2: Make the small program fail
+
+With a working save point preserved, ask Codex to introduce one obvious, reversible error in the health route. Do not use a branch or leave the error in the working version.
+
+Observe:
+
+<ul class="question-list">
+<li>the browser response;</li>
+<li>the user-facing behavior;</li>
+<li>the function log; and</li>
+<li>that the online page still opens even though one answer fails.</li>
+</ul>
+
+Fix the error locally, run the focused checks, deploy again, and verify the health route.
+
+### Failure 3: Change the format of the answer
+
+Temporarily return:
+
+```json
+{
+  "chores": []
+}
+```
+
+while the page expects:
+
+```json
+[]
+```
+
+Ask:
+
+<ul class="question-list">
+<li>Did the small program run?</li>
+<li>Was the answer marked successful?</li>
+<li>Did the answer have the format the page expected?</li>
+<li>Should the page or the small program be corrected?</li>
+</ul>
+
+Restore the expected response shape before continuing.
+
+<Response id="week2-day10-failure-predictions" prompt="For each controlled failure, predict what should go wrong, what clues you expect, how you will restore the working version, and what remains unknown." rows={14} />
+
+## Check each claim separately
+
+Verify each claim separately:
+
+<table>
+<thead><tr><th>What you want to know</th><th>What to check</th></tr></thead>
+<tbody>
+<tr><td>The health check works on your laptop.</td><td>Ask the laptop address and record the status and answer.</td></tr>
+<tr><td>The health check works online.</td><td>Ask the online address and record the status and answer.</td></tr>
+<tr><td>The chores answer arrives.</td><td>Look at the online request and the answer it returned.</td></tr>
+<tr><td>The page asks the right place.</td><td>Look at the address in the browser’s request list.</td></tr>
+<tr><td>The page shows the answer.</td><td>Look for the sample chore on the page.</td></tr>
+<tr><td>The online program ran.</td><td>Look at Vercel’s record of the program running.</td></tr>
+<tr><td>The sample chore was not saved.</td><td>Refresh or ask again and notice that the same fixed sample can return.</td></tr>
+<tr><td>No private saved-data access is in the page.</td><td>Keep saved-data access in the small program, not in browser code.</td></tr>
+</tbody>
+</table>
+
+Do not treat a successful answer as proof that saving works. Ask what remains unverified.
+
+<Response id="week2-day10-evidence-review" prompt="Review your notes. Which things did you prove, which are only partly supported, and what remains unknown about the page, the online program, the sample chore, and saved data?" rows={13} />
+
+## Run every earlier check again
+
+Adding an online answer can accidentally disturb something that already worked. A **regression** is an unintended break in an older behavior. Before you call Day 10 complete, rerun all of the relevant checks from Days 8 and 9:
+
+<ol class="mental-model-steps">
+<li>Open the app on your laptop and confirm the page still loads.</li>
+<li>Confirm the page on your laptop can still get data from the program on your laptop.</li>
+<li>Open the online page in a fresh browser window and confirm the page, styling, and images still load.</li>
+<li>Confirm the online page does not pretend that saved data is connected.</li>
+<li>Check the browser’s question-and-answer list for the requests you already understood from the earlier days.</li>
+<li>Run the new laptop and online health checks, then compare the results with your prediction.</li>
+</ol>
+
+If one of these older checks fails, record what you expected, what happened, the exact evidence, and what changed immediately beforehand. Do not assume that the newest route is the cause until the evidence supports that conclusion.
+
+<Response id="week2-day10-regression-check" prompt="Which earlier checks did you rerun? What did you expect, what happened, and what clues show that the existing page still works?" rows={11} />
+
+## Student deliverable
+
+Create:
+
+```text
+week2-day10-hosted-server.md
+```
+
+Include:
+
+<ol class="mental-model-steps">
+<li>A comparison of the local server process and a Vercel Function.</li>
+<li>The health-route acceptance criteria.</li>
+<li>Local and public request evidence.</li>
+<li>One function-log example with secrets removed.</li>
+<li>The <code>/api/chores</code> request and response shape.</li>
+<li>An explanation of why the sample data is not persistent.</li>
+<li>Evidence from a wrong route, thrown error, or response-shape mismatch.</li>
+<li>A diagram of the current partial architecture.</li>
+</ol>
+
+Use this prompt if you want Codex to organize your observations:
+
+```text
+I completed Day 10.
+
+Create or update week2-day10-hosted-server.md from my notes.
+
+Do not invent observations or claim that the database is connected.
+Include:
+- local server versus Vercel Function
+- health-route acceptance criteria
+- local and public request evidence
+- one function-log example with secrets removed
+- /api/chores request and response shape
+- why the sample data is not persistent
+- one controlled failure and its repair
+- the current partial architecture
+
+Mark anything I did not run as not run.
+Preserve exact URLs, statuses, response bodies, and error messages.
+```
+
+<Response id="week2-day10-deliverable-plan" prompt="Write a plan for your Day 10 report. Which exact evidence will support each section, and which observations must be marked not run?" rows={12} />
+
+## Explain back
+
+Without notes, explain:
+
+<ul class="observation-checklist">
+<li>The program that answers the page still exists; it is simply running somewhere else.</li>
+<li>Vercel starts the small program when the browser asks it a question.</li>
+<li>The health check proves that the online program can answer without involving saved data.</li>
+<li>The chores answer currently contains a temporary sample chore.</li>
+<li>A successful answer does not prove that anything was saved.</li>
+<li>Vercel’s records help prove whether the small program ran.</li>
+</ul>
+
+<Response id="week2-day10-explain-back" prompt="Explain what a Vercel Function is, how it differs from the program on your laptop, what the health check proves, why the sample chore is temporary, and what remains unknown." rows={14} />
+
+<details>
+  <summary>Mentor pause</summary>
+
+Show your mentor the before-and-after picture, what you expected, the laptop and online answers, evidence that the program ran, the temporary-data explanation, one controlled failure, its repair, and what remains unknown. Explain what is working, what is incomplete, and what has not been checked.
+</details>
+
+<Checkpoint id="week2-day10-mentor-pause">I explained where the small program runs, showed the evidence, and clearly stated that saved data is not connected.</Checkpoint>
+
+## Done when
+
+You are finished when you can:
+
+<ul class="observation-checklist">
+<li>call <code>/api/health</code> locally and publicly;</li>
+<li>identify evidence that the online program ran;</li>
+<li>load a temporary sample chore from the online page;</li>
+<li>explain in plain English how a browser question starts the program;</li>
+<li>explain why the temporary sample data disappears or repeats; and</li>
+<li>say that the database has not yet been connected.</li>
+</ul>
+
+<Checkpoint id="week2-day10-complete">I completed Day 10 and can explain how a program running online answers the page without pretending that the temporary sample chore was saved.</Checkpoint>
+
+</Track>

@@ -1,0 +1,610 @@
+---
+title: "Day 11: Give the shared chores a home"
+section: "Week 2 · Day 11"
+order: 17
+estimatedTime: "150 minutes"
+mentalModel: "The page and its program can move online, but shared saved information needs its own dependable home."
+verificationFocus: "Create and inspect one hosted chores table, insert fictional data, test a rejected value, and keep the app disconnected until Day 12."
+description: "Create the hosted database that will later hold the Family Chore Board’s shared rows."
+---
+
+Yesterday, you gave the page a small program that can run online.
+
+Today, imagine that your laptop is closed. Where should the chore rows live so that the program can find the same rows tomorrow, from another computer, or after a new deployment?
+
+<aside class="model-purpose">
+<p><strong>Today’s success is not “the app is connected.”</strong></p>
+<p>Today’s success is: you create the shared saved place, inspect its table, insert one fictional chore, and prove that the row exists independently of the page and your laptop.</p>
+</aside>
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day11-storage-location.svg`} alt="Before-and-after diagram showing the page, program, and SQLite file together on one laptop, then an online page and program with a separate hosted database created but not connected yet." />
+<p class="image-caption"><strong>What to notice:</strong> the database is created today, but the line connecting it to the online program stays off until Day 12.</p>
+
+<Track type="product" title="Product Judgment">
+
+## Where should the chores live?
+
+Imagine that your laptop is closed and another person opens the online page. The page still needs the same chore rows that you can see on your laptop.
+
+Those rows need to survive after your laptop is closed and be available as one shared set of information.
+
+Your laptop’s SQLite file was a good choice for the local version. It kept the data in one clear place next to the local program. The problem appears when the program runs online: there is no longer one dependable laptop file that every request should treat as the shared truth.
+
+That means the program and the saved information now need separate homes:
+
+<ol class="mental-model-steps">
+<li>The page can be opened online.</li>
+<li>The small server program can run online when the page asks it a question.</li>
+<li>The shared chore rows need to remain available between questions.</li>
+<li>The shared rows must not depend on your laptop being open.</li>
+</ol>
+
+<Response id="week2-day11-problem-prediction" prompt="Imagine your laptop is closed and another person opens the online page. Where should the chore rows come from? What would go wrong if the only copy stayed in a file on your laptop?" rows={10} />
+
+## What does “shared saved information” mean?
+
+Think about a spreadsheet:
+
+<ul class="question-list">
+<li>It can contain many rows.</li>
+<li>Each column has a name.</li>
+<li>Each row can describe one thing.</li>
+<li>A later reader can see the same values instead of starting with a blank sheet.</li>
+</ul>
+
+A database table follows the same basic idea. For this course, the <code>chores</code> table will contain one row per chore, with columns for its title, assigned person, completion state, and creation time.
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day11-table-rows.svg`} alt="Spreadsheet-like chores table with named columns for id, title, assigned person, completion state, and creation time, plus three example rows." />
+<p class="image-caption"><strong>What to notice:</strong> one row is one chore. The column names preserve the same meaning as the local Family Chore Board.</p>
+
+<Response id="week2-day11-table-model" prompt="In your own words, what does one row represent, and what kind of information belongs in each of the named columns?" rows={10} />
+
+## Define success before creating anything
+
+Write acceptance criteria you can observe:
+
+<ul class="observation-checklist">
+<li>A disposable teaching project exists in Supabase.</li>
+<li>A Postgres database is available inside that project.</li>
+<li>A table named <code>chores</code> exists.</li>
+<li>The table keeps the existing chore meaning: id, title, assigned person, done/not done, and creation time.</li>
+<li>You can insert one fictional chore and see it in the table.</li>
+<li>You can run a query that finds that fictional row.</li>
+<li>An invalid insert is rejected where the table requires a value.</li>
+<li>The online app is still not connected to this database.</li>
+</ul>
+
+<Response id="week2-day11-acceptance" prompt="Write the checks you will use to decide whether today succeeded. Include the table, one fictional row, one rejected value, and the fact that the app is not connected yet." rows={11} />
+
+</Track>
+
+## One answer: use a separate hosted database
+
+The problem creates a natural question:
+
+> If the page and program can run online, where can the shared rows live so they do not depend on one laptop?
+
+For this course, we will use **Supabase**. Supabase is a service that can run and manage a **Postgres database** for us.
+
+You do not need to build Postgres yourself. Postgres is an open-source database program, like SQLite was in Week 1. We are using an existing implementation; our work today is to create the project and the table that matches the chore information we already have.
+
+<dl class="definition-list">
+<div><dt>SQLite</dt><dd>The database program used by the local version. Its saved information lives in a file on your laptop.</dd></div>
+<div><dt>Postgres</dt><dd>Another database program. In this lesson, it will hold the shared rows in an online service.</dd></div>
+<div><dt>Supabase</dt><dd>The service that gives us a hosted Postgres database and tools for inspecting it.</dd></div>
+<div><dt>Table</dt><dd>A named collection of rows and columns, similar to a spreadsheet.</dd></div>
+</dl>
+
+The important continuity is:
+
+<ol class="mental-model-steps">
+<li>Both SQLite and Postgres hold tables.</li>
+<li>Tables contain rows.</li>
+<li>Rows contain named fields.</li>
+<li>A program can ask the database to read or change rows.</li>
+</ol>
+
+Today we will create the hosted database and inspect it. Tomorrow the online program will learn how to ask it for chores.
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+## Ask ChatGPT to help plan the table
+
+You do not need to invent database design from scratch. Ask ChatGPT to explain a small table that preserves the data model you already used.
+
+Use this prompt:
+
+```text
+I am a beginner moving the Family Chore Board’s saved data from a local SQLite file to a hosted Postgres database in Supabase.
+
+Here is Codex’s report from inspecting the actual SQLite database:
+[paste the complete SQLite schema report here]
+
+Do not assume the report has the same fields as an example lesson. Use the report as the source for the current local design.
+
+Help me preserve the existing meaning in one small chores table.
+
+For each column found in the real SQLite schema, explain in plain English:
+1. what it means;
+2. what kind of value it stores;
+3. whether it must have a value;
+4. whether the database can provide a default; and
+5. one fictional example.
+
+Do not redesign the product or silently rename a field.
+Do not add users, families, permissions, reminders, points, recurring chores, comments, or extra tables.
+Do not connect the application yet.
+
+Then provide:
+- the SQL that would create the table;
+- one SQL query that lists the rows; and
+- one safe test that should be rejected, such as a blank title.
+
+Explain what the SQL would create before suggesting that I run it.
+```
+
+The learner still owns the decision. Read the suggested table and SQL before running anything. The purpose of the prompt is to make the database structure visible, not to make you blindly accept generated SQL.
+
+<Response id="week2-day11-schema-prediction" prompt="Before running any SQL, predict what table and columns the prompt should produce. What would count as Codex or ChatGPT inventing product behavior that was not requested?" rows={12} />
+
+## Keep a record of what exists
+
+The dashboard lets you see the table that exists remotely. A migration file is a saved instruction in the project that records how to create that table again.
+
+<dl class="definition-list">
+<div><dt>Dashboard</dt><dd>A website where you can inspect and operate the hosted project.</dd></div>
+<div><dt>Migration</dt><dd>A saved, reviewable instruction for creating or changing database structure.</dd></div>
+</dl>
+
+The dashboard answers, “What exists in this project right now?” The migration file answers, “What does this project expect the table to look like?” Keep both visible. A remote table should not become undocumented magic.
+
+Use Codex to create or update the migration file after you have reviewed the table design:
+
+```text
+I reviewed the proposed chores table for the Family Chore Board.
+
+Create the smallest migration file in the repository that records this table.
+
+Before editing:
+- inspect the project’s existing database or migration conventions;
+- preserve the existing field names and product meaning;
+- do not add extra tables or product features;
+- do not connect the application to Supabase yet;
+- do not place a password, private connection string, or secret key in the file.
+
+After editing, report:
+- the exact migration filename;
+- what table and columns it creates;
+- which values are required or have defaults;
+- the verification query; and
+- what remains unverified until the migration is run in Supabase.
+```
+
+<Response id="week2-day11-migration-prediction" prompt="What should the migration file record? What should it never contain, and what will still be unknown until you inspect Supabase?" rows={10} />
+
+## Debug from evidence, not guesses
+
+If the table does not appear or an insert fails, record:
+
+<ul class="question-list">
+<li>the exact project and table you opened;</li>
+<li>the exact query or button action you used;</li>
+<li>the exact error message;</li>
+<li>whether the table was found;</li>
+<li>whether the value was rejected by a table rule; and</li>
+<li>what you changed immediately beforehand.</li>
+</ul>
+
+Use this prompt only after collecting the evidence:
+
+```text
+I am investigating one Supabase database check.
+
+What I expected:
+[what table or row I expected to see]
+
+What happened:
+[exact result]
+
+Query or action:
+[exact SQL or dashboard action]
+
+Evidence:
+[exact error, table view, or returned row]
+
+What I changed immediately beforehand:
+[one change]
+
+Help me decide whether the problem is:
+1. the project or table name;
+2. a column name or value;
+3. a table rule rejecting the value; or
+4. the query itself.
+
+Explain your reasoning from the evidence. Do not redesign the table or add product features.
+```
+
+<Response id="week2-day11-debug-prediction" prompt="Before asking for help, predict which evidence would distinguish a missing table from a wrong column name or a value rejected by a table rule." rows={10} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+## Step 0: inspect the table you already have
+
+Before creating anything in Supabase, you need to find out exactly what the local SQLite database already contains. Do not rely on memory, the Week 1 example, or the sample SQL below.
+
+SQLite is the database used by the local version of the app. Its table is the thing we are moving from. We will make the Supabase table preserve the same meaning.
+
+You do not need to know how to open the SQLite file yourself. Ask Codex to inspect it without changing anything. Use this prompt:
+
+```text
+Before making any changes, inspect the existing local SQLite database used by the Family Chore Board.
+
+I am preparing to move its chores table to Supabase Postgres.
+
+Please:
+- find the actual SQLite database file and the project command or tool used to inspect it;
+- inspect the real chores table, rather than assuming its structure from the lesson;
+- report the exact table name;
+- report every column name and database type;
+- report which columns are required or optional;
+- report primary-key and automatic-id behavior;
+- report default values;
+- report how the done value is represented;
+- report how the creation time is represented;
+- report one example row if fictional teaching data is already present;
+- do not edit files, change data, or create the Supabase table yet;
+- if you cannot inspect the database, say exactly what was not run and why.
+
+Explain the result in plain English after showing the exact schema evidence.
+```
+
+Save Codex’s report. If it says that the database could not be inspected, stop and ask for help before creating the Supabase table. A guessed schema is not good enough for a data move.
+
+<Response id="week2-day11-sqlite-inspection" prompt="What does the real SQLite table contain? Record the exact table name, columns, required values, defaults, identifier behavior, done representation, creation-time representation, and the evidence Codex used." rows={14} />
+
+## Compare the two table designs before creating Supabase data
+
+Use the SQLite report to complete this comparison:
+
+<table>
+<thead><tr><th>Question</th><th>SQLite: what exists now?</th><th>Supabase: what must mean the same?</th></tr></thead>
+<tbody>
+<tr><td>What is the table called?</td><td><Response id="week2-day11-parity-table-name" prompt="SQLite table name" rows={2} /></td><td><code>chores</code>, unless the existing project proves another name is required.</td></tr>
+<tr><td>What does one row represent?</td><td><Response id="week2-day11-parity-row-meaning" prompt="One row represents" rows={2} /></td><td>One chore.</td></tr>
+<tr><td>What are the fields called?</td><td><Response id="week2-day11-parity-columns" prompt="SQLite column names" rows={3} /></td><td>Preserve the names the server and page already use.</td></tr>
+<tr><td>What values are required?</td><td><Response id="week2-day11-parity-required" prompt="Required SQLite values" rows={3} /></td><td>Keep the same product rules.</td></tr>
+<tr><td>How are id, done, and created_at provided?</td><td><Response id="week2-day11-parity-defaults" prompt="SQLite id, done, and created_at behavior" rows={3} /></td><td>Preserve the same meaning, even when Postgres uses a different database type.</td></tr>
+</tbody>
+</table>
+
+The database programs may use different technical types. That is acceptable when the meaning remains the same. For example, SQLite may represent a true/false value as <code>0</code> or <code>1</code>, while Postgres can represent it as <code>false</code> or <code>true</code>. The important question is whether the application still receives the meaning it expects.
+
+Ask Codex to review the comparison before you create the hosted table:
+
+```text
+Compare the SQLite schema report above with the proposed Supabase Postgres chores table.
+
+Do not create or alter anything yet.
+
+Tell me:
+- which table and column names match;
+- which names or meanings do not match;
+- which type differences are harmless representation changes;
+- which differences would break the existing server or page;
+- whether id, title, assigned_to, done, and created_at preserve their meaning;
+- whether the proposed required values and defaults match SQLite; and
+- what must be changed before the Supabase table is created.
+
+Do not add product features or redesign the data model. If the SQLite schema evidence is missing, say that the comparison cannot yet be trusted.
+```
+
+<Response id="week2-day11-parity-review" prompt="What matches between SQLite and the proposed Supabase table? What must be corrected before creation? Which differences are only technical type differences, and which would change the application’s meaning?" rows={14} />
+
+<Checkpoint id="week2-day11-parity-approved">I inspected the real SQLite table, compared it with the proposed Supabase table, and know what must match before I create the hosted table.</Checkpoint>
+
+## Create the project, step by step
+
+You do not need to know how to build Supabase or Postgres. Supabase is a website that gives you a managed database project. You will create one practice project, use its built-in tools, and put only fictional teaching data into it.
+
+Use this exact sequence:
+
+<ol class="mental-model-steps">
+<li>Open the <a href="https://supabase.com/dashboard">Supabase dashboard</a>. If you do not have an account, choose the sign-up option and finish creating one.</li>
+<li>Choose <strong>New project</strong>. If Supabase asks you to choose an organization, use the personal organization it provides for your account.</li>
+<li>Give the project a simple name such as <code>family-chore-board-teaching</code>.</li>
+<li>Choose the free or teaching-appropriate plan if Supabase offers a plan choice.</li>
+<li>Create a database password. Save it in a password manager. Do not put it in this lesson, your notes, a screenshot, or the repository.</li>
+<li>Choose a region reasonably close to you, then choose <strong>Create project</strong>.</li>
+<li>Wait for the project to finish setting itself up. You should eventually see the project dashboard rather than a setup-in-progress message.</li>
+</ol>
+
+If a button or label has moved, look for the same ideas: create a project, open that project’s dashboard, and find the database tools. Supabase’s official <a href="https://supabase.com/docs/guides/database/overview">database overview</a> explains that each project includes a Postgres database and that the dashboard includes a Table Editor and SQL Editor.
+
+<Checkpoint id="week2-day11-project-created">I created a practice Supabase project, stored its password safely, and can see its project dashboard without exposing the password.</Checkpoint>
+
+## Create the table: choose one of two methods
+
+Both methods create the same table design you just compared with SQLite. Choose one method and complete it. Do not run both, because the second attempt will usually report that the table already exists.
+
+### Method 1: Use the Visual Table Editor
+
+This is the easiest option if you do not want to work with SQL. You fill in a form, like setting up columns in a spreadsheet.
+
+<ol class="mental-model-steps">
+<li>Open the project dashboard.</li>
+<li>In the left-hand navigation, choose <strong>Table Editor</strong>. It may look like a small grid or spreadsheet icon.</li>
+<li>Choose <strong>New table</strong>.</li>
+<li>For the table name, enter <code>chores</code>. Use lowercase letters and underscores for database names.</li>
+<li>Leave <strong>Enable Row Level Security (RLS)</strong> checked. This is a protection setting for data access; the application is not connecting today, so you do not need to create any access rules yet.</li>
+<li>Add a column named <code>id</code>. Choose a whole-number type, make it the primary key, and enable automatic identity values if the form offers that option.</li>
+<li>Add a column named <code>title</code> with type <code>text</code>. Mark it as required, usually shown as <strong>Is Nullable</strong> turned off.</li>
+<li>Add a column named <code>assigned_to</code> with type <code>text</code>. Make it required too.</li>
+<li>Add a column named <code>done</code> with type <code>boolean</code>. Set its default value to <code>false</code>.</li>
+<li>Add a column named <code>created_at</code> with a date-and-time type. Set its default to the current time if the form offers a current-time option.</li>
+<li>Choose <strong>Save</strong>. Wait for the table to appear in the Table Editor.</li>
+</ol>
+
+If the form uses slightly different labels, look for the same ideas: column name, type, required/not-null, primary key, identity/automatic number, and default value.
+
+### Method 2: Use the SQL Editor
+
+This method lets one reviewed instruction create the table and its rules. You do not need to write SQL from memory. ChatGPT or Codex can help produce it, and you review it before running it.
+
+<ol class="mental-model-steps">
+<li>Open the project dashboard.</li>
+<li>In the left-hand navigation, choose <strong>SQL Editor</strong>. It may look like a terminal or code icon.</li>
+<li>Choose <strong>New query</strong>.</li>
+<li>Paste the reviewed table instruction below into the editor.</li>
+<li>Read the table name and column names once more.</li>
+<li>Choose <strong>Run</strong>, or use <kbd>Cmd</kbd> + <kbd>Enter</kbd> on Mac or <kbd>Ctrl</kbd> + <kbd>Enter</kbd> on Windows/Linux if that shortcut is shown.</li>
+<li>Wait for a success message. If Supabase shows an error, stop and save the exact message before changing anything.</li>
+</ol>
+
+This is an example of the table instruction when the SQLite report contains the Week 1 fields shown here. Do not run it until the parity review says that it matches your real SQLite schema. If the report found different names or rules, use the corrected SQL from the parity review instead.
+
+```sql
+create table chores (
+  id bigint generated by default as identity primary key,
+  title text not null,
+  assigned_to text not null,
+  done boolean not null default false,
+  created_at timestamptz not null default now()
+);
+```
+
+Read it as a set of promises:
+
+<table>
+<thead><tr><th>Column</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>id</code></td><td>Every row gets its own identifier.</td></tr>
+<tr><td><code>title</code></td><td>The chore’s name is required.</td></tr>
+<tr><td><code>assigned_to</code></td><td>The assigned person is required.</td></tr>
+<tr><td><code>done</code></td><td>The value is true or false, and starts false by default.</td></tr>
+<tr><td><code>created_at</code></td><td>The database records when the row was created.</td></tr>
+</tbody>
+</table>
+
+Now inspect what Supabase actually created:
+
+<ol class="mental-model-steps">
+<li>In the left-hand navigation, choose <strong>Table Editor</strong>.</li>
+<li>Choose the table named <code>chores</code>.</li>
+<li>Look at the columns and compare them with the table above.</li>
+<li>Confirm that <code>id</code> is the unique identifier, <code>title</code> and <code>assigned_to</code> are required, <code>done</code> starts as false, and <code>created_at</code> gets a time automatically.</li>
+<li>Take a screenshot or copy the table structure into your notes, without including passwords or connection information.</li>
+</ol>
+
+The exact SQL may need to match the project’s existing Week 1 schema. Ask Codex to inspect that schema before changing names. The important rule is: do not change the product meaning during this storage move.
+
+<Response id="week2-day11-schema-reading" prompt="Read the table definition in plain English. What does each column promise, who provides the id, what value does done start with, and what remains unknown until you inspect the real table?" rows={14} />
+
+## Insert one fictional row and find it again
+
+Now you will put one harmless teaching row into the table. You can use the Table Editor’s <strong>Insert row</strong> button, or copy the reviewed instruction below into a new SQL Editor query.
+
+<table>
+<thead><tr><th>Field</th><th>Teaching value</th></tr></thead>
+<tbody>
+<tr><td>title</td><td>Water the demo plant</td></tr>
+<tr><td>assigned_to</td><td>Taylor</td></tr>
+<tr><td>done</td><td>false</td></tr>
+</tbody>
+</table>
+
+If you use the SQL Editor, run:
+
+```sql
+insert into chores (title, assigned_to, done)
+values ('Water the demo plant', 'Taylor', false)
+returning *;
+```
+
+The result should show one row, including an automatically created <code>id</code> and <code>created_at</code>. To find the row again, run:
+
+```sql
+select *
+from chores
+order by id;
+```
+
+You can also return to <strong>Table Editor → chores</strong> and see the row in the spreadsheet-like table. Save the returned row or a screenshot as evidence.
+
+This is the important moment:
+
+<ul class="observation-checklist">
+<li>The row exists outside the browser.</li>
+<li>The row exists outside the Vercel Function.</li>
+<li>The row exists outside your laptop.</li>
+<li>The application is not connected to it yet.</li>
+<li>Tomorrow, the server program will request this row.</li>
+</ul>
+
+<Checkpoint id="week2-day11-row-created">I inserted one fictional chore, found it again, and can show the row in Supabase without using the application.</Checkpoint>
+
+## Break one database rule on purpose
+
+Use the disposable teaching project or a safe, rolled-back experiment. Predict before each attempt.
+
+### Failure 1: Use the wrong column name
+
+In the SQL Editor, try this query:
+
+```sql
+select assignedTo
+from chores;
+```
+
+The table has <code>assigned_to</code>, not <code>assignedTo</code>. Observe the exact database error, then do not save this query as your working query.
+
+### Failure 2: Leave out a required value
+
+Try this in the SQL Editor:
+
+```sql
+insert into chores (assigned_to, done)
+values ('Taylor', false);
+```
+
+Because <code>title</code> is required, the database should reject the insert. Observe the exact error. No blank-title row should appear in the table.
+
+### Failure 3: Ask for the wrong table
+
+Try this:
+
+```sql
+select *
+from chore;
+```
+
+The table is named <code>chores</code>, so the database should say that <code>chore</code> does not exist. Observe the exact error and compare the name with the table you created.
+
+<Response id="week2-day11-failure-predictions" prompt="For each deliberate failure, predict what should happen, what exact evidence you expect, how you will return to the working state, and what remains unknown." rows={14} />
+
+## Check each claim separately
+
+<table>
+<thead><tr><th>What you want to know</th><th>What to check</th></tr></thead>
+<tbody>
+<tr><td>The hosted project has a Postgres database.</td><td>Inspect the project’s database tools and record the project name.</td></tr>
+<tr><td>The <code>chores</code> table exists.</td><td>Open the table and record its name.</td></tr>
+<tr><td>The columns preserve the Week 1 meaning.</td><td>Compare the real columns with the table definition and the diagram.</td></tr>
+<tr><td>A fictional row can be saved and found.</td><td>Insert it, query it, and record the returned row.</td></tr>
+<tr><td>An invalid value is rejected.</td><td>Record the exact error from a blank title or wrong column.</td></tr>
+<tr><td>The project has a written record.</td><td>Find the migration or schema file in the repository.</td></tr>
+<tr><td>The app is not connected yet.</td><td>Confirm no application route or browser code uses the database connection.</td></tr>
+</tbody>
+</table>
+
+Do not treat “the table appeared” as proof that the application can use it. Today you are proving that the independent storage exists. The connection is tomorrow’s work.
+
+<Response id="week2-day11-evidence-review" prompt="Review your evidence. Which claims are fully supported, which are partly supported, and what remains unknown about the table, the fictional row, the migration, and the application connection?" rows={13} />
+
+## Run the earlier checks again
+
+Creating a project and migration file should not undo the work from Days 8–10. Rerun the relevant checks:
+
+<ol class="mental-model-steps">
+<li>Open the app on your laptop and confirm the page still loads.</li>
+<li>Confirm the laptop version still reaches its local program.</li>
+<li>Open the online page and confirm the page, styling, and images still load.</li>
+<li>Confirm the online health check still returns its expected answer.</li>
+<li>Confirm the online page is still not pretending to use the new database.</li>
+</ol>
+
+If one fails, record what you expected, what happened, the exact evidence, and what changed immediately beforehand. Do not connect the app as a shortcut for a problem you have not understood.
+
+<Response id="week2-day11-regression" prompt="Which checks from earlier days did you rerun? What did you expect, what happened, and what evidence shows that the existing app still works?" rows={11} />
+
+## Your Day 11 notes
+
+Create:
+
+```text
+week2-day11-hosted-database.md
+```
+
+Include:
+
+<ol class="mental-model-steps">
+<li>Why the laptop’s SQLite file is not the shared online source of truth.</li>
+<li>Why program lifetime and saved-data lifetime are different.</li>
+<li>A plain-English SQLite/Postgres comparison.</li>
+<li>The chores table and what each column means.</li>
+<li>The migration filename.</li>
+<li>Evidence that the table exists.</li>
+<li>Evidence that one fictional row exists.</li>
+<li>Evidence from one rejected value or wrong query.</li>
+<li>A current diagram showing that the database exists but is not connected yet.</li>
+</ol>
+
+Use this prompt if you want Codex to organize your notes:
+
+```text
+I completed Day 11.
+
+Create or update week2-day11-hosted-database.md from my notes.
+
+Do not invent observations or claim that the application is connected to Supabase.
+Include:
+- why the local SQLite file is not the shared online source of truth;
+- program lifetime versus saved-data lifetime;
+- SQLite versus Postgres in plain English;
+- the chores table and each column’s meaning;
+- the migration filename;
+- evidence that the table exists;
+- evidence that one fictional row exists;
+- one rejected value or wrong query and its exact error;
+- the current architecture, with the database created but not connected.
+
+Mark anything I did not run as not run.
+Preserve exact project names, table names, query results, and error messages.
+```
+
+<Response id="week2-day11-notes-plan" prompt="Plan your notes. Which exact evidence will support each section, and which observations must be marked not run?" rows={12} />
+
+## Explain it back
+
+Without notes, explain:
+
+<ul class="observation-checklist">
+<li>Why SQLite was a good fit for the local Week 1 system.</li>
+<li>Why a program running online should not treat its temporary files as the shared saved truth.</li>
+<li>Why saved chore rows need to outlive one question, one program run, and one deployment.</li>
+<li>What Supabase provides in this lesson.</li>
+<li>What Postgres is doing for us.</li>
+<li>How the chores table preserves the existing product meaning.</li>
+<li>Why the database can exist independently even though the application is not connected yet.</li>
+<li>Why the migration file matters.</li>
+</ul>
+
+<Response id="week2-day11-explain-back" prompt="Explain why the local file is no longer enough, what Supabase and Postgres provide, what one chores row means, why the migration matters, and why the application is still disconnected." rows={15} />
+
+<details>
+  <summary>Mentor pause</summary>
+
+Show your mentor the two diagrams, the table definition, the migration file, the fictional row, the deliberate failure, the evidence, and the statement that the application is not connected yet. Explain what exists, what you checked, and what remains unknown.
+</details>
+
+<Checkpoint id="week2-day11-mentor-pause">I explained where the shared rows live, showed the evidence, and clearly stated that the application is not connected to the database yet.</Checkpoint>
+
+## Done when
+
+You are finished when you can:
+
+<ul class="observation-checklist">
+<li>explain why the laptop’s SQLite file is not the shared online source of truth;</li>
+<li>explain why the saved rows need to outlive one program run and one deployment;</li>
+<li>show a disposable Supabase project with a Postgres database;</li>
+<li>show a <code>chores</code> table that preserves the Week 1 meaning;</li>
+<li>show one fictional row and one rejected value or wrong query;</li>
+<li>show the migration or schema file in the repository;</li>
+<li>say clearly that the application is not connected yet; and</li>
+<li>say what remains unverified.</li>
+</ul>
+
+<Checkpoint id="week2-day11-complete">I completed Day 11 and can explain why the shared database exists separately from the online page and program, without pretending that the application is connected yet.</Checkpoint>
+
+</Track>

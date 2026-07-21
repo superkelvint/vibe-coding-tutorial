@@ -1,0 +1,687 @@
+---
+title: "Day 12: Connect the online app to shared chores"
+section: "Week 2 · Day 12"
+order: 18
+estimatedTime: "180 minutes"
+mentalModel: "The browser asks the server; the server runs as a Vercel Function and asks the shared database; the answer comes back through the same path."
+verificationFocus: "Read the existing row, add one chore, mark one chore done, inspect evidence at every layer, and verify persistence after refresh."
+description: "Connect the hosted server program to the hosted chores table one operation at a time."
+---
+
+Yesterday, you created a real <code>chores</code> table in Supabase and inserted one fictional row. The online app was deliberately left disconnected.
+
+Today, the question is simple:
+
+> How can the online page show the row that is already saved in Supabase, without giving the browser the database password?
+
+You will connect one path at a time:
+
+<ol class="mental-model-steps">
+<li>Show the existing chore in the online page.</li>
+<li>Add one new chore and confirm that it was saved.</li>
+<li>Mark one chore done and confirm that only that row changed.</li>
+</ol>
+
+<aside class="model-purpose">
+<p><strong>Today’s success is not “everything is finished.”</strong></p>
+<p>Today’s success is: the browser asks the server, the server runs as a Vercel Function and asks Supabase, the saved row comes back, and you can prove what happened.</p>
+</aside>
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day12-hosted-path.svg`} alt="Diagram showing the browser asking the Vercel page, the page asking a Vercel Function, the function asking Supabase for Postgres rows, and the answer returning while the private database connection stays with the function." />
+<p class="image-caption"><strong>What to notice:</strong> the browser never talks directly to the database. The server, running as a Vercel Function, is the middle layer that checks the request and keeps the private connection.</p>
+
+
+## The browser is public, so treat it as inspectable
+
+Before we connect anything, make this rule permanent:
+
+> Anything sent to the browser should be treated as public.
+
+The page is not a private place. When someone opens the app, their browser downloads the JavaScript, HTML, and other files needed to display it. That person can open the browser’s developer tools, inspect the files, look at the requests, and copy anything that the page has received. A password does not become safe just because it is inside a JavaScript file, hidden behind a button, given an innocent-looking name, or made harder to read by a build tool.
+
+This is why a database password, a private database connection string, or a powerful database key must never be placed in client code. If we put it there, every person who opens the app can potentially copy it. An attacker could then use that access outside the app: read information, change rows, delete data, or use the database for their own purposes. We should assume that anything the browser can receive can eventually be discovered. Putting a secret in the client is not a security measure; it is handing out the key.
+
+The same rule applies to browser requests and responses. Do not return the database password in an API answer, print it in browser console output, put it in a visible error message, or paste it into a screenshot. A page may receive the chore rows it needs, but it should never receive the credential that lets it reach the database.
+
+## What can go wrong if we ignore this rule?
+
+If a secret or powerful database connection reaches the browser, the damage is not limited to someone seeing an ugly piece of code. A person who opens the app—or an automated attacker who examines it—may be able to:
+
+<ul class="observation-checklist">
+<li><strong>Steal the database password or private key.</strong> They can copy it and use it from their own computer.</li>
+<li><strong>Read private rows.</strong> They may see information that the page was never supposed to show them, including personal, customer, employee, or company data.</li>
+<li><strong>Change or delete rows.</strong> They may alter chores, remove records, or damage the database directly instead of using the page’s intended controls.</li>
+<li><strong>Bypass the page’s rules.</strong> If the browser is the only place checking “is this allowed?”, an attacker can send a different request that skips those checks.</li>
+<li><strong>Create fake or dangerous data.</strong> They may insert blank, enormous, misleading, or otherwise invalid values if the server does not validate them again.</li>
+<li><strong>Impersonate another person.</strong> If a login token or similar credential is exposed, an attacker may act as the person who owns it.</li>
+<li><strong>Use paid services at your expense.</strong> A stolen key can be used to send requests, consume storage, or create bills under your account.</li>
+<li><strong>Discover internal details.</strong> Detailed database errors, private URLs, stack traces, and connection information can help an attacker plan the next attack.</li>
+<li><strong>Copy or automate the requests.</strong> A person can replay, modify, or send thousands of requests even if the page only offers one small button.</li>
+<li><strong>Trust a fake success message.</strong> If the browser is allowed to decide that an action succeeded, it can display success even when no authorized server operation occurred.</li>
+</ul>
+
+That is why the server must make the important decision again. The browser can ask, “Please add this chore,” but the server must decide whether the request is valid, whether the person is allowed to make the change, what fields may change, and whether the database confirms success. The browser is a useful user interface; it is not a trustworthy security boundary.
+
+<Response id="week2-day12-security-consequences" prompt="Choose three risks from this list and explain how keeping the database connection on the server helps prevent each one. What could still go wrong if the server trusts the browser too much?" rows={13} />
+
+<aside class="model-purpose">
+<p><strong>Client code is for the user interface, not for private authority.</strong></p>
+<p>The browser can ask for a permitted result. It must not receive the power to connect directly to the database with a private credential.</p>
+</aside>
+
+## Two different things are deployed to Vercel
+
+This distinction is essential. Vercel hosts both the client and the server, but they are two different parts of the application:
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day12-two-things-on-vercel.svg`} alt="Diagram showing Vercel hosting a public React client and a separate private server Vercel Function. The browser can inspect the client and ask the function, while the function keeps DATABASE_URL and asks Supabase." />
+<p class="image-caption"><strong>What to notice:</strong> “deployed to Vercel” does not mean “safe for secrets.” The React client is public; the Vercel Function is where private database access belongs.</p>
+
+<table>
+<thead><tr><th>Public React client</th><th>Server / Vercel Function</th></tr></thead>
+<tbody>
+<tr><td>Delivered to the browser.</td><td>Runs on Vercel when the browser sends a request.</td></tr>
+<tr><td>Can contain the page, buttons, loading feedback, and data the user is allowed to see.</td><td>Can read private connection settings, check requests, and ask Supabase for rows.</td></tr>
+<tr><td>Must never contain a database password, private connection string, or powerful database key.</td><td>Must never send private connection settings back in its answer.</td></tr>
+<tr><td>Cannot be trusted to decide that an important action is allowed or successful.</td><td>Must validate the request and wait for the database to confirm success.</td></tr>
+</tbody>
+</table>
+
+## The solution: let the server talk to Supabase
+
+The server is the safer middle layer. In this lesson, that server code runs as a **Vercel Function**. “Safer” does not mean that the server is magically protected from attack. It means that the server runs in a different place from the browser, and that difference lets us keep private information and important decisions away from the user’s device.
+
+Imagine a restaurant:
+
+<ul class="question-list">
+<li><strong>The menu is public.</strong> Anyone who visits can read it, copy it, or take a photograph of it.</li>
+<li><strong>The customer can place an order.</strong> They can ask for a meal, but they do not get to walk into the kitchen and take ingredients.</li>
+<li><strong>The kitchen staff checks the order.</strong> They decide whether it is a real menu item and whether it can be prepared.</li>
+<li><strong>The pantry is locked.</strong> The customer does not receive the key to the pantry.</li>
+<li><strong>The staff brings back the meal.</strong> The customer receives what they ordered, not the pantry key or every ingredient in the restaurant.</li>
+</ul>
+
+The app works the same way:
+
+<table>
+<thead><tr><th>Restaurant</th><th>App</th></tr></thead>
+<tbody>
+<tr><td>Public menu</td><td>React client: the page, buttons, and visible information sent to the browser.</td></tr>
+<tr><td>Kitchen staff</td><td>Server / Vercel Function: checks the request and carries it out.</td></tr>
+<tr><td>Locked pantry</td><td>Supabase database: shared saved information reached by the server.</td></tr>
+<tr><td>Customer’s order</td><td>Browser request: “Please show these chores” or “Please add this chore.”</td></tr>
+</tbody>
+</table>
+
+The React client is public because the browser needs it to display the page. The server is safer for private work because the browser does not receive the server’s private database key. The browser can ask for a result, just as a customer can place an order, but the server decides what to do and talks to the database on the browser’s behalf.
+
+The important line is:
+
+> Give the browser the page and the result it is allowed to see. Keep the database key with the server that uses it.
+
+The restaurant analogy has one limit: someone can still send a fake order to the kitchen. That is why the server must check every request—titles, ids, permissions, and which fields may change—before it touches the database. Keeping the key out of the browser protects the key; it does not remove the need for the server to check its work.
+
+<ol class="mental-model-steps">
+<li>The browser sends a question to the server.</li>
+<li>The server checks that the question makes sense.</li>
+<li>The server uses private connection information to ask Supabase for rows.</li>
+<li>Supabase reads or changes the durable row.</li>
+<li>The server sends back only the answer the page needs.</li>
+<li>The page updates what it displays.</li>
+</ol>
+
+This is safer because the private connection information stays with the Vercel Function. The browser sees only the request it is allowed to make and the limited answer the server chooses to return. The function can reject invalid input, decide which fields may change, and avoid exposing database details.
+
+This is not magic protection. The server still needs careful validation, appropriate database permissions, useful error handling, and safe configuration. The important separation is that the browser is public while the database connection remains server-only.
+
+The server needs a private way to contact Supabase. Supabase offers more than one connection option, so do not guess which one to use. Ask Codex to follow the current Supabase instructions for a Vercel Function and choose the appropriate server-only option. You do not need to memorize the option’s technical name.
+
+<dl class="definition-list">
+<div><dt>Private connection information</dt><dd>The address and credential the server needs to reach the database. It belongs on the server, not in browser code.</dd></div>
+<div><dt>Server-only setting</dt><dd>A value that the Vercel Function can read but the browser must never receive.</dd></div>
+<div><dt>Database query</dt><dd>A question or instruction sent to the database, such as “list the chores” or “save this new row.”</dd></div>
+</dl>
+
+<Track type="codex" title="Codex Prompting and Debugging">
+
+## Connect the read operation first
+
+Do not ask Codex to connect reading, adding, completing, and deleting in one large change. Start with <code>GET /api/chores</code>, which means: “give the page the current chores.”
+
+Use this prompt after confirming that the Supabase table exists and the schema matches SQLite:
+
+```text
+I am a beginner connecting the Family Chore Board to its already-created Supabase Postgres table.
+
+Current situation:
+- the page and Vercel server function are deployed;
+- GET /api/chores currently returns temporary sample data;
+- the Supabase chores table exists;
+- one fictional row exists in that table;
+- the SQLite-to-Supabase schema comparison has been reviewed.
+
+Goal:
+Replace only the temporary data in GET /api/chores with a query to Supabase.
+
+Expected behavior:
+- the server function asks Supabase for chores;
+- the response keeps the existing field names and JSON shape;
+- the deployed page displays the fictional row after refresh.
+
+Before editing:
+- inspect the existing server route and client request;
+- inspect the existing database schema report and migration;
+- inspect the project’s existing package, test, and build conventions;
+- inspect the current Supabase guidance for serverless connections;
+- use the server-only environment variable named DATABASE_URL;
+- explain exactly where the local and Vercel versions of DATABASE_URL must be configured;
+- never print, commit, or include the actual DATABASE_URL value in the report.
+
+Please:
+- change only the read operation first;
+- keep the browser from connecting directly to Supabase;
+- keep all database connection information on the server;
+- use parameterized or library-safe query behavior;
+- preserve the existing response field names;
+- return an intentional error if the database query fails;
+- keep loading and error feedback understandable;
+- do not add login, realtime features, new tables, or new product behavior;
+- do not connect Add or Done until the read operation is verified.
+
+Acceptance criteria:
+- the manually inserted Supabase row appears in GET /api/chores;
+- the online page renders that row after refresh;
+- loading and database failure feedback are honest;
+- no private connection information appears in browser code or responses;
+- local checks and the production build pass.
+
+Report:
+- exact files changed;
+- exact commands run;
+- local and online request results;
+- database query evidence;
+- browser request and response evidence;
+- what remains unverified.
+
+Do not claim Add or Done works yet.
+```
+
+Before sending it, predict which files should change and what must remain untouched.
+
+<Response id="week2-day12-read-prompt" prompt="What should Codex change for the read operation, and what must it leave alone? What evidence would prove that the row came from Supabase rather than the old sample array?" rows={12} />
+
+## Give the server a private way to reach Supabase
+
+The server, running as a Vercel Function, needs a private connection value so it knows which Supabase database to contact. This value must be available to the server, but it must never be sent to the browser.
+
+You will learn environment settings in more detail on Day 13. For today, follow these concrete steps:
+
+<ol class="mental-model-steps">
+<li>Open your Supabase project and choose <strong>Connect</strong>.</li>
+<li>Find the connection-string section and choose the option intended for a serverless function. If the dashboard shows several technical names, ask Codex which one the current Supabase instructions recommend for this project.</li>
+<li>Copy the connection string. Treat it like a password. Do not paste the real value into this lesson, chat, notes, screenshots, or source code.</li>
+<li>At the project’s top level, create or open a file named <code>.env.local</code>. This file is for private values used when the app runs on your laptop.</li>
+<li>Put this line in <code>.env.local</code>, replacing only the placeholder with the real Supabase connection string:<br /><code>DATABASE_URL=PASTE_THE_SUPABASE_CONNECTION_STRING_HERE</code></li>
+<li>Ask Codex to confirm that the server reads <code>process.env.DATABASE_URL</code> and that browser code does not read or import it.</li>
+<li>In the Vercel project, open <strong>Settings → Environment Variables</strong>. Add a variable named <code>DATABASE_URL</code> and paste the real connection string into its private value field. Select the environments you are testing, such as Preview or Production.</li>
+<li>Keep the actual value out of Git. This project’s <code>.gitignore</code> should ignore <code>.env</code> and <code>.env.*</code>; run <code>git status</code> and confirm that <code>.env.local</code> is not listed as a file to commit.</li>
+<li>Never paste the connection string into a chat, screenshot, note, browser code, browser response, or committed file.</li>
+<li>If the project has no safe place for this setting yet, stop and ask Codex to explain the smallest setup needed. Do not hard-code the value into application code.</li>
+</ol>
+
+For this lesson, the important variable is:
+
+<table>
+<thead><tr><th>Variable name</th><th>What it contains</th><th>Where it belongs</th></tr></thead>
+<tbody>
+<tr><td><code>DATABASE_URL</code></td><td>The private Supabase connection string.</td><td><code>.env.local</code> on your laptop and Vercel’s private environment settings online.</td></tr>
+</tbody>
+</table>
+
+Do not put <code>DATABASE_URL</code> in a client-facing variable such as <code>VITE_DATABASE_URL</code>. The <code>VITE_</code> prefix means that a value is intended to be included in the browser build, which is exactly what we must avoid for a database connection.
+
+You do not need to understand every part of the connection string today. The important rule is: the server can read it; the browser cannot. If you want to check the current recommendation, use <a href="https://supabase.com/docs/guides/database/connecting-to-postgres">Supabase’s connection documentation</a> or ask Codex to explain the relevant choice in plain English.
+
+<Response id="week2-day12-private-connection" prompt="Where will the server read the private database connection value? What evidence would show that it was accidentally exposed to the browser?" rows={10} />
+
+## Then write smaller prompts for Add and Done
+
+Once the read operation works, write a separate prompt for Add. Your prompt should ask for this sequence:
+
+<ol class="mental-model-steps">
+<li>The person submits a title and assigned person.</li>
+<li>The page shows that it is saving.</li>
+<li>The server checks the input.</li>
+<li>The database creates one row.</li>
+<li>The server returns the created row.</li>
+<li>The page shows the confirmed row and success feedback.</li>
+</ol>
+
+Use this scaffold:
+
+```text
+The read operation is working and has been verified.
+
+Now implement only Add Chore.
+
+Before editing, inspect the existing input fields, request body, server route, and chores table.
+
+Required behavior:
+- reject a missing or blank title;
+- validate the assigned person using the existing product rules;
+- insert one row in Supabase;
+- return the created row in the existing response shape;
+- show saving feedback while waiting;
+- show useful failure feedback if validation or the database fails;
+- show the chore only after the server confirms it.
+
+Do not implement Done, delete, reminders, or new product behavior.
+Do not make the browser connect directly to Supabase.
+Do not claim that the row was saved unless the database response proves it.
+
+Report the request, validation result, database result, response, visible feedback, and remaining uncertainty.
+```
+
+Then write a separate prompt for Done. It should ask Codex to identify the selected row, update only its <code>done</code> value, return the updated row, and reject an unknown id without claiming success.
+
+<Response id="week2-day12-write-prompts" prompt="Write the smallest important parts of your Add and Done prompts. What must each operation prove before you accept it?" rows={14} />
+
+## Debug from evidence
+
+If something fails, record the path before asking Codex for a diagnosis:
+
+<ol class="mental-model-steps">
+<li>Did the person’s action fire?</li>
+<li>Did the page create the expected browser request?</li>
+<li>Did the request reach the Vercel Function?</li>
+<li>Did the function receive the expected input?</li>
+<li>Did validation pass?</li>
+<li>Did the function reach Supabase?</li>
+<li>Did the database query succeed?</li>
+<li>Did the row change?</li>
+<li>Did the function return the expected status and answer?</li>
+<li>Did the page update its display?</li>
+<li>Did refresh return the saved result?</li>
+</ol>
+
+Use this evidence-first prompt:
+
+```text
+I am debugging one hosted database operation.
+
+Operation:
+[read, add, or done]
+
+What I expected:
+[exact page behavior and saved-data behavior]
+
+What actually happened:
+[exact visible result]
+
+Browser request:
+[method, URL, request body if relevant]
+
+Browser response:
+[status and response body]
+
+Vercel evidence:
+[log or invocation result, with secrets removed]
+
+Supabase evidence:
+[table row, query result, or exact database error]
+
+What changed immediately beforehand:
+[one change]
+
+Help me locate the failure: page action, browser request, Vercel function, validation, database connection, query, response, or page update.
+Reason from the evidence. Do not rewrite unrelated parts of the application.
+```
+
+<Response id="week2-day12-debug-prediction" prompt="Before using the debugging prompt, predict which evidence would distinguish a browser-request problem from a database-connection problem or a page-rendering problem." rows={12} />
+
+</Track>
+
+<Track type="technical" title="Technical Build">
+
+## Step 1: make the saved row appear
+
+First confirm that the fictional row still exists in Supabase. Then:
+
+<ol class="mental-model-steps">
+<li>Open the online page.</li>
+<li>Refresh it.</li>
+<li>Look for the fictional chore you inserted yesterday.</li>
+<li>Open the browser’s request list and find <code>GET /api/chores</code>.</li>
+<li>Inspect its status and answer.</li>
+<li>Inspect the Vercel record showing that the function ran.</li>
+<li>Compare the row in Supabase with the row displayed in the page.</li>
+</ol>
+
+The page did not invent this row. The function asked Supabase, Supabase returned the row, and the page displayed the answer.
+
+<Checkpoint id="week2-day12-read-verified">I can show the fictional Supabase row, the browser request, the Vercel Function evidence, and the same row displayed in the page.</Checkpoint>
+
+## Step 2: add one chore
+
+After reading works, connect Add Chore. Use one fictional chore for testing, such as “Sort the demo books,” assigned to Jordan.
+
+Watch the sequence:
+
+<img src={`${import.meta.env.BASE_URL}/images/week2-day12-add-trace.svg`} alt="Trace of adding a chore: the user clicks Add, the page shows Saving, the server checks the input, Postgres saves a row, the server returns it, and the page shows the confirmed chore." />
+<p class="image-caption"><strong>What to notice:</strong> the page should show the chore as confirmed only after the database has returned the created row.</p>
+
+<ol class="mental-model-steps">
+<li>Predict the request and visible feedback.</li>
+<li>Enter the fictional chore and submit it.</li>
+<li>Observe the saving state.</li>
+<li>Inspect the browser request body and response.</li>
+<li>Inspect Supabase and confirm that one new row exists.</li>
+<li>Confirm the page shows the returned row.</li>
+<li>Refresh and confirm the row remains.</li>
+</ol>
+
+Do not start with an optimistic update. An optimistic update changes the page before the database confirms the save, which means the page can briefly show something that never existed. First make the confirmed path understandable.
+
+<Checkpoint id="week2-day12-add-verified">I added one valid chore, inspected the request and database row, saw honest feedback, and confirmed the chore remained after refresh.</Checkpoint>
+
+## Step 3: mark one chore done
+
+Now connect the existing Done action. The server should identify the selected row, change only its <code>done</code> value, and return the updated row.
+
+Verify:
+
+<ul class="observation-checklist">
+<li>Only the selected chore changes.</li>
+<li>The Supabase row changes.</li>
+<li>The page displays the returned value.</li>
+<li>A refresh shows the changed value again.</li>
+<li>An unknown chore id does not claim success.</li>
+</ul>
+
+<Checkpoint id="week2-day12-done-verified">I marked one chore done, confirmed that only its database row changed, and saw the result survive refresh.</Checkpoint>
+
+## Keep responsibilities in the right place
+
+The page, server, and database each have a different job:
+
+<table>
+<thead><tr><th>Part</th><th>Job</th></tr></thead>
+<tbody>
+<tr><td>Browser page</td><td>Collect the person’s action, show loading or failure, and display the confirmed answer.</td></tr>
+<tr><td>Server / Vercel Function</td><td>Check input, choose what may change, ask Supabase, and return a useful answer.</td></tr>
+<tr><td>Supabase/Postgres</td><td>Store rows, apply table rules, create configured ids or times, and run queries.</td></tr>
+</tbody>
+</table>
+
+The server should not blindly trust the browser. The browser should not receive the private database connection. The database should not be asked to invent product behavior that belongs in the server.
+
+## Do not confuse “a Supabase table exists” with “the migration is complete”
+
+At this point, it would be possible to have two databases:
+
+<table>
+<thead><tr><th>Old path</th><th>New path</th></tr></thead>
+<tbody>
+<tr><td>The app still reads and writes the local SQLite file.</td><td>A Supabase table exists, but the app does not use it yet.</td></tr>
+<tr><td>The page shows local or sample data.</td><td>The page shows a row that someone inserted into Supabase by hand.</td></tr>
+<tr><td>Changes work only on the laptop.</td><td>The hosted server reads and changes the shared Supabase rows.</td></tr>
+</tbody>
+</table>
+
+Creating the Supabase project and table is preparation. The migration is complete for the hosted app only when the app’s real hosted paths use Supabase for every saved-data operation:
+
+<ul class="observation-checklist">
+<li><code>GET /api/chores</code> reads the current rows from Supabase.</li>
+<li><code>POST /api/chores</code> creates the row in Supabase.</li>
+<li><code>PATCH /api/chores/:id</code> changes the row in Supabase.</li>
+<li>The browser receives the server’s answer, not a local SQLite result or a hard-coded sample list.</li>
+<li>The hosted server does not open, import, or fall back to the laptop’s SQLite file.</li>
+<li>A row added through the hosted app can be found in Supabase and returns after a refresh or from another browser.</li>
+</ul>
+
+The local SQLite database may remain as a Week 1 teaching artifact if the project still needs a clearly separate local version. That is not the same as the hosted app using SQLite. Document the separation: local-only SQLite is allowed; the hosted application’s saved-data path must use Supabase.
+
+<Response id="week2-day12-migration-meaning" prompt="In your own words, why is creating a Supabase table not enough to count as a migration? Which hosted operation must use Supabase for reading, adding, and marking a chore done?" rows={12} />
+
+## Ask Codex to prove which database the app actually uses
+
+Do this audit before calling the migration complete. Codex should inspect the real project, not infer the answer from the lesson or from the existence of a Supabase dashboard.
+
+```text
+Audit whether the hosted Family Chore Board has actually migrated its saved-data path from SQLite to Supabase.
+
+Do not edit anything yet.
+Do not print or reveal secret values.
+
+Inspect the actual repository and report:
+- every server route used to load, add, or mark a chore done;
+- which database module each route calls;
+- whether any route imports SQLite, opens a local database file, reads a local JSON/sample array, or falls back to temporary data;
+- whether the hosted server reads the server-only DATABASE_URL setting;
+- whether the Supabase table and the application’s expected fields match;
+- whether the client talks only to the server and never directly to Supabase;
+- whether tests or checks prove that a hosted Add and Done operation changed a Supabase row.
+
+Search the repository for relevant SQLite and Supabase references, including:
+- sqlite
+- better-sqlite3
+- sqlite3
+- database file paths
+- sample or temporary chore data
+- Supabase or Postgres client/query code
+- DATABASE_URL
+
+Classify the result as exactly one of:
+1. Complete hosted migration: all hosted saved-data operations use Supabase.
+2. Partial migration: some hosted paths still use SQLite, sample data, or a fallback.
+3. Not migrated: the hosted app is not connected to Supabase.
+
+For every conclusion, cite the exact file and route or the evidence that is still missing.
+Explain the result in beginner-friendly language.
+```
+
+<Response id="week2-day12-migration-audit" prompt="What did Codex find? For each of read, add, and done, name the actual database being used. If Codex cannot prove one operation reaches Supabase, mark the migration incomplete." rows={16} />
+
+If the audit says the migration is partial or not migrated, use this implementation prompt. Do not accept “the table exists” as the answer:
+
+```text
+Complete the remaining SQLite-to-Supabase migration for the hosted Family Chore Board.
+
+The goal is not to create another unused table. The goal is for the hosted server’s real saved-data paths to use Supabase.
+
+Before editing:
+- inspect the current SQLite and Supabase paths;
+- identify every route used by load, Add, and Done;
+- compare the real SQLite meaning with the Supabase table;
+- list the smallest files that must change;
+- explain whether local SQLite should remain only for a separate Week 1 local mode.
+
+Implement only the smallest remaining migration:
+- hosted read uses Supabase;
+- hosted Add inserts into Supabase;
+- hosted Done updates only the selected Supabase row;
+- the browser continues to call the server, never Supabase directly;
+- the server reads DATABASE_URL only on the server;
+- remove hosted fallbacks to SQLite, sample arrays, or fake success responses;
+- preserve the existing field meaning and response shape;
+- keep fictional data only.
+
+Do not delete a local SQLite teaching artifact unless you can prove it is no longer needed.
+Do not add login, permissions, realtime behavior, new tables, or product features.
+Do not print, commit, or expose any secret value.
+
+After editing, prove the migration with:
+- repository search showing whether hosted code still imports or opens SQLite;
+- local checks and the production build;
+- a hosted read that returns a known Supabase row;
+- a hosted Add whose new row is visible in Supabase;
+- a hosted Done whose only changed field is the selected Supabase row;
+- refresh evidence;
+- second-browser evidence where available;
+- failure evidence showing a database failure is not reported as success.
+
+Report separately:
+- what still uses local SQLite, if anything;
+- what uses Supabase;
+- what passed;
+- what failed;
+- what was not run;
+- what remains unverified.
+```
+
+<Checkpoint id="week2-day12-migration-complete">I have proved that the hosted read, Add, and Done paths use Supabase. I know whether local SQLite remains only as a separate teaching path, and I have not called the migration complete based only on the existence of a Supabase table.</Checkpoint>
+
+## Break the connection on purpose
+
+Use a safe save point or a disposable teaching environment. Predict before each failure and restore the working version afterward.
+
+### Failure 1: ask for the wrong table
+
+Temporarily change the server query from <code>chores</code> to <code>chore</code>. The function should run, the database query should fail, and the page should show useful failure feedback instead of success.
+
+### Failure 2: use a bad connection setting
+
+In a safe local or preview setting, use an invalid database connection value. Do not paste the real value into notes or chat. Observe the function evidence, error response, and page feedback. Restore the correct setting.
+
+### Failure 3: make the page expect the wrong answer
+
+Let the database save a row, but temporarily make the page expect a different answer format. Ask:
+
+<ul class="question-list">
+<li>Was the row created?</li>
+<li>Was the server response successful?</li>
+<li>Did the answer match what the page expected?</li>
+<li>Could retrying create a duplicate row?</li>
+</ul>
+
+### Failure 4: change the page before confirmation
+
+If a local page change makes a chore appear before the database confirms it, refresh immediately. If the chore disappears, the page changed but saving was never confirmed.
+
+<Response id="week2-day12-failure-predictions" prompt="For each failure, predict which layer should fail, what evidence should show it, how you will restore the working version, and what remains unknown." rows={15} />
+
+## Check every layer and rerun earlier checks
+
+Verify the new claims separately:
+
+<table>
+<thead><tr><th>What you want to know</th><th>Evidence to collect</th></tr></thead>
+<tbody>
+<tr><td>The deployed page asks <code>GET /api/chores</code>.</td><td>Browser request list.</td></tr>
+<tr><td>The function asks Supabase.</td><td>Function evidence and returned result.</td></tr>
+<tr><td>The existing row appears.</td><td>Supabase row compared with page row.</td></tr>
+<tr><td>Add creates one row.</td><td>Request body, response, and new Supabase row.</td></tr>
+<tr><td>Blank input is rejected.</td><td>Response status, visible feedback, and no new row.</td></tr>
+<tr><td>Done updates only the selected row.</td><td>Before-and-after database rows and page result.</td></tr>
+<tr><td>Saved data survives refresh.</td><td>Refresh result and Supabase row.</td></tr>
+<tr><td>A second browser sees shared data.</td><td>Fresh browser result after loading.</td></tr>
+<tr><td>No private connection information is exposed.</td><td>Inspect browser code, responses, and visible logs without revealing secret values.</td></tr>
+</tbody>
+</table>
+
+Then rerun every relevant regression check from Days 8–11:
+
+<ol class="mental-model-steps">
+<li>Open the app locally and confirm the page still loads.</li>
+<li>Confirm the local app still reaches its local program.</li>
+<li>Open the online page and confirm its styling and images still load.</li>
+<li>Confirm the online health check still works.</li>
+<li>Confirm the hosted table still exists and the fictional row is still present.</li>
+<li>Run the normal read, add, and done paths once more after the deliberate failures have been repaired.</li>
+</ol>
+
+Do not treat a green build as proof that the database workflow works. The browser, function, database, and refresh checks each support a different claim.
+
+<Response id="week2-day12-evidence-review" prompt="Review your evidence. Which claims are fully supported, which are partly supported, and what remains unknown about the page, server, Supabase query, saved row, and private connection?" rows={14} />
+
+## Your Day 12 notes
+
+Create:
+
+```text
+week2-day12-complete-hosted-path.md
+```
+
+Include:
+
+<ol class="mental-model-steps">
+<li>The complete browser → server/Vercel Function → Supabase path.</li>
+<li>One read trace from page request to Supabase row and back.</li>
+<li>One Add Chore trace from click to saved row and back.</li>
+<li>One Done trace.</li>
+<li>Browser request evidence.</li>
+<li>Function evidence with secrets removed.</li>
+<li>Supabase row evidence.</li>
+<li>Refresh and second-browser evidence.</li>
+<li>One database connection failure and its repair.</li>
+<li>A list of what remains deliberately out of scope or unverified.</li>
+</ol>
+
+Use this prompt if you want Codex to organize your notes:
+
+```text
+I completed Day 12.
+
+Create or update week2-day12-complete-hosted-path.md from my notes.
+
+Do not invent observations or claim that a step passed if I did not run it.
+Include:
+- the complete browser → server/Vercel Function → Supabase path;
+- one read trace;
+- one Add Chore trace;
+- one Done trace;
+- browser request evidence;
+- function evidence with secrets removed;
+- Supabase row evidence;
+- refresh and second-browser evidence;
+- one database connection failure and repair;
+- what remains deliberately out of scope or unverified.
+
+Mark anything I did not run as not run.
+Preserve exact statuses, response bodies, row values, and error messages.
+```
+
+<Response id="week2-day12-notes-plan" prompt="Plan your notes. Which exact evidence supports each section, and which observations must be marked not run?" rows={12} />
+
+## Explain it back
+
+Without notes, explain:
+
+<ul class="observation-checklist">
+<li>The browser asks the server, running as a Vercel Function, rather than Supabase directly.</li>
+<li>The server checks the request and uses private connection information.</li>
+<li>Supabase reads or changes a durable row.</li>
+<li>The server returns an answer.</li>
+<li>The page updates only after it has an answer.</li>
+<li>A row survives refresh because it lives in Supabase, not because the page remembered it.</li>
+<li>A second browser can see the same shared teaching data.</li>
+<li>Different evidence can locate a failure in the page, request, function, connection, query, answer, or display.</li>
+</ul>
+
+<Response id="week2-day12-explain-back" prompt="Explain the complete path in plain English, how Add and Done are confirmed, why the database connection stays server-only, and how you would locate a failure." rows={15} />
+
+<details>
+  <summary>Mentor pause</summary>
+
+Show your mentor the architecture diagram, the read/Add/Done traces, browser evidence, function evidence, Supabase row evidence, refresh result, second-browser result, one repaired failure, and remaining uncertainty. Explain what is working, what is incomplete, and what you did not verify.
+</details>
+
+<Checkpoint id="week2-day12-mentor-pause">I explained the complete hosted path, showed evidence from the page, program, and database, and clearly stated what remains unknown.</Checkpoint>
+
+## Done when
+
+You are finished when you can:
+
+<ul class="observation-checklist">
+<li>show the existing Supabase row in the online page;</li>
+<li>add a valid chore and see it survive refresh;</li>
+<li>show that a blank chore is rejected;</li>
+<li>mark only the selected chore done;</li>
+<li>show the saved result in a second browser after loading;</li>
+<li>locate a failure in the page, request, function, connection, query, answer, or display;</li>
+<li>show that private database connection information did not reach the browser; and</li>
+<li>say what remains unverified.</li>
+</ul>
+
+<Checkpoint id="week2-day12-complete">I completed Day 12 and can explain how the page, server/Vercel Function, and Supabase database work together to preserve shared chore data.</Checkpoint>
+
+</Track>

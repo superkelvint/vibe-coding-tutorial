@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 610" role="img" aria-labelledby="title desc">
+  <title id="title">Why localhost works differently for you and another visitor</title>
+  <desc id="desc">A browser on the developer laptop can reach that laptop's localhost server. A visitor's browser sends localhost to the visitor's own device. A relative API path instead asks the same public host as the page.</desc>
+  <defs>
+    <marker id="host-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#286c67"/>
+    </marker>
+    <style>
+      .title { font: 700 30px system-ui, sans-serif; fill: #263238; }
+      .subtitle { font: 500 18px system-ui, sans-serif; fill: #627177; }
+      .label { font: 700 19px system-ui, sans-serif; fill: #263238; }
+      .small { font: 500 15px system-ui, sans-serif; fill: #627177; }
+      .laptop { fill: #f2eadf; stroke: #bda98f; stroke-width: 2; }
+      .public { fill: #e6f1ee; stroke: #286c67; stroke-width: 2; }
+      .server { fill: #e8f0f8; stroke: #587da3; stroke-width: 2; }
+      .warning { fill: #fff3f1; stroke: #b42318; stroke-width: 2; }
+      .arrow { stroke: #286c67; stroke-width: 3; fill: none; marker-end: url(#host-arrow); }
+      .bad { stroke: #b42318; stroke-width: 3; stroke-dasharray: 8 7; fill: none; }
+      .divider { stroke: #dbe2df; stroke-width: 2; stroke-dasharray: 8 8; }
+    </style>
+  </defs>
+  <rect width="1200" height="610" rx="24" fill="#fbfaf7"/>
+  <text x="60" y="56" class="title">The localhost trap</text>
+  <text x="60" y="88" class="subtitle">“localhost” means this device, not “the computer where the app happens to live.”</text>
+  <line x1="600" y1="125" x2="600" y2="535" class="divider"/>
+
+  <text x="300" y="145" text-anchor="middle" class="label">You are testing on your laptop</text>
+  <rect x="65" y="175" width="470" height="290" rx="22" class="laptop"/>
+  <text x="300" y="210" text-anchor="middle" class="label">Your laptop</text>
+  <rect x="100" y="255" width="170" height="82" rx="14" class="public"/>
+  <text x="185" y="288" text-anchor="middle" class="label">Browser</text>
+  <text x="185" y="315" text-anchor="middle" class="small">localhost:3000</text>
+  <rect x="335" y="255" width="170" height="82" rx="14" class="server"/>
+  <text x="420" y="288" text-anchor="middle" class="label">Local server</text>
+  <text x="420" y="315" text-anchor="middle" class="small">also on your laptop</text>
+  <path d="M270 296 L335 296" class="arrow"/>
+  <text x="300" y="420" text-anchor="middle" class="small">This can work.</text>
+
+  <text x="900" y="145" text-anchor="middle" class="label">Someone else opens your public page</text>
+  <rect x="665" y="175" width="470" height="290" rx="22" class="laptop"/>
+  <text x="900" y="210" text-anchor="middle" class="label">Visitor’s device</text>
+  <rect x="700" y="255" width="170" height="82" rx="14" class="public"/>
+  <text x="785" y="288" text-anchor="middle" class="label">Browser</text>
+  <text x="785" y="315" text-anchor="middle" class="small">localhost:3000</text>
+  <rect x="935" y="255" width="170" height="82" rx="14" class="warning"/>
+  <text x="1020" y="288" text-anchor="middle" class="label">No local server</text>
+  <text x="1020" y="315" text-anchor="middle" class="small">on this device</text>
+  <path d="M870 296 L935 296" class="bad"/>
+  <text x="900" y="420" text-anchor="middle" class="small">This usually fails.</text>
+
+  <rect x="220" y="500" width="760" height="62" rx="14" class="public"/>
+  <text x="600" y="526" text-anchor="middle" class="label">Use /api/chores</text>
+  <text x="600" y="550" text-anchor="middle" class="small">The browser asks the same public host that served the page.</text>
+</svg>

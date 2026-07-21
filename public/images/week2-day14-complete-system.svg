@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 620" role="img" aria-labelledby="title desc">
+  <title id="title">The complete hosted Family Chore Board system</title>
+  <desc id="desc">A person uses a browser. The browser receives the React client from Vercel, asks a Vercel Function for chores, and the function uses private configuration to ask Supabase Postgres. The answer returns to the browser.</desc>
+  <rect width="1400" height="620" fill="#ffffff"/>
+  <text x="700" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="29" font-weight="700" fill="#20312f">One action travels through several responsibilities</text>
+  <text x="700" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#526461">Trace the request forward, then trace the confirmed result back.</text>
+
+  <rect x="42" y="190" width="180" height="170" rx="18" fill="#fffaf2" stroke="#8da7a2" stroke-width="3"/>
+  <text x="132" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#20312f">Person</text>
+  <text x="132" y="272" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#526461">clicks Add</text>
+  <text x="132" y="298" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#526461">or Done</text>
+
+  <rect x="270" y="150" width="230" height="250" rx="18" fill="#fffaf2" stroke="#8da7a2" stroke-width="3"/>
+  <text x="385" y="201" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#20312f">Browser</text>
+  <text x="385" y="237" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#526461">React client</text>
+  <rect x="310" y="265" width="150" height="65" rx="10" fill="#ffffff" stroke="#d0a25a" stroke-width="2"/>
+  <text x="385" y="294" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#20312f">visible page</text>
+  <text x="385" y="316" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#526461">loading / success / error</text>
+
+  <rect x="550" y="150" width="230" height="250" rx="18" fill="#f7fbfa" stroke="#8da7a2" stroke-width="3"/>
+  <text x="665" y="201" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#20312f">Vercel</text>
+  <text x="665" y="237" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#526461">server function</text>
+  <rect x="590" y="265" width="150" height="65" rx="10" fill="#ffffff" stroke="#6e9c94" stroke-width="2"/>
+  <text x="665" y="294" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#20312f">checks request</text>
+  <text x="665" y="316" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#526461">keeps connection private</text>
+
+  <rect x="830" y="150" width="230" height="250" rx="18" fill="#fffaf2" stroke="#8da7a2" stroke-width="3"/>
+  <text x="945" y="201" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#20312f">Supabase</text>
+  <text x="945" y="237" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#526461">Postgres database</text>
+  <rect x="870" y="265" width="150" height="65" rx="10" fill="#ffffff" stroke="#6e9c94" stroke-width="2"/>
+  <text x="945" y="294" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#20312f">saved rows</text>
+  <text x="945" y="316" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#526461">read / insert / update</text>
+
+  <rect x="1110" y="190" width="245" height="170" rx="18" fill="#f7fbfa" stroke="#8da7a2" stroke-width="3"/>
+  <text x="1232" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#20312f">Evidence</text>
+  <text x="1232" y="272" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#526461">Network response</text>
+  <text x="1232" y="298" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#526461">function log</text>
+  <text x="1232" y="324" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#526461">database row</text>
+
+  <path d="M222 260h42" stroke="#d0a25a" stroke-width="5" marker-end="url(#arrow)"/>
+  <path d="M502 260h42" stroke="#d0a25a" stroke-width="5" marker-end="url(#arrow)"/>
+  <path d="M782 260h42" stroke="#d0a25a" stroke-width="5" marker-end="url(#arrow)"/>
+  <path d="M1062 260h42" stroke="#d0a25a" stroke-width="5" marker-end="url(#arrow)"/>
+
+  <text x="700" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#20312f">Forward: ask → check → save</text>
+  <path d="M1230 515H170" stroke="#6e9c94" stroke-width="4" stroke-dasharray="11 8" marker-end="url(#arrow-back)"/>
+  <text x="700" y="555" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#526461">Back: confirm → update the screen → survive refresh</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,7 L10,3.5 z" fill="#d0a25a"/>
+    </marker>
+    <marker id="arrow-back" markerWidth="11" markerHeight="11" refX="9" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,7 L10,3.5 z" fill="#6e9c94"/>
+    </marker>
+  </defs>
+</svg>
