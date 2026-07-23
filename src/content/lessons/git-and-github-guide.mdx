@@ -1,0 +1,394 @@
+---
+title: "Git and GitHub: local history and team collaboration"
+section: "Course Reference · Git and GitHub"
+order: 98
+estimatedTime: "30 minutes"
+mentalModel: "Git keeps project history on your computer; GitHub lets people share and collaborate on Git repositories, and can connect that shared project to services such as Vercel."
+verificationFocus: "Predict what stays on your computer and what is uploaded, create a safe repository, and verify the connection without sharing private information."
+description: "A beginner-friendly guide to the difference between Git and GitHub, creating an account, sharing a project with collaborators, and connecting GitHub to Vercel."
+---
+
+You have already used Git to make local save points. Now imagine that you are working with two other people on the same project.
+
+<aside class="model-purpose">
+<p><strong>How can all three of you share the project, review one another's changes, and contribute without passing folders around by email?</strong></p>
+</aside>
+
+## The problem of synchronizing changes
+
+Imagine that you and a teammate both start with the same project.
+
+You change the page title and make a Git commit on your computer. At almost the same time, your teammate changes the button text and makes a different Git commit on their computer.
+
+The <strong>working directory</strong> is the project folder you are currently editing. Each person has a separate working directory on their own computer, connected to that person's local Git history.
+
+Now there are two local histories:
+
+<ul class="question-list">
+<li>Your Git working directory and local repository know about your title change.</li>
+<li>Your teammate's Git working directory and local repository know about the button change.</li>
+<li>Neither working directory automatically receives the other person's new commit.</li>
+</ul>
+
+<aside class="model-purpose">
+<p><strong>Git is very good at remembering changes. Git by itself does not send your changes to another person's computer.</strong></p>
+<p>So how do the two people exchange their commits and combine both changes into one project?</p>
+</aside>
+
+## What does “merge” mean?
+
+To <strong>merge</strong> means to bring two lines of committed work together.
+
+<ol class="mental-model-steps">
+<li>Both people begin from the same project version.</li>
+<li>Each person makes and commits a separate change.</li>
+<li>The two histories are exchanged.</li>
+<li>Git combines the changes into one history when it can do so safely.</li>
+<li>If both people changed the same part in incompatible ways, Git stops and asks a person to choose what the final version should say.</li>
+</ol>
+
+<img src={`${import.meta.env.BASE_URL}/images/git-merge-problem.svg`} alt="Diagram showing one starting commit splitting into a change made by one teammate and a different change made by another teammate, then joining into one merged commit." />
+
+A merge is not Git guessing what the product should do. Git can combine separate changes, but a person must decide when the changes disagree.
+
+This gives us the real problem:
+
+<aside class="model-purpose">
+<p><strong>Git can record and merge committed work. The two people still need a shared place to exchange those commits.</strong></p>
+</aside>
+
+That shared place is where GitHub becomes useful. <strong>GitHub is a website built around Git.</strong> It gives the team one shared repository where people can publish their commits, review one another's changes, discuss what should happen, and agree which changes become part of the project.
+
+Each person still does the actual editing and testing in their own local Git working directory. GitHub is the team's meeting point: it is where the committed work is exchanged and reviewed. It does not replace Git, and you do not need a GitHub account for the first local Git exercises.
+
+## A service can consume the shared project too
+
+The consumer of the shared project does not have to be another person. It can also be a service that needs the latest committed version of the code.
+
+Vercel has a similar need to a teammate: it needs to receive a particular version of the project before it can do its job. The difference is what happens next:
+
+<table>
+<thead><tr><th>Consumer</th><th>What it does with the shared project</th></tr></thead>
+<tbody>
+<tr><td><strong>Another person</strong></td><td>Downloads or pulls the project, reviews it, edits it, and may contribute new commits.</td></tr>
+<tr><td><strong>Vercel</strong></td><td>Reads the committed project, builds it, and publishes the result so your users can open it through a public URL.</td></tr>
+</tbody>
+</table>
+
+Vercel is not another developer. It does not decide what the product should do or replace your local Git history. It is a service that consumes a selected project version and turns that version into something users can reach.
+
+<aside class="model-purpose">
+<p><strong>GitHub is the shared source that people and services can read.</strong></p>
+<p>A teammate consumes the code to collaborate. Vercel consumes the code to publish it.</p>
+</aside>
+
+
+## Git and GitHub are different
+
+Think of your project as a notebook.
+
+<table>
+<thead><tr><th>Thing</th><th>Plain-English meaning</th><th>Where it happens</th></tr></thead>
+<tbody>
+<tr><td><strong>Git</strong></td><td>A tool that records save points and changes in your project.</td><td>On your computer.</td></tr>
+<tr><td><strong>Git repository</strong></td><td>A project folder that Git is tracking.</td><td>Usually on your computer, inside the project's hidden Git record.</td></tr>
+<tr><td><strong>GitHub</strong></td><td>A website where people can share, review, and collaborate on a Git project.</td><td>On GitHub's website.</td></tr>
+<tr><td><strong>Push</strong></td><td>Send commits from your computer to the shared GitHub repository.</td><td>From your computer to GitHub.</td></tr>
+<tr><td><strong>Pull</strong></td><td>Bring a collaborator's commits from the shared repository down to your computer.</td><td>From GitHub to your computer.</td></tr>
+</tbody>
+</table>
+
+<img src={`${import.meta.env.BASE_URL}/images/git-local-github-remote.svg`} alt="Diagram showing two teammates with separate project folders and local Git histories. Both connect to one shared GitHub project: one person pushes a checked change to GitHub, and the other pulls it into their own folder." />
+
+<aside class="model-purpose">
+<p><strong>Git is the history tool on your computer. GitHub is the shared meeting place for the team.</strong></p>
+<p>GitHub is not a second screen that your computer updates while you type. You make and check a change locally, then deliberately share a saved commit with the team.</p>
+</aside>
+
+Git does not require a GitHub account. You can use Git for local history even when your computer is offline. GitHub adds a shared online place where collaborators can see the project, review changes, discuss decisions, and contribute their own work.
+
+### How do the two places connect?
+
+When you connect a local project to GitHub, you save the GitHub address in your local project. Git calls that saved address a <strong>remote</strong>. The common nickname for the remote is <code>origin</code>.
+
+You can think of it as telling Git:
+
+<aside class="model-purpose">
+<p>“This local project belongs with that shared GitHub project.”</p>
+</aside>
+
+Then the two important directions are:
+
+<table>
+<thead><tr><th>Command</th><th>Plain-English meaning</th></tr></thead>
+<tbody>
+<tr><td><code>git push</code></td><td>Send your checked local commits to the shared GitHub project so other people can see them.</td></tr>
+<tr><td><code>git pull</code></td><td>Bring new commits from the shared GitHub project into your local project so you can work with your teammate’s changes.</td></tr>
+</tbody>
+</table>
+
+The files do not move every time you type. The usual rhythm is:
+
+<ol class="mental-model-steps">
+<li>Make a change on your computer.</li>
+<li>Check that it works.</li>
+<li>Save it as a Git commit.</li>
+<li>Push that commit to GitHub.</li>
+<li>Your teammate pulls it into their own computer when they are ready.</li>
+</ol>
+
+<Response id="git-github-two-repositories-prediction" prompt="Imagine you and a teammate are working on the same app. Explain why each person needs their own project folder, why Git keeps a local history, and what GitHub adds. Predict what happens if you make a commit but do not push it, or if your teammate pushes a commit but you do not pull it." rows={10} />
+
+<ol class="mental-model-steps">
+<li>You edit files on your computer.</li>
+<li>Git records a local save point.</li>
+<li>You push that save point to GitHub so collaborators can see and work from it.</li>
+<li>Collaborators can review changes, discuss them, and contribute their own commits.</li>
+<li>Another service, such as Vercel, can also read the shared GitHub project.</li>
+</ol>
+
+
+## Why share a project on GitHub?
+
+GitHub is useful when more than one person needs to work with the same project. For example:
+
+<ul class="observation-checklist">
+<li>You want a teammate to receive the project without copying folders around.</li>
+<li>You want a teammate or mentor to inspect and discuss a proposed change.</li>
+<li>You want several people to work from the same project history.</li>
+<li>You want a visible record of who changed what and when.</li>
+<li>You want Vercel to build the shared project after an approved change.</li>
+</ul>
+
+GitHub can also act as an online backup, but that is not the main idea to remember. The important idea is shared collaboration around the same project.
+
+GitHub is not automatically a security system. A private repository limits who can view the project on GitHub, but it does not make passwords or database keys safe to commit. Never put secret values in project files that you plan to upload.
+
+<aside class="mantra-callout">
+<p><strong>Before uploading anything, ask:</strong> “Would I be comfortable showing this file to the people who can access the repository?”</p>
+<p>Real passwords, private keys, customer information, and confidential company files do not belong in a GitHub repository.</p>
+</aside>
+
+## Create a GitHub account
+
+
+<ol class="mental-model-steps">
+<li>Open the official <a href="https://github.com/signup">GitHub sign-up page</a>.</li>
+<li>Create an account with an email address you control.</li>
+<li>Choose a username you will be comfortable using for future projects.</li>
+<li>Complete GitHub's email verification and sign-in steps.</li>
+<li>Turn on two-factor authentication when GitHub offers it. This adds another check when someone tries to sign in.</li>
+</ol>
+
+You do not need to paste your password, verification code, or recovery information into Codex. Keep those private.
+
+<Checkpoint id="git-github-account-created">I created or signed into a GitHub account, verified the email if required, and kept my password and verification codes private.</Checkpoint>
+
+## Create a shared GitHub repository
+
+A GitHub repository is the shared online project space. It is related to your local Git repository, but it is not automatically connected until you link them. Once collaborators have permission to use it, they can work from the same project history instead of keeping unrelated copies.
+
+<ol class="mental-model-steps">
+<li>Sign in to GitHub.</li>
+<li>Choose <strong>New repository</strong>.</li>
+<li>Give it a clear name, such as <code>family-chore-board</code>.</li>
+<li>Choose whether it should be public or private. For a learning project with no need to share it broadly, private is the safer default.</li>
+<li>Do not add a README, license, or other starter files if your local project already contains its own files. This avoids creating two unrelated starting histories.</li>
+<li>Create the repository.</li>
+</ol>
+
+The empty repository page will show Git commands for connecting an existing local project. Do not copy commands blindly. First compare them with the commands below and ask Codex to explain anything unfamiliar.
+
+## Invite a collaborator
+
+Creating the repository gives you the shared project space. Collaboration begins when you give another person permission to use it.
+
+<ol class="mental-model-steps">
+<li>Open the repository on GitHub.</li>
+<li>Open the repository's <strong>Settings</strong>.</li>
+<li>Find <strong>Collaborators</strong> or <strong>Manage access</strong>.</li>
+<li>Choose <strong>Add people</strong> or the equivalent invitation option.</li>
+<li>Enter your teammate's GitHub username or email address.</li>
+<li>Choose the smallest permission level that lets them do their job. Ask a mentor if you are unsure what a permission allows.</li>
+<li>Send the invitation and wait for the person to accept it.</li>
+</ol>
+
+Do not invite someone to a private company project just to experiment. Use a disposable teaching repository, and remove access when the exercise is over.
+
+Once the invitation is accepted, the collaborator can download the shared project onto their own computer. They do not receive your computer's files magically; they make their own local working copy:
+
+```bash
+git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
+cd YOUR-REPOSITORY
+git log --oneline
+```
+
+<code>git clone</code> downloads the repository and its history. The collaborator can then inspect the files, make a change, create a commit, and push that commit if their permission allows it. Other collaborators can use <code>git pull</code> to bring that new commit into their own local copy.
+
+<Response id="git-github-collaboration-prediction" prompt="Imagine a teammate has accepted your invitation. Predict what they must do to get their own working copy, what GitHub stores, and what you would need to do before seeing a change they pushed." rows={9} />
+
+## Connect the local project to GitHub
+
+Before uploading a project, check what Git is about to send:
+
+```bash
+git status
+git log --oneline -1
+git diff
+```
+
+You should understand which files are changed and which commit you are sending. If you see a secret, private document, or an unexpected file, stop before pushing.
+
+For a local project that already has a commit, GitHub usually gives you a repository address. The address may look like this:
+
+```text
+https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
+```
+
+Replace the placeholders with your own repository address. Then connect and upload the current committed version:
+
+```bash
+git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
+git branch -M main
+git remote -v
+git push -u origin main
+```
+
+In plain English:
+
+<ul class="question-list">
+<li><code>git remote add origin</code> gives your local project the address of its shared GitHub repository.</li>
+<li><code>git branch -M main</code> gives the main project branch a conventional name.</li>
+<li><code>git remote -v</code> lets you check that the saved address points to the GitHub repository you intended.</li>
+<li><code>git push -u origin main</code> sends the committed project history to GitHub and remembers the connection for later pushes.</li>
+</ul>
+
+GitHub may ask you to sign in through your browser or use a supported authentication method. Follow GitHub's instructions. Do not send your password or access token to Codex or place it in a command that will be saved in your project history.
+
+<Response id="git-github-upload-prediction" prompt="Before running the connection commands, predict what will remain on your computer, what will appear on GitHub, and what should happen if you run git push before creating a local commit." rows={9} />
+
+After the push finishes, open the repository page in your browser. Check:
+
+<ul class="observation-checklist">
+<li>The project files appear on GitHub.</li>
+<li>The latest commit message matches the save point you intended to upload.</li>
+<li>No secret values or private files were uploaded.</li>
+<li>The GitHub page is showing the shared repository, not a new local edit.</li>
+</ul>
+
+<Checkpoint id="git-github-first-push-verified">I checked the local status and latest commit before pushing, uploaded the intended project version, opened the GitHub repository, and confirmed that no private values were included.</Checkpoint>
+
+## How GitHub and Vercel work together
+
+Earlier, Day 9 used the Vercel command-line tool to send a project directly from your computer to Vercel. That is one deployment path.
+
+There is another path:
+
+<img src={`${import.meta.env.BASE_URL}/images/git-github-vercel-flow.svg`} alt="Diagram showing a developer making a local Git commit, pushing it to GitHub, and Vercel reading that saved project version to build a public deployment." />
+
+<ol class="mental-model-steps">
+<li>You make a change on your computer.</li>
+<li>You check the change and create a Git commit.</li>
+<li>You push the commit to GitHub.</li>
+<li>Vercel is connected to the GitHub repository and notices the new commit.</li>
+<li>Vercel builds the project and creates a deployment.</li>
+<li>You open the deployment URL and check what actually works.</li>
+</ol>
+
+<table>
+<thead><tr><th>What happens</th><th>Who does it</th></tr></thead>
+<tbody>
+<tr><td>Edits files and makes a local save point</td><td>You and Git on your computer</td></tr>
+<tr><td>Stores the shared project and its committed history</td><td>GitHub</td></tr>
+<tr><td>Builds the project and makes a public deployment</td><td>Vercel</td></tr>
+<tr><td>Checks whether the deployed result solves the user's problem</td><td>You</td></tr>
+</tbody>
+</table>
+
+## Connect a GitHub repository to Vercel
+
+You need a GitHub account and a GitHub repository before using this path. You also need a Vercel account. If you have not learned Vercel yet, return to <a href={`${import.meta.env.BASE_URL}/lessons/week2/day9/`}>Day 9: Deploy only the client</a> first.
+
+When you are ready:
+
+<ol class="mental-model-steps">
+<li>Open the <a href="https://vercel.com/dashboard">Vercel dashboard</a> and sign in.</li>
+<li>Choose <strong>Add New Project</strong>.</li>
+<li>Choose <strong>Import Git Repository</strong> or the equivalent GitHub import option.</li>
+<li>Authorize Vercel to see the GitHub repositories you choose. Read the permission request before accepting it.</li>
+<li>Select the repository you just created.</li>
+<li>Review the detected project settings and build command. Ask Codex to explain a setting before changing it.</li>
+<li>Start the deployment.</li>
+<li>Open the generated URL and check the page in a fresh browser window.</li>
+</ol>
+
+After the first connection, a later push to the selected GitHub branch can cause Vercel to create another deployment automatically. The exact branch and deployment settings belong to the Vercel project, so always check what the dashboard says rather than assuming.
+
+<aside class="model-purpose">
+<p><strong>GitHub is the shared project that collaborators and Vercel can read. Vercel is the service that builds and publishes what it reads.</strong></p>
+<p>A successful deployment still does not prove that every user journey works. Open the deployed page, test the intended workflow, inspect errors, and record what remains unverified.</p>
+</aside>
+
+## A safe first exercise
+
+Use a small practice project, not a project containing real customer information or secrets.
+
+<ol class="mental-model-steps">
+<li>Change one visible line in the project.</li>
+<li>Open the page and check that the change appears.</li>
+<li>Run <code>git diff</code> and inspect the change.</li>
+<li>Create a commit with a clear message.</li>
+<li>Push the commit to GitHub.</li>
+<li>Open GitHub and confirm that the new commit and line are visible.</li>
+<li>If Vercel is connected, open the new deployment and confirm which project version it built.</li>
+<li>Check that the existing behavior still works. This is your regression check.</li>
+</ol>
+
+<Response id="git-github-vercel-evidence" prompt="Record the evidence from your first GitHub upload or Vercel connection. What commit did you send? What appeared on GitHub? What deployment did Vercel create, if any? Which behavior did you re-check, and what remains unverified?" rows={12} />
+
+## Ask Codex for help without handing over control
+
+Use this prompt when you are unsure whether a project is connected correctly:
+
+```text
+I am learning the difference between Git, GitHub, and Vercel.
+
+Please inspect the project and explain in plain English:
+- whether this folder is a Git repository;
+- which local commit I am currently on;
+- whether an online GitHub remote is configured;
+- the remote's GitHub repository name, without printing credentials;
+- whether the working tree has uncommitted changes; and
+- whether the current Vercel workflow uses the CLI directly or a GitHub connection.
+
+Do not push, deploy, change files, or expose passwords, tokens, environment values, or private file contents.
+Tell me what I should inspect next and what evidence would confirm it.
+```
+
+Ask Codex to explain its report before taking any action. A useful report should tell you what is known, what was not checked, and what it cannot safely infer.
+
+<Response id="git-github-codex-review" prompt="Read Codex’s report critically. Which statements are supported by direct evidence? Did it avoid exposing private information? What would you check yourself before pushing or deploying?" rows={10} />
+
+## Explain it back
+
+Explain these sentences without reading from the page:
+
+<ul class="observation-checklist">
+<li>Git is the local history tool.</li>
+<li>GitHub is a shared online place where collaborators can work with a Git project.</li>
+<li>A push sends committed work from the computer to GitHub.</li>
+<li>Vercel can read a GitHub repository, build the project, and create a deployment.</li>
+<li>Neither GitHub nor Vercel makes private information safe if you commit it to the project.</li>
+</ul>
+
+<Response id="git-github-explain-back" prompt="Explain the difference between Git and GitHub, then describe the path from a local change to a Vercel deployment. Include one thing you verified and one thing that remains unverified." rows={10} />
+
+<details>
+  <summary>Mentor pause</summary>
+
+Show your mentor the local commit, GitHub repository, push result, and Vercel deployment if you created one. Point out exactly what each system did. Explain what you checked, what you deliberately did not upload, and what remains uncertain.
+</details>
+
+<Checkpoint id="git-github-mentor-pause">I explained what Git, GitHub, and Vercel each do, showed the evidence for my shared repository or deployment, and stated what remains unverified.</Checkpoint>
+
+<Checkpoint id="git-github-guide-complete">I can distinguish Git from GitHub, share a checked project with collaborators, push a commit, and explain how Vercel can use GitHub to create deployments.</Checkpoint>

@@ -102,7 +102,6 @@ Install or confirm:
 VS Code
 Git
 A browser
-A GitHub account
 ```
 
 Create a folder called:
@@ -132,6 +131,8 @@ git add notes.txt
 git commit -m "Add first notes file"
 git status
 ```
+
+This hour stays local on purpose. GitHub is a separate online service, not part of Git itself. When the learner later wants to upload a checked project or connect it to Vercel, use the standalone Git and GitHub guide in the course reference pages.
 
 ### Pause and Predict
 

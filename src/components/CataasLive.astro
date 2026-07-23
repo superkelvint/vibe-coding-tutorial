@@ -1,0 +1,56 @@
+<div class="model-purpose" aria-live="polite">
+  <p><strong>A cat returned through an API</strong></p>
+  <p id="cat-api-status">Asking the cat API for information…</p>
+  <section id="cat-api-card" hidden>
+    <img id="cat-api-image" alt="A cat returned by the CATAAS API">
+    <ul class="observation-checklist">
+      <li>ID: <span id="cat-api-id"></span></li>
+      <li>Tags: <span id="cat-api-tags"></span></li>
+      <li>Created: <span id="cat-api-created"></span></li>
+      <li>File type: <span id="cat-api-type"></span></li>
+    </ul>
+    <details>
+      <summary>See the JSON response</summary>
+      <pre id="cat-api-response" class="astro-code" data-language="json"><code>Waiting for JSON…</code></pre>
+    </details>
+  </section>
+</div>
+
+<script>
+  const catStatus = document.querySelector('#cat-api-status');
+  const catCard = document.querySelector<HTMLElement>('#cat-api-card');
+  const catImage = document.querySelector<HTMLImageElement>('#cat-api-image');
+  const catId = document.querySelector('#cat-api-id');
+  const catTags = document.querySelector('#cat-api-tags');
+  const catCreated = document.querySelector('#cat-api-created');
+  const catType = document.querySelector('#cat-api-type');
+  const catResponse = document.querySelector('#cat-api-response code');
+
+  if (!catStatus || !catCard || !catImage || !catId || !catTags || !catCreated || !catType || !catResponse) {
+    throw new Error('The cat API display elements are missing from the page');
+  }
+
+  fetch('https://cataas.com/cat?json=true')
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`The cat API responded with status ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (!data.url || !data.id) {
+        throw new Error('The cat API response did not contain the cat details we need');
+      }
+      catImage.src = data.url;
+      catId.textContent = data.id;
+      catTags.textContent = data.tags?.join(', ') || 'No tags';
+      catCreated.textContent = data.created_at || 'Unknown';
+      catType.textContent = data.mimetype || 'Unknown';
+      catResponse.textContent = JSON.stringify(data, null, 2);
+      catCard.hidden = false;
+      catStatus.textContent = 'The API answered. The page parsed the JSON and built this HTML card.';
+    })
+    .catch((error) => {
+      catStatus.textContent = `The cat request failed: ${error.message}`;
+    });
+</script>

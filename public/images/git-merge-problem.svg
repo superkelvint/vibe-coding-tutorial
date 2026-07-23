@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 430" role="img" aria-labelledby="title desc">
+  <title id="title">Separate changes becoming one merged history</title>
+  <desc id="desc">One starting project version splits into a title change by one person and a button change by another person, then both changes join in one merged project version.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L11 5.5L0 11Z" fill="#334155"/></marker>
+    <style>
+      .box{fill:#fff;stroke:#334155;stroke-width:3}.title{font:700 24px system-ui,sans-serif;fill:#172033}.label{font:600 19px system-ui,sans-serif;fill:#172033}.text{font:17px system-ui,sans-serif;fill:#334155}.arrow{stroke:#334155;stroke-width:4;marker-end:url(#arrow)}.dash{stroke:#64748b;stroke-width:3;stroke-dasharray:9 8;fill:none}.small{font:15px system-ui,sans-serif;fill:#475569}
+    </style>
+  </defs>
+  <rect width="1100" height="430" rx="22" fill="#fff"/>
+  <text x="550" y="40" text-anchor="middle" class="title">Two people make changes, then Git brings the histories together</text>
+
+  <rect x="405" y="78" width="290" height="76" rx="14" class="box"/>
+  <text x="550" y="112" text-anchor="middle" class="label">Starting version</text>
+  <text x="550" y="137" text-anchor="middle" class="small">both people begin here</text>
+
+  <line x1="490" y1="155" x2="280" y2="225" class="arrow"/>
+  <line x1="610" y1="155" x2="820" y2="225" class="arrow"/>
+
+  <rect x="70" y="225" width="420" height="82" rx="14" class="box"/>
+  <text x="280" y="259" text-anchor="middle" class="label">Your commit</text>
+  <text x="280" y="284" text-anchor="middle" class="text">Change the page title</text>
+
+  <rect x="610" y="225" width="420" height="82" rx="14" class="box"/>
+  <text x="820" y="259" text-anchor="middle" class="label">Teammate's commit</text>
+  <text x="820" y="284" text-anchor="middle" class="text">Change the button text</text>
+
+  <line x1="280" y1="308" x2="490" y2="365" class="arrow"/>
+  <line x1="820" y1="308" x2="610" y2="365" class="arrow"/>
+
+  <rect x="370" y="350" width="360" height="62" rx="14" class="box"/>
+  <text x="550" y="377" text-anchor="middle" class="label">Merged version</text>
+  <text x="550" y="400" text-anchor="middle" class="small">both changes together</text>
+</svg>

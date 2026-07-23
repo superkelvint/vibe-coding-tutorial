@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+  <title id="title">Shared languages for people and software</title>
+  <desc id="desc">The diagram compares people speaking different languages and using a shared language with software programs using an API and JSON to communicate.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0 0L11 5.5L0 11Z" fill="#334155"/></marker>
+    <style>
+      .panel{fill:#fff;stroke:#334155;stroke-width:3}.title{font:700 25px system-ui,sans-serif;fill:#172033}.label{font:600 19px system-ui,sans-serif;fill:#172033}.text{font:17px system-ui,sans-serif;fill:#334155}.small{font:15px system-ui,sans-serif;fill:#475569}.arrow{stroke:#334155;stroke-width:4;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1200" height="430" rx="22" fill="#fff"/>
+  <text x="600" y="40" text-anchor="middle" class="title">Programs need a shared way to communicate</text>
+
+  <rect x="45" y="78" width="510" height="275" rx="18" class="panel"/>
+  <text x="300" y="119" text-anchor="middle" class="title">People</text>
+  <rect x="80" y="150" width="190" height="70" rx="12" fill="#fff" stroke="#64748b" stroke-width="2"/>
+  <text x="175" y="181" text-anchor="middle" class="label">Many languages</text>
+  <text x="175" y="207" text-anchor="middle" class="small">English, Spanish, Arabic…</text>
+  <line x1="280" y1="185" x2="330" y2="185" class="arrow"/>
+  <rect x="340" y="150" width="180" height="70" rx="12" fill="#fff" stroke="#64748b" stroke-width="2"/>
+  <text x="430" y="181" text-anchor="middle" class="label">Shared language</text>
+  <text x="430" y="207" text-anchor="middle" class="small">English for some work</text>
+  <text x="300" y="282" text-anchor="middle" class="text">A shared language gives both sides</text>
+  <text x="300" y="308" text-anchor="middle" class="text">a reasonable chance of understanding.</text>
+
+  <rect x="645" y="78" width="510" height="275" rx="18" class="panel"/>
+  <text x="900" y="119" text-anchor="middle" class="title">Software programs</text>
+  <rect x="680" y="150" width="190" height="70" rx="12" fill="#fff" stroke="#64748b" stroke-width="2"/>
+  <text x="775" y="181" text-anchor="middle" class="label">Different programs</text>
+  <text x="775" y="207" text-anchor="middle" class="small">browser, server, service</text>
+  <line x1="880" y1="185" x2="930" y2="185" class="arrow"/>
+  <rect x="940" y="150" width="180" height="70" rx="12" fill="#fff" stroke="#64748b" stroke-width="2"/>
+  <text x="1030" y="181" text-anchor="middle" class="label">API + JSON</text>
+  <text x="1030" y="207" text-anchor="middle" class="small">shared communication</text>
+  <text x="900" y="282" text-anchor="middle" class="text">The API sets the conversation rules.</text>
+  <text x="900" y="308" text-anchor="middle" class="text">JSON carries labelled information.</text>
+
+  <text x="600" y="395" text-anchor="middle" class="small">The analogy is not exact, but the need is similar: communication works better when both sides agree how to communicate.</text>
+</svg>

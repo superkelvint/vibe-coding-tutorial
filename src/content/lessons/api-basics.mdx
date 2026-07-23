@@ -1,0 +1,640 @@
+---
+title: "APIs: how software programs communicate"
+section: "Course Reference · APIs"
+order: 97
+estimatedTime: "35 minutes"
+mentalModel: "An API is a clear way for software programs to communicate: one program sends a request, another sends a response, and the first program uses the answer."
+verificationFocus: "Predict the request and response, inspect the Network evidence, handle loading and failure honestly, and say what the API result does and does not prove."
+description: "Learn how software programs communicate, then use a tiny public API to build a webpage that displays the visitor's public IP address."
+---
+
+import IpifyLive from '../../components/IpifyLive.astro';
+import CataasLive from '../../components/CataasLive.astro';
+import FreeIpApiLive from '../../components/FreeIpApiLive.astro';
+
+Think about how humans communicate first. People speak many different languages. When people from different countries need to work together, they often use English as a shared language. They do not have to use English for every conversation; it is simply a common language that gives both sides a reasonable chance of understanding one another.
+
+Software programs face a similar problem. A shopping app may need a payment service, a map app may need route information, and a browser page may need data from a server. These programs may have been created by different teams using different technologies, so they need a shared way to communicate.
+
+<img src={`${import.meta.env.BASE_URL}/images/api-shared-language.svg`} alt="Diagram comparing people who use a shared language for international communication with software programs that use APIs and JSON to communicate." />
+
+<aside class="model-purpose">
+<p><strong>How can two different software programs ask each other for information or actions?</strong></p>
+<p>One program cannot simply look inside another program. They need a clear, agreed way to send requests and receive answers.</p>
+</aside>
+
+A program written by one team cannot assume that another program will understand its private words or internal code. The two programs need a standard way to ask questions, describe answers, and report problems.
+
+An <strong>API</strong> provides that agreed conversation. API stands for **Application Programming Interface**, but you do not need to memorize the long name yet. In this lesson, think of an API as the rules for how one program asks another program for information or an action, and how the other program sends its answer back.
+
+<strong>JSON</strong> is one popular format used to carry information in that conversation. It is like the shared language used for the message itself: it gives both programs a predictable way to label and read the data.
+
+
+## What is JSON?
+
+Before looking at a real response, understand the format many APIs use to answer.
+
+The API needs to send its answer in a form that both people and programs can understand. <strong>JSON</strong> is a very common way to write organized information as plain text.
+
+### JSON objects and lists
+
+Most of the JSON you see will use two shapes:
+
+<table>
+<thead><tr><th>Type</th><th>What it looks like in JSON</th><th>What it means</th></tr></thead>
+<tbody>
+<tr><td><strong>Object</strong></td><td><code>&#123; "name": "Call Taylor", "done": false &#125;</code></td><td>Objects have keys and values. Here, there are 2 keys, "name" and "done". The "name" key has the <em>Call Taylor</em> value. The "done" key has the value <em>false</em>.</td></tr>
+<tr><td><strong>Array</strong></td><td><code>[ "Water plants", "Feed cat" ]</code></td><td>A list containing two text values.</td></tr>
+</tbody>
+</table>
+
+The curly braces <code>&#123; &#125;</code> surround an <strong>object</strong>. An object is a group of named fields that describe one thing. The square brackets <code>[ ]</code> surround an <strong>array</strong>. An array is an ordered list of values.
+
+For example, this JSON object describes one cat. The <code>tags</code> field contains a list inside that object:
+
+```json
+{
+  "id": "mcje1vkz08SlYsHK",
+  "tags": ["cute", "sleepy"],
+  "age": 8
+}
+```
+
+You can map the object’s labelled fields into a table:
+
+<table>
+<thead><tr><th>JSON label</th><th>Value from the response</th></tr></thead>
+<tbody>
+<tr><td><code>id</code></td><td>mcje1vkz08SlYsHK</td></tr>
+<tr><td><code>age</code></td><td>8</td></tr>
+<tr><td><code>tags</code></td><td><ul class=""><li>cute</li><li>sleepy</li></ul></td></tr>
+</tbody>
+</table>
+
+
+<aside class="model-purpose">
+<p><strong>Why is JSON so popular?</strong></p>
+<p>JSON is small, readable, and supported by almost every modern programming language. A browser, server, phone app, and many different services can exchange the same JSON response without needing to use the same programming language or technology.</p>
+<p>Other formats exist, and some are useful for particular jobs. JSON became common for web APIs because it is simple enough for a person to inspect and predictable enough for a program to read. That makes it a practical shared language between different programs.</p>
+</aside>
+
+
+## Example: asking for the visitor's public IP address
+
+We will use a small service at:
+
+```text
+https://api64.ipify.org?format=json
+```
+
+This service answers the question: “Which public internet address is my browser using to reach you?” In other words, it reports the address that the outside internet sees for the network connection. That is usually different from a private address assigned only to your individual device.
+
+IPify returns a JSON object with an <code>ip</code> label. The value is not fixed: it depends on the public address that makes the request.
+
+The stable shape of the response is:
+
+```json
+{
+  "ip": "the public address returned for this request"
+}
+```
+
+The label <code>ip</code> is part of the agreed response shape. The value beside it changes depending on who makes the request.
+
+This page is using the API right now. When your browser loaded the page, its JavaScript asked IPify for the response and placed the actual value returned for your request into the box:
+
+<IpifyLive />
+
+The value is the public address that the API sees. It may belong to your home network, school, workplace, VPN, or another network service. It is not necessarily the private address of your individual device, and it does not reveal your exact physical location.
+
+## From an IP address to a broad location
+
+An IP address is not usually meaningful to a person on its own. A page might use a second API to ask for broad location information associated with that public address.
+
+We will use [FreeIPAPI](https://freeipapi.com/docs/api-reference/get-ip-info), an HTTPS API that can look up broad information about an IP address:
+
+```text
+https://free.freeipapi.com/api/json/{ip-address}
+```
+
+The part written as `{ip-address}` is replaced with the IP value returned by IPify. FreeIPAPI also allows the IP to be omitted and will use the address making the request, but passing the IP explicitly makes the two-request story easier to see.
+
+A successful response may look like:
+
+```json
+{
+  "ipVersion": 4,
+  "ipAddress": "203.0.113.42",
+  "countryName": "United States",
+  "regionName": "California",
+  "cityName": "Mountain View",
+  "isProxy": false
+}
+```
+
+The exact result depends on the network, and IP geolocation is approximate. It may identify a nearby city, an internet provider, a VPN, a school, or a company rather than the person's exact location. It should not be presented as a precise address or proof of where a person physically is.
+
+### How the two APIs work together
+
+The browser can use the result from one API to ask another API a new question:
+
+<ol class="mental-model-steps">
+<li>Ask IPify for the public IP address.</li>
+<li>Read the <code>ip</code> value from the JSON response.</li>
+<li>Ask FreeIPAPI for broad location information about that IP address.</li>
+<li>Read the country, region, and city fields from the second JSON response.</li>
+<li>Display the result with honest wording such as “approximate network location.”</li>
+</ol>
+
+This is called chaining requests: the answer from one program becomes part of the next request.
+
+This second component performs that chained example live. It first asks IPify for the visitor's public IP, then asks FreeIPAPI for broad location information about that IP:
+
+<FreeIpApiLive />
+
+<aside class="model-purpose">
+<p><strong>Leaflet shows another kind of API integration.</strong></p>
+<p>IPify and FreeIPAPI return JSON data. Our JavaScript reads that data and uses the latitude and longitude.</p>
+<p>Leaflet is an open-source JavaScript library that turns those coordinates into an interactive map widget. The widget also asks a map-tile service for the pieces of the map image it needs to display. So the integration is not only “receive JSON and print text”: it can also be “receive data, give it to a widget, and let the widget create a richer visual experience.”</p>
+<p>In this example, Leaflet supplies the map behavior, OpenStreetMap supplies the map tiles, and our page supplies the location data and marker.</p>
+</aside>
+
+<aside class="model-purpose">
+<p><strong>A failed request can teach you something important.</strong></p>
+<p>The problem is not necessarily your JavaScript. Check the page address, the request address, the response status, and the browser Console before changing code.</p>
+</aside>
+
+### Ask Codex to add the geolocation step
+
+Now ask Codex to add this behavior to your local HTML page. You are giving Codex the product goal and the observable result; Codex should work out the implementation after inspecting your existing page.
+
+```text
+I have a plain HTML page that already asks this API for the visitor's public IP address:
+https://api64.ipify.org?format=json
+
+Add one small next step:
+- keep the existing IP address behavior working;
+- after the IPify response succeeds, use its ip value to request broad location information from:
+  https://free.freeipapi.com/api/json/{ip-address}
+- parse the FreeIPAPI JSON response;
+- display the returned countryName, regionName, and cityName in the page;
+- use the returned latitude and longitude to show a world map with one marker;
+- use Leaflet for the map and OpenStreetMap tiles with visible attribution;
+- label the result as an approximate network location, not the person's exact location;
+- show a waiting message while the second request is running;
+- show an honest error if either request fails or the response is missing the fields we need.
+
+Before editing:
+- inspect the existing HTML and JavaScript;
+- explain where the new request will fit into the current request-and-response story;
+- do not add a framework, library, account, or unrelated feature.
+- the one exception is Leaflet, which is the small open-source map library needed for this exercise;
+
+Acceptance criteria:
+- the IP address still appears after the first request succeeds;
+- the second request uses the IPify ip value;
+- countryName, regionName, and cityName appear only after a successful geolocation response;
+- the map appears only when valid latitude and longitude values are available;
+- the marker is placed using those returned coordinates;
+- the page says the location is approximate;
+- both loading and failure states are visible and honest.
+
+Verification:
+- run the existing checks, if any;
+- open the page and inspect both requests in Network;
+- inspect the response fields;
+- verify that the map loads, the OpenStreetMap attribution is visible, and the marker uses the returned coordinates;
+- deliberately use a wrong geolocation URL and confirm the page does not claim success;
+- restore the correct URL and repeat the normal workflow as a regression check.
+
+Report the files changed, the evidence from both requests, what passed, what failed, and what remains unverified.
+```
+
+Acceptance criteria:
+
+<ul class="observation-checklist">
+<li>The page displays the IPify result first.</li>
+<li>The second request uses that IP value.</li>
+<li>The page displays country, region, and city only when the second API reports success.</li>
+<li>A world map appears with a marker based on the returned latitude and longitude.</li>
+<li>OpenStreetMap attribution is visible on the map.</li>
+<li>The page says the location is approximate.</li>
+<li>The page shows an honest error if either service reports a failure.</li>
+<li>The page does not claim to know the person's exact location.</li>
+</ul>
+
+<Response id="api-ipify-geolocation-prediction" prompt="Predict the two-request story before trying it locally. Which response supplies the IP for the second request? Which FreeIPAPI fields will become visible on the page? What evidence would distinguish a JavaScript error from an API failure?" rows={12} />
+
+
+
+## A second example: asking an API for a cat
+
+The IPify example returns one small value: an IP address. APIs can return many other kinds of information.
+
+Open this endpoint:
+
+```text
+https://cataas.com/cat?json=true
+```
+
+It returns information about a cat and includes a URL where the cat image can be loaded. A response might look like this:
+
+```json
+{
+  "id": "mcje1vkz08SlYsHK",
+  "tags": ["cute"],
+  "created_at": "2024-09-15T15:50:48.649Z",
+  "url": "https://cataas.com/cat/mcje1vkz08SlYsHK?position=center",
+  "mimetype": "image/png"
+}
+```
+
+The exact cat and exact values may change when you ask again. Read the response as a labelled description:
+
+<table>
+<thead><tr><th>Label</th><th>What it tells your program</th></tr></thead>
+<tbody>
+<tr><td><code>id</code></td><td>Which cat image this is.</td></tr>
+<tr><td><code>tags</code></td><td>Words associated with the cat. The square brackets show a list.</td></tr>
+<tr><td><code>created_at</code></td><td>When this cat record was created.</td></tr>
+<tr><td><code>url</code></td><td>Where the image can be loaded.</td></tr>
+<tr><td><code>mimetype</code></td><td>What kind of file the image is, such as PNG or JPEG.</td></tr>
+</tbody>
+</table>
+
+This page also asks that API for JSON, reads the <code>url</code> value, and uses that value to display the returned image:
+
+<CataasLive />
+
+## Build the CATAAS page yourself
+
+Now create a second file called `cat.html`. Your page should ask CATAAS for JSON and turn the response into a small cat card.
+
+Before writing the code, predict:
+
+<ul class="prediction-list">
+<li>What should appear while the request is waiting?</li>
+<li>Which JSON labels will become visible text?</li>
+<li>Which label will tell the page where to find the image?</li>
+<li>What should the page show if the request fails?</li>
+</ul>
+
+Use this complete example first:
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>A cat from an API</title>
+    <style>
+      body {
+        max-width: 38rem;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        font-family: system-ui, sans-serif;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        max-height: 28rem;
+        object-fit: contain;
+        margin-top: 1rem;
+      }
+
+      li {
+        margin: .4rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>A cat from an API</h1>
+      <p id="status">Asking CATAAS for a cat…</p>
+
+      <section id="cat-card" hidden>
+        <img id="cat-image" alt="A cat returned by CATAAS">
+        <ul>
+          <li>ID: <span id="cat-id"></span></li>
+          <li>Tags: <span id="cat-tags"></span></li>
+          <li>Created: <span id="cat-created"></span></li>
+          <li>File type: <span id="cat-type"></span></li>
+        </ul>
+      </section>
+    </main>
+
+    <script>
+      const status = document.querySelector('#status');
+      const card = document.querySelector('#cat-card');
+      const image = document.querySelector('#cat-image');
+      const id = document.querySelector('#cat-id');
+      const tags = document.querySelector('#cat-tags');
+      const created = document.querySelector('#cat-created');
+      const type = document.querySelector('#cat-type');
+
+      fetch('https://cataas.com/cat?json=true')
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Request failed with status ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((cat) => {
+          if (!cat.url || !cat.id) {
+            throw new Error('The response was missing the cat details we need');
+          }
+
+          image.src = cat.url;
+          id.textContent = cat.id;
+          tags.textContent = cat.tags?.join(', ') || 'No tags';
+          created.textContent = cat.created_at || 'Unknown';
+          type.textContent = cat.mimetype || 'Unknown';
+          card.hidden = false;
+          status.textContent = 'The API answered. Here is the cat information:';
+        })
+        .catch((error) => {
+          status.textContent = `The cat could not be loaded: ${error.message}`;
+        });
+    </script>
+  </body>
+</html>
+```
+
+The key parsing step is `response.json()`. It turns the response text into a JavaScript value so your page can read labels such as `cat.id`, `cat.tags`, and `cat.url`.
+
+Check your page in the browser and Network panel:
+
+<ol class="mental-model-steps">
+<li>The page shows a waiting message.</li>
+<li>The browser requests `https://cataas.com/cat?json=true`.</li>
+<li>The response is parsed as JSON.</li>
+<li>The cat image appears using the returned `url`.</li>
+<li>The returned ID, tags, creation time, and file type appear as HTML text.</li>
+<li>A failed request produces an honest error instead of an empty or invented cat card.</li>
+</ol>
+
+<Checkpoint id="api-cataas-page-created">I built a plain HTML page that parses the CATAAS JSON response and displays the returned image and cat details as HTML.</Checkpoint>
+
+
+Notice the two-step story:
+
+<ol class="mental-model-steps">
+<li>The browser asks CATAAS for information.</li>
+<li>CATAAS sends back JSON describing a cat.</li>
+<li>The browser reads the image URL from the JSON.</li>
+<li>The browser makes a second request to load the image from that URL.</li>
+<li>The page displays the image.</li>
+</ol>
+
+The API did not send a picture inside the JSON response. It sent information telling the browser where to find the picture. This is a common pattern: one API response gives a program the details it needs to request another resource.
+
+## The request and response story
+
+When this page asks IPify for the address, the interaction is:
+
+<ol class="mental-model-steps">
+<li>This page creates a request for the IPify address.</li>
+<li>The request travels from your browser to the IPify service.</li>
+<li>IPify works out which public address made the request.</li>
+<li>IPify sends back a response containing JSON data.</li>
+<li>The page reads the <code>ip</code> value.</li>
+<li>The page changes the screen to display that value.</li>
+</ol>
+
+<table>
+<thead><tr><th>Word</th><th>Plain-English meaning in this example</th></tr></thead>
+<tbody>
+<tr><td><strong>API</strong></td><td>The agreed way for your page to ask IPify a question.</td></tr>
+<tr><td><strong>Endpoint</strong></td><td>The particular web address where the question is sent.</td></tr>
+<tr><td><strong>Request</strong></td><td>Your browser asking IPify for information.</td></tr>
+<tr><td><strong>Response</strong></td><td>IPify's answer, containing data such as <code>&#123;"ip":"203.0.113.42"&#125;</code>.</td></tr>
+<tr><td><strong>JSON</strong></td><td>A common text format that labels information so programs can read the answer reliably.</td></tr>
+</tbody>
+</table>
+
+The endpoint has two visible parts:
+
+<ul class="question-list">
+<li><code>https://api64.ipify.org</code> identifies the service and endpoint.</li>
+<li><code>?format=json</code> tells the service that we want the answer formatted as JSON.</li>
+</ul>
+
+<aside class="model-purpose">
+<p><strong>An API is not magic data inside your webpage.</strong></p>
+<p>Your page asks another program, waits for a response, checks what came back, and then decides what to show the user.</p>
+</aside>
+
+<Response id="api-ipify-prediction" prompt="Before opening the API or writing code, predict what the browser will request, what the response will contain, what the page should show while waiting, and what the page should show if the request fails." rows={10} />
+
+## Build your own tiny HTML page
+
+Create a new folder with a file named:
+
+```text
+index.html
+```
+
+Use this complete example first. Read it before opening it in the browser:
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My public IP address</title>
+  </head>
+  <body>
+    <main>
+      <h1>Your public IP address</h1>
+      <p id="status">Asking the API…</p>
+      <p id="address">Waiting for an answer</p>
+    </main>
+
+    <script>
+      const status = document.querySelector('#status');
+      const address = document.querySelector('#address');
+
+      fetch('https://api64.ipify.org?format=json')
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Request failed with status ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          if (!data.ip) {
+            throw new Error('The response did not contain an IP address');
+          }
+
+          address.textContent = data.ip;
+          status.textContent = 'The API answered.';
+        })
+        .catch((error) => {
+          address.textContent = 'The address could not be loaded.';
+          status.textContent = error.message;
+        });
+    </script>
+  </body>
+</html>
+```
+
+The important parts are:
+
+<table>
+<thead><tr><th>Code</th><th>Job</th></tr></thead>
+<tbody>
+<tr><td><code>fetch(...)</code></td><td>Asks the endpoint for a response.</td></tr>
+<tr><td><code>response.ok</code></td><td>Checks whether the response reported success.</td></tr>
+<tr><td><code>response.json()</code></td><td>Reads the response as organized JSON data.</td></tr>
+<tr><td><code>data.ip</code></td><td>Reads the IP value from the response.</td></tr>
+<tr><td><code>textContent</code></td><td>Changes what the user sees on the page.</td></tr>
+<tr><td><code>catch</code></td><td>Shows honest feedback if the request or response cannot be used.</td></tr>
+</tbody>
+</table>
+
+<Checkpoint id="api-ipify-page-created">I created an HTML page that asks the IPify endpoint for JSON and has visible loading, success, and failure messages.</Checkpoint>
+
+## Open the page and inspect what actually happened
+
+Open `index.html` in your browser. You should see an address after a short wait.
+
+Do not stop at “a number appeared.” Open the browser's **Network** panel and find the request to `api64.ipify.org`.
+
+Check:
+
+<ul class="observation-checklist">
+<li>the request URL;</li>
+<li>the response status;</li>
+<li>the response body;</li>
+<li>the time spent waiting; and</li>
+<li>the exact value that the page displayed.</li>
+</ul>
+
+Your acceptance criteria are observable:
+
+<ol class="mental-model-steps">
+<li>The page opens without needing a server that you wrote.</li>
+<li>The page shows a waiting message before the response is ready.</li>
+<li>The page displays the <code>ip</code> value returned by the API.</li>
+<li>The Network panel shows a request to the IPify endpoint.</li>
+<li>The page shows an honest error if the request cannot be completed.</li>
+</ol>
+
+<Response id="api-ipify-evidence" prompt="Record the request URL, response status, response body shape, displayed value, and waiting or error feedback. Which claim does each piece of evidence support?" rows={12} />
+
+## Break the request safely
+
+A working request is only the happy case. Make a copy of your file or create a Git save point first. Then temporarily change the endpoint to an address that does not exist:
+
+```javascript
+fetch('https://api64.ipify.org/not-a-real-endpoint')
+```
+
+Predict what should happen before opening the page:
+
+<ul class="prediction-list">
+<li>The page itself should still open.</li>
+<li>The API request should fail or return an error response.</li>
+<li>The page should not display a made-up IP address.</li>
+<li>The visible message should explain that the address could not be loaded.</li>
+</ul>
+
+Open Network and Console evidence before asking for a diagnosis. Restore the correct endpoint afterward.
+
+<Response id="api-ipify-failure-evidence" prompt="Describe the deliberate failure. What did you expect, what actually happened, what did Network or Console show, and how did you restore the working endpoint?" rows={12} />
+
+## Ask Codex for help
+
+Use this prompt if the page does not behave as expected:
+
+```text
+I am building a tiny plain HTML page that asks this API for JSON:
+https://api64.ipify.org?format=json
+
+The page should:
+- show a waiting message before the response arrives;
+- show the returned data.ip value after success;
+- show an honest error after failure;
+- never invent an IP address.
+
+Here is my evidence:
+Expected:
+[what I predicted]
+
+Actual:
+[what I saw]
+
+Request URL:
+[exact URL from Network]
+
+Response status:
+[status or connection error]
+
+Response body:
+[what came back, with private information removed if necessary]
+
+Console message:
+[exact message, or “none”]
+
+Please explain whether the problem is in the URL, request, response status, response shape, JavaScript, or screen update.
+Do not rewrite the page yet. Give me the smallest likely fix and explain why.
+```
+
+Codex should diagnose from the evidence, not guess from “it does not work.”
+
+<Response id="api-ipify-codex-review" prompt="Read Codex’s diagnosis critically. Which part of the request–response story does it identify? What evidence supports the diagnosis, and what remains unverified?" rows={10} />
+
+## Regression check
+
+Restore the correct endpoint and run the normal workflow again:
+
+<ol class="mental-model-steps">
+<li>Open the page in a fresh browser tab.</li>
+<li>Confirm the waiting message appears.</li>
+<li>Confirm an IP value appears after the response.</li>
+<li>Refresh the page.</li>
+<li>Confirm the page asks the API again rather than pretending the old value was still current.</li>
+<li>Confirm the rest of the page still opens and the error handling remains present in the code.</li>
+</ol>
+
+A value appearing after refresh does not prove that the API always works. It proves that this request succeeded on this attempt. Your evidence should say what you actually observed.
+
+## What this example teaches
+
+This tiny page demonstrates a pattern used by much larger applications:
+
+<ol class="mental-model-steps">
+<li>A user needs information.</li>
+<li>The browser asks another program through an API.</li>
+<li>The other program checks or finds the information.</li>
+<li>The browser waits for the answer.</li>
+<li>The browser displays success or failure honestly.</li>
+</ol>
+
+The same pattern can ask for a map route, search messages, load a profile, check an order, or submit a form. The difference is what the API does with the request and what rules it applies.
+
+It also gives you a debugging map. If the address is missing, ask:
+
+<ul class="question-list">
+<li>Did the browser send the request?</li>
+<li>Did the request use the right endpoint?</li>
+<li>Did the API return a successful response?</li>
+<li>Did the response contain the field the page expected?</li>
+<li>Did the JavaScript read the field correctly?</li>
+<li>Did the screen display the value correctly?</li>
+</ul>
+
+<Response id="api-ipify-explain-back" prompt="Explain the complete story in your own words: what problem the API solves, what the browser sends, what IPify returns, how the page displays it, and where you would look if the value were missing. Say what you verified and what remains unverified." rows={12} />
+
+<details>
+  <summary>Mentor pause</summary>
+
+Show your mentor the HTML page, the live IP result, the Network evidence, the deliberate failure, the repaired page, and the refresh regression check. Explain what the API owns, what your page owns, and what you still do not know.
+</details>
+
+<Checkpoint id="api-ipify-mentor-pause">I explained the API request and response, showed the evidence from the working and deliberately broken requests, and said what remains unverified.</Checkpoint>
+
+<Checkpoint id="api-ipify-complete">I can explain an API as a way for one program to ask another program for information, build a page that displays an API response, inspect the request and response, and handle failure honestly.</Checkpoint>

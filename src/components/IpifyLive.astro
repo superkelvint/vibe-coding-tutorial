@@ -1,0 +1,40 @@
+<div class="model-purpose" aria-live="polite">
+  <p><strong>Your current public IP address</strong></p>
+  <p><code id="lesson-ip-address">Asking the API…</code></p>
+  <p id="lesson-ip-status">Your browser is waiting for the API's response.</p>
+  <details>
+    <summary>See the actual JSON response</summary>
+    <pre class="astro-code" data-language="json"><code id="lesson-ip-json">Waiting for JSON…</code></pre>
+  </details>
+</div>
+
+<script>
+  const ipOutput = document.querySelector<HTMLElement>('#lesson-ip-address');
+  const ipStatus = document.querySelector<HTMLElement>('#lesson-ip-status');
+  const ipJson = document.querySelector<HTMLElement>('#lesson-ip-json');
+
+  if (!ipOutput || !ipStatus || !ipJson) {
+    throw new Error('The IP display elements are missing from the page');
+  }
+
+  fetch('https://api64.ipify.org?format=json')
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`The API responded with status ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      if (!data.ip) {
+        throw new Error('The API response did not contain an ip value');
+      }
+      ipOutput.textContent = data.ip;
+      ipJson.textContent = JSON.stringify(data, null, 2);
+      ipStatus.textContent = 'The API answered, and this page displayed the value it returned.';
+    })
+    .catch((error) => {
+      ipOutput.textContent = 'Could not load the address';
+      ipJson.textContent = 'No JSON response was available.';
+      ipStatus.textContent = `The request failed: ${error.message}`;
+    });
+</script>
