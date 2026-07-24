@@ -1,0 +1,319 @@
+---
+title: "TypeScript for React projects: help Codex make fewer mistakes"
+section: "Course Reference · TypeScript"
+order: 96
+estimatedTime: "25 minutes"
+mentalModel: "The TypeScript compiler checks code written by Codex and gives it concrete feedback when data or component code does not match."
+verificationFocus: "Predict a preventable data mistake, ask Codex to use TypeScript, run the type checker, and separate type mistakes from bugs that need other checks."
+description: "Understand why new React projects should use TypeScript by default and how compiler feedback helps Codex correct its code."
+---
+
+## A critical habit when working with coding agents
+
+When Codex changes an app, it needs a way to tell whether the change is actually right. A confident-sounding explanation is not enough. Give Codex feedback that can confirm or reject its work.
+
+That feedback might come from:
+
+<ul class="observation-checklist">
+<li>a <strong>code checker</strong>, which checks whether the code follows the rules;</li>
+<li>a <strong>unit test</strong>, which checks one small behavior;</li>
+<li>an <strong>end-to-end test</strong>, which checks a complete user journey; or</li>
+<li>a <strong>manual browser check</strong>, where you observe what the user actually sees.</li>
+</ul>
+
+This is one of the most important habits in agent-assisted development:
+
+<aside class="mantra-callout">
+<p><strong>Do not only tell Codex what to build. Give it a way to discover whether it built it correctly.</strong></p>
+</aside>
+
+TypeScript is one example of this idea. Its code checker gives Codex immediate feedback when the code it wrote uses data incorrectly. This checker is commonly called a <strong>compiler</strong>. Unit tests, end-to-end tests, and browser checks provide other kinds of feedback later in the process.
+
+## Start with what plain JavaScript cannot check early
+
+Imagine that an app stores a chore like this:
+
+```javascript
+const chore = {
+  title: "Water the plants",
+  assignedTo: "Taylor",
+  done: false
+};
+```
+
+JavaScript is flexible. That is useful, but it means JavaScript usually does not know in advance what fields or values this object is supposed to contain. Here are three simple mistakes that can slip through until the app runs.
+
+### Example 1: a misspelled field
+
+```javascript
+console.log(chore.titel);
+```
+
+The real field is <code>title</code>, but the code asks for <code>titel</code>. JavaScript will usually allow this line. When it runs, it produces <code>undefined</code>, and the user may see a blank space.
+
+### Example 2: missing information
+
+```javascript
+const incompleteChore = {
+  title: "Water the plants",
+  done: false
+};
+```
+
+This object has no <code>assignedTo</code> field. Plain JavaScript does not automatically know that every chore is supposed to have one. The problem may appear much later when the screen tries to display the person’s name.
+
+### Example 3: the wrong kind of value
+
+```javascript
+const confusingChore = {
+  title: "Water the plants",
+  assignedTo: "Taylor",
+  done: "no"
+};
+```
+
+The app expects <code>done</code> to be true or false, but this code supplies text. JavaScript generally allows that too. A later rule that expects a true-or-false value may make the wrong decision.
+
+<aside class="model-purpose">
+<p><strong>How could we get the computer to reject these mismatches before the app runs?</strong></p>
+</aside>
+
+## TypeScript gives Codex feedback before the app runs
+
+TypeScript is JavaScript with an additional checking step. You describe what your data is supposed to look like, and TypeScript can report a mismatch before the app runs. This early checking is often called <strong>compile-time checking</strong>; it happens while the project is being prepared, not while a user is clicking the app.
+
+Here is the same chore description in TypeScript:
+
+```tsx
+type Chore = {
+  title: string;
+  assignedTo: string;
+  done: boolean;
+};
+```
+
+Now the TypeScript compiler can report that <code>titel</code> is not a field on a <code>Chore</code>, that <code>assignedTo</code> is missing, or that <code>done: "no"</code> is the wrong kind of value. Codex can read that feedback, correct the code, and run the check again before you open the app.
+
+TypeScript does not decide what a chore should contain. You make that product decision. The compiler then gives Codex feedback when the code it writes does not follow that decision.
+
+The name is less important than the behavior:
+
+```text
+Plain JavaScript:
+mistake → app runs → confusing screen behavior
+
+TypeScript:
+mistake → compiler reports it → Codex corrects it before the app runs
+```
+
+## What you will learn
+
+By the end of this short guide, you will be able to:
+
+<ul class="observation-checklist">
+<li>explain the difference between JavaScript’s runtime discovery and TypeScript’s earlier checking;</li>
+<li>recognize the kinds of mismatches TypeScript can report to Codex;</li>
+<li>ask Codex to use TypeScript for a new React project;</li>
+<li>ask Codex to prove that TypeScript is actually being checked; and</li>
+<li>explain which problems still need tests or a browser check.</li>
+</ul>
+
+You are not trying to learn every TypeScript feature today. The goal is to understand why it is a sensible default for new React projects and how to ask Codex to set it up properly.
+
+For example, a chore might be expected to look like this:
+
+<table>
+<thead><tr><th>Field</th><th>Expected value</th></tr></thead>
+<tbody>
+<tr><td><code>title</code></td><td>text, such as “Water the plants”</td></tr>
+<tr><td><code>assignedTo</code></td><td>text, such as “Taylor”</td></tr>
+<tr><td><code>done</code></td><td>true or false</td></tr>
+</tbody>
+</table>
+
+That description is useful because the same chore may be displayed by several pieces of the interface. They all need to agree about the field names and the kind of values they contain.
+
+<Response id="typescript-react-prediction" prompt="Before reading further, choose one of the three JavaScript examples. What do you predict TypeScript would report before the app runs? What confusing browser behavior might happen if the mismatch were allowed through?" rows={8} />
+
+## Why this is our default for new React projects
+
+For this course, the rule is simple:
+
+<aside class="mantra-callout">
+<p><strong>Every new React project uses TypeScript by default.</strong></p>
+<p>We are choosing this because React projects pass the same data through multiple components. The compiler gives Codex feedback when those pieces disagree, before the disagreement becomes confusing screen behavior.</p>
+</aside>
+
+TypeScript is especially helpful when Codex is making changes because it can expose assumptions that would otherwise remain hidden:
+
+<ul class="observation-checklist">
+<li>a field was renamed in one file but not another;</li>
+<li>a required value was forgotten;</li>
+<li>a true-or-false value was replaced with text;</li>
+<li>a component was given the wrong kind of information; or</li>
+<li>a change no longer matches the data used elsewhere in the app.</li>
+</ul>
+
+This is not magic and it is not a guarantee that the app works. It is a feedback loop: Codex writes code, the compiler reports mismatches, and Codex can correct them while it builds and changes the project.
+
+## What happens to TypeScript before a user sees the app?
+
+The browser normally runs JavaScript, not the TypeScript annotations used during development.
+
+<ol class="mental-model-steps">
+<li>You or Codex write React code in <code>.tsx</code> files.</li>
+<li>The TypeScript checker looks for disagreements such as a misspelled field or a missing value, then gives Codex a concrete error to investigate.</li>
+<li>The project prepares browser-ready JavaScript.</li>
+<li>The browser runs that JavaScript and shows the interface.</li>
+</ol>
+
+The important idea is that TypeScript helps Codex while the project is being built. It is development-time information and checking, not a feature that users click on.
+
+<details>
+  <summary>What do .ts, .tsx, and tsconfig.json mean?</summary>
+
+  <dl>
+    <dt><code>.ts</code></dt>
+    <dd>A file containing TypeScript that does not contain JSX interface markup.</dd>
+    <dt><code>.tsx</code></dt>
+    <dd>A TypeScript file that can also contain React interface markup.</dd>
+    <dt><code>tsconfig.json</code></dt>
+    <dd>A project settings file that tells the checker which TypeScript rules and files to use.</dd>
+  </dl>
+
+  You do not need to create these by hand for this lesson. Ask Codex to set up the project and then ask it to show you the evidence that the checker runs.
+</details>
+
+## Ask Codex to use TypeScript
+
+When starting a new React project, use this prompt:
+
+```text
+Create this new React project using TypeScript from the beginning.
+
+Use .ts files for regular TypeScript code and .tsx files for React components.
+Do not create JavaScript or JSX application source files.
+Use TypeScript to describe the important data and the information each component receives.
+Set up the normal TypeScript project settings and a command that checks the code.
+
+Before editing, tell me:
+- which files will contain the React application;
+- which command will check the TypeScript; and
+- which command will build the project for the browser.
+
+After editing:
+- run the TypeScript check;
+- run the project build;
+- report the exact commands and results;
+- show one example of a data shape or component input that is typed; and
+- say what remains unverified.
+
+Do not claim the project is correct just because the TypeScript check passes.
+```
+
+<Response id="typescript-new-project-prompt" prompt="Copy the prompt into your notes. In your own words, what simple mistake is TypeScript supposed to catch in this project? What evidence will Codex provide that the check really ran?" rows={10} />
+
+## Ask Codex to prove it is being used
+
+A file called <code>tsconfig.json</code> is not enough evidence by itself. Codex should check that the project actually uses TypeScript and that the check runs.
+
+```text
+Audit this React project without changing files.
+
+Check:
+- whether the application source uses .ts and .tsx files;
+- whether TypeScript project settings exist;
+- the exact command that checks TypeScript;
+- whether important data and component inputs have types; and
+- whether the check and the build actually pass.
+
+Report:
+- what you inspected;
+- the commands you ran and their results;
+- one mistake the checker could catch in this project;
+- anything that is still JavaScript or unchecked; and
+- what remains unverified.
+
+Do not call the project fully typed just because a settings file exists.
+```
+
+## TypeScript does not check everything
+
+TypeScript checks the promises written into your code. It cannot force information from outside the code to be truthful.
+
+For example, a server might send:
+
+```json
+{
+  "title": "Water the plants",
+  "done": "yes"
+}
+```
+
+Your code may say that <code>done</code> should be true or false, but TypeScript cannot control what an outside server sends at runtime.
+
+That is why you still need other checks:
+
+<ul class="question-list">
+<li>Does the response arrive?</li>
+<li>Does it contain the fields the app needs?</li>
+<li>Are the values actually the right kind when they arrive?</li>
+<li>What happens when a field is missing?</li>
+<li>Does the user see the correct result?</li>
+</ul>
+
+TypeScript can show Codex a misspelled field in the code it is creating or changing. A test or browser check is still needed to confirm that the user can add a chore, see it, and mark it complete.
+
+## Check one TypeScript change
+
+For one small change, use this order:
+
+<ol class="mental-model-steps">
+<li>Predict which data or component expectation will change.</li>
+<li>Ask Codex to make only that small change.</li>
+<li>Run the TypeScript check and read the result.</li>
+<li>Run all regression checks already required by the project.</li>
+<li>Open the app and check the changed behavior yourself.</li>
+<li>Try one simple edge case, such as an empty value or missing data.</li>
+<li>Record what you checked and what remains unknown.</li>
+</ol>
+
+<Response id="typescript-verification-review" prompt="Ask Codex to review one TypeScript change. Ask it: What compiler feedback did Codex receive? How did Codex respond to it? Which problems need a test or browser check? What passed, failed, was not run, and remains unverified?" rows={12} />
+
+<details>
+  <summary>Optional: an existing React project that uses JavaScript</summary>
+
+  If you already have a JavaScript React project, do not ask Codex to rename everything in one enormous step. Ask it to inspect the project first and suggest one small migration milestone:
+
+  ```text
+  Inspect this existing React project before changing anything.
+
+  Tell me:
+  - which source files use JavaScript and which use TypeScript;
+  - whether TypeScript checking is already configured;
+  - which shared data and component should be typed first; and
+  - what small change would show visible progress.
+
+  Do not edit files yet. Include the focused check, all regression checks, and the browser check for that milestone.
+  ```
+
+  This is an optional follow-up. New projects should start with TypeScript instead of needing this migration.
+</details>
+
+<details>
+  <summary>Mentor pause</summary>
+
+  Explain this without using the phrase “it makes the code safer” by itself:
+
+  <ul>
+  <li>What feedback does the TypeScript compiler give Codex?</li>
+  <li>What mismatch can that feedback expose before the browser runs the app?</li>
+  <li>What problem would still require a test or a browser check?</li>
+  </ul>
+
+  Show the type-check evidence and name one thing you still do not know.
+</details>
+
+<Checkpoint id="typescript-mentor-pause">I explained how compiler feedback helps Codex correct its code, showed the type-check evidence, and named one problem that still needs a test or browser check.</Checkpoint>
+
+<Checkpoint id="typescript-guide-complete">I can ask Codex to start a React project with TypeScript, recognize evidence that the checker really ran, and explain why a passing type check does not prove that the user problem is solved.</Checkpoint>
