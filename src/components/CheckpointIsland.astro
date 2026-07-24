@@ -1,0 +1,7 @@
+---
+import Checkpoint from './Checkpoint';
+
+const { id, children } = Astro.props;
+---
+
+<Checkpoint client:load id={id}>{children}</Checkpoint>

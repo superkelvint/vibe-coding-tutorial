@@ -1,0 +1,7 @@
+---
+import Response from './Response';
+
+const { id, prompt, rows } = Astro.props;
+---
+
+<Response client:load id={id} prompt={prompt} rows={rows} />

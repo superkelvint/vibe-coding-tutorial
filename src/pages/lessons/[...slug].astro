@@ -2,8 +2,8 @@
 import { getCollection, render } from 'astro:content';
 import LessonLayout from '../../layouts/LessonLayout.astro';
 import Track from '../../components/Track.astro';
-import Response from '../../components/Response';
-import Checkpoint from '../../components/Checkpoint';
+import Response from '../../components/ResponseIsland.astro';
+import Checkpoint from '../../components/CheckpointIsland.astro';
 
 export async function getStaticPaths() {
   const lessons = (await getCollection('lessons')).sort((a, b) => a.data.order - b.data.order);
