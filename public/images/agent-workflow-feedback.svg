@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 360" role="img" aria-labelledby="title desc">
+  <title id="title">Implementation and testing feedback loop</title>
+  <desc id="desc">Codex implements a small change, tests it, receives evidence, and either moves on or makes a focused fix before testing again.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12z" fill="#334155"/></marker>
+  </defs>
+  <rect width="1100" height="360" fill="#fff"/>
+  <g font-family="Arial, sans-serif" fill="#172033">
+    <text x="550" y="42" text-anchor="middle" font-size="24" font-weight="700">Testing gives Codex a chance to correct itself</text>
+    <g stroke="#334155" stroke-width="3">
+      <rect x="80" y="115" width="220" height="105" rx="16" fill="#f0fdf4"/>
+      <rect x="440" y="115" width="220" height="105" rx="16" fill="#eff6ff"/>
+      <rect x="800" y="115" width="220" height="105" rx="16" fill="#fff7ed"/>
+      <path d="M300 167H430" marker-end="url(#arrow)" fill="none"/>
+      <path d="M660 167H790" marker-end="url(#arrow)" fill="none"/>
+      <path d="M910 230C910 310 190 310 190 230" marker-end="url(#arrow)" fill="none"/>
+    </g>
+    <g text-anchor="middle">
+      <text x="190" y="153" font-size="22" font-weight="700">Implement</text>
+      <text x="190" y="181" font-size="16">Make one small change</text>
+      <text x="190" y="205" font-size="16">with a clear target</text>
+      <text x="550" y="153" font-size="22" font-weight="700">Test</text>
+      <text x="550" y="181" font-size="16">Run checks and inspect</text>
+      <text x="550" y="205" font-size="16">the user experience</text>
+      <text x="910" y="153" font-size="22" font-weight="700">Evidence</text>
+      <text x="910" y="181" font-size="16">Passed? Move on.</text>
+      <text x="910" y="205" font-size="16">Failed? Fix narrowly.</text>
+      <text x="550" y="337" font-size="17" font-weight="700">Do not hide failures—use them to guide the next change.</text>
+    </g>
+  </g>
+</svg>

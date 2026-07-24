@@ -1,0 +1,388 @@
+---
+title: "The Explore → Plan → Implement → Test workflow"
+section: "Course Reference · Agent Workflow"
+order: 97
+estimatedTime: "35 minutes"
+mentalModel: "Give a coding agent enough focused context to understand the project, agree on a plan, make one visible change, and receive evidence about whether the change worked."
+verificationFocus: "Review the plan before implementation, require checks after each milestone, inspect the evidence, and save only verified work."
+description: "A practical workflow for using Codex on larger changes without losing track of the problem, the plan, the evidence, or the last working version."
+---
+
+When a project is small, you can sometimes ask Codex for one change and check the result immediately. That becomes much harder when a change touches several screens, saved data, a server, tests, and deployment.
+
+The answer is not simply “write a much longer prompt.” A better answer is to give Codex a repeatable way to work:
+
+<ol class="mental-model-steps">
+<li><strong>Explore:</strong> understand the project and find the information that matters.</li>
+<li><strong>Plan:</strong> decide what will change and how you will know each part is finished.</li>
+<li><strong>Implement:</strong> make one small, visible part of the plan.</li>
+<li><strong>Test:</strong> gather evidence, find problems, and fix them before moving on.</li>
+</ol>
+
+After a tested milestone, create a clear Git save point. Then begin the next cycle.
+
+<aside class="model-purpose">
+<p><strong>The core idea is simple: do not ask Codex to guess, build everything at once, and hope. Give it context, a reviewed plan, a small target, and a way to discover whether it got the target right.</strong></p>
+</aside>
+
+<img src={`${import.meta.env.BASE_URL}/images/agent-workflow-loop.svg`} alt="Diagram showing Codex exploring the project, creating a reviewed plan, implementing one visible milestone, and testing the result in a loop." />
+<p class="image-caption"><strong>Notice the loop.</strong> Testing is not the final ceremony. Its evidence can send Codex back to make a focused fix before the next milestone.</p>
+
+## Use the right tool for each part
+
+Where possible, use <strong>ChatGPT for Explore and Plan</strong>, then use <strong>Codex for Implement and Test</strong>.
+
+ChatGPT is a good place to think through the broad problem, ask questions, compare possible user experiences, and draft the plan. Once you have reviewed those decisions, save them in the project and give them to Codex.
+
+Codex is then working from useful, approved context instead of spending its context and tokens rediscovering the whole project before every implementation request. This does not mean Codex must blindly trust the documents. Codex should still inspect the relevant files before changing them and check that the plan matches the real project.
+
+### Why not use Codex for broad exploration when ChatGPT can do it?
+
+Exploration can involve reading many files, comparing several possible approaches, asking follow-up questions, and changing your mind. If you do all of that in Codex, its context window and token budget can become crowded before it has written or checked any code. Important project details may be pushed out by the exploration conversation, and you have spent the implementation agent’s budget on work that did not require it to edit the repository.
+
+Use ChatGPT for that broad thinking where possible. Then give Codex a short, reviewed summary and plan. Codex can spend its focused context on the actual repository, the next code change, and the checks that tell you whether the change worked.
+
+This is not because ChatGPT is automatically correct or because Codex is unable to explore. It is a division of labor that keeps the implementation session focused and preserves Codex’s capacity for coding and verification. Codex must still inspect the relevant files before editing, because the approved notes may not capture every detail of the current code.
+
+<table>
+<thead><tr><th>Work</th><th>Preferred tool</th><th>Reason</th></tr></thead>
+<tbody>
+<tr><td>Explore the problem, possible experiences, and broad project context</td><td><strong>ChatGPT</strong></td><td>Keep broad thinking out of the implementation session where possible.</td></tr>
+<tr><td>Draft the PRD, design notes, and milestone plan</td><td><strong>ChatGPT</strong></td><td>Give yourself room to ask questions and revise decisions before code changes begin.</td></tr>
+<tr><td>Inspect the relevant files before changing them</td><td><strong>Codex</strong></td><td>Confirm that the approved plan matches the actual repository.</td></tr>
+<tr><td>Implement one milestone and run its checks</td><td><strong>Codex</strong></td><td>Codex can edit the project and use compiler, test, and browser feedback.</td></tr>
+</tbody>
+</table>
+
+## Why a process matters
+
+Codex can produce a convincing-looking answer even when it has misunderstood the project. It may change the wrong file, copy an old pattern, forget an existing rule, or solve one screen while quietly breaking another.
+
+This is especially likely when a request contains many decisions. For example, “let users export all their data” sounds small, but it leaves important questions unanswered:
+
+<ul class="question-list">
+<li>What file format should the export use?</li>
+<li>Should the export include private or hidden information?</li>
+<li>What should happen if the user has a very large amount of data?</li>
+<li>Does the export happen immediately or take time?</li>
+<li>What should the user see while it is being prepared?</li>
+<li>What happens if the user clicks the button repeatedly?</li>
+</ul>
+
+If those decisions remain hidden, Codex has to invent answers. You may not discover the inventions until a large amount of code has been written.
+
+The larger the change and the more decisions it contains, the more useful it is to slow down before implementation. A tiny text change may need only a short prompt and a quick check. A new workflow that changes the user experience, data, and server needs the full cycle.
+
+## The four-part workflow
+
+<table>
+<thead><tr><th>Stage</th><th>Question it answers</th><th>What you should receive</th></tr></thead>
+<tbody>
+<tr><td><strong>Explore</strong></td><td>What already exists, and what does this change touch?</td><td>A focused summary of the relevant files, rules, and current behavior.</td></tr>
+<tr><td><strong>Plan</strong></td><td>What exactly will we change, in what order, and how will we check it?</td><td>A small sequence of milestones with visible results and checks.</td></tr>
+<tr><td><strong>Implement</strong></td><td>Can we complete the next milestone without taking on the whole project?</td><td>One understandable change that can be inspected.</td></tr>
+<tr><td><strong>Test</strong></td><td>Did the change work, and did it break anything else?</td><td>Commands, results, browser observations, failures, and remaining uncertainty.</td></tr>
+</tbody>
+</table>
+
+These stages are connected. Testing can reveal that the plan was incomplete. Exploration can reveal a product decision that needs your answer. Implementation can reveal that a milestone is too large. Going back to an earlier stage is not failure; it is how the process prevents expensive confusion later.
+
+## 1. Explore before changing anything
+
+Start by asking ChatGPT to help you think through the change without editing files. Where possible, do this before opening an implementation session in Codex. The purpose is not to make ChatGPT read the entire repository and repeat it back to you. The purpose is to identify the small amount of context and the important questions needed for the requested change.
+
+If ChatGPT cannot inspect the local repository, give it the relevant project documents or summaries. Codex will still inspect the actual files before editing. The point is to avoid using Codex for broad brainstorming and planning when ChatGPT can do that work first.
+
+Codex may need to inspect:
+
+<ul class="observation-checklist">
+<li>the existing screen or user flow;</li>
+<li>the files that own the relevant data and behavior;</li>
+<li>the project’s instructions in <code>AGENTS.md</code> or similar files;</li>
+<li>the product requirements and design documents;</li>
+<li>the existing tests and the commands that run them;</li>
+<li>previous architecture decisions; and</li>
+<li>recent Git changes when the history may explain a decision.</li>
+</ul>
+
+You do not need to know the names of all these files in advance. Ask Codex to find them and explain which ones matter.
+
+### A simple exploration prompt for ChatGPT
+
+```text
+Help me explore this project before Codex makes any changes.
+
+I want to add: [describe the user problem and the requested outcome].
+
+Do not edit files. Based on the project information I provide, help me identify only the instructions and files that are relevant to this request.
+
+Report in plain language:
+- how the current behavior works;
+- which files, data, and user actions this change may affect;
+- which existing checks are available;
+- which decisions are already documented;
+- what is unclear or missing; and
+- what questions you need me to answer before planning.
+
+Do not propose implementation details until you have explained what information matters and what is still missing.
+```
+
+<Response id="agent-workflow-explore-prediction" prompt="Before using the exploration prompt, predict what Codex should find for your project: which screen, data, or existing check is most likely to matter? Afterward, compare your prediction with its report." rows={8} />
+
+### Why the context must stay focused
+
+Codex has a limit on how much information it can actively consider in one conversation. This limit is often called the <strong>context window</strong>. If the conversation is filled with unrelated files and long explanations, important details can become harder for the agent to use accurately.
+
+Exploration should therefore be selective. Ask Codex to find the relevant context, summarize it, and leave unrelated parts alone. For a very large project, a separate helper agent can investigate one narrow question and return a short summary. That keeps the main conversation easier to follow.
+
+You do not need a team of helper agents for every task. Use them when the project is large enough that one conversation would otherwise become crowded, or when different investigations can happen independently.
+
+<img src={`${import.meta.env.BASE_URL}/images/agent-workflow-context.svg`} alt="Diagram showing a large project being narrowed to the relevant instructions, files, tests, decisions, and one clear question before Codex works." />
+<p class="image-caption"><strong>Explore to narrow the context.</strong> Codex does not need every file in every conversation. It needs the information that matters for this change.</p>
+
+## 2. Make and review a plan
+
+Once ChatGPT has helped you understand the problem and the relevant project context, ask ChatGPT to turn the request into a plan. The plan should break the work into milestones. Each milestone should produce something visible or inspectable, rather than hiding all progress until the very end.
+
+For example:
+
+<ol class="mental-model-steps">
+<li>Show an Export button in the right place.</li>
+<li>Make the button produce a small export for the current user.</li>
+<li>Add a loading and error state.</li>
+<li>Handle large or empty data safely.</li>
+<li>Test the complete user journey and protect existing behavior.</li>
+</ol>
+
+The plan can be saved in a Markdown file such as <code>docs/implementation-plan.md</code>. Saving it makes the work easier to resume after a long break, a crashed computer, or a new Codex conversation.
+
+### The human review is essential
+
+You are not reviewing the plan to check whether you know every technical term. You are reviewing the decisions that affect the product:
+
+<ul class="question-list">
+<li>Is this solving the actual user problem?</li>
+<li>Does the workflow make sense from the user’s point of view?</li>
+<li>What should happen when the user has no data?</li>
+<li>What should happen when the action fails?</li>
+<li>Is anything included that we did not ask for?</li>
+<li>Can we see the product taking shape after each milestone?</li>
+</ul>
+
+If you are technical, you can also review the proposed technical decisions. If you are not technical, you still own the product and business decisions. Do not approve a plan you do not understand well enough to explain.
+
+### A planning prompt for ChatGPT
+
+```text
+Using the exploration report and the approved product documents, create an implementation plan for this change. This plan will later be given to Codex.
+
+Break the work into small milestones. Each milestone must have:
+- one clear purpose;
+- a visible or inspectable result;
+- the smallest files and behavior it needs to change;
+- focused automated checks where they are useful;
+- all existing regression checks that must still pass;
+- a manual browser check when the user experience changes; and
+- evidence that will show whether it worked.
+
+Start with the smallest useful milestone. Do not implement anything yet.
+
+Call out:
+- decisions you made;
+- decisions that still need my answer;
+- edge cases;
+- what the plan deliberately leaves out; and
+- what will remain unverified after each milestone.
+```
+
+Review the plan before asking Codex to implement it. If the plan is wrong, this is a cheap moment to change it. Once many files have been changed, changing your mind costs more time and creates more opportunities for accidental breakage.
+
+<Response id="agent-workflow-plan-review" prompt="Read the proposed plan as a product owner. Which milestone will produce the first visible result? What user decision does the plan make? What edge case or out-of-scope feature should be corrected before implementation begins?" rows={10} />
+
+## 3. Give the reviewed plan to Codex
+
+After you review the exploration notes and plan, save the useful results in the project. For example:
+
+<ul class="observation-checklist">
+<li><code>docs/product-requirements.md</code> for the user problem and product decisions;</li>
+<li><code>docs/high-level-design.md</code> for the main parts of the system; and</li>
+<li><code>docs/implementation-plan.md</code> for the approved milestones and checks.</li>
+</ul>
+
+Now Codex can use those documents as a starting point. It should read the relevant files and confirm the plan against the real codebase, but it should not be asked to repeat broad exploration and planning that has already been done in ChatGPT.
+
+## 4. Implement one milestone at a time
+
+Do not give Codex the instruction “implement the entire plan” and disappear for hours. Give it the next approved milestone, its acceptance criteria, and the checks it promised to run.
+
+The implementation request should make the boundary of the work obvious:
+
+```text
+Implement only Milestone 1 from docs/implementation-plan.md.
+
+Before editing, restate:
+- the user problem this milestone addresses;
+- the visible result I should expect; and
+- what this milestone deliberately does not change.
+
+After editing:
+- run the focused checks for this milestone;
+- run every regression check required so far;
+- perform the planned manual check if the browser behavior changed;
+- report the files changed and the evidence collected; and
+- say what passed, failed, was not run, and remains unverified.
+
+Do not start the next milestone. Do not add new product behavior without asking me.
+```
+
+A milestone is complete when its result is visible, its acceptance criteria are observable, and the evidence supports the claim. A long list of changed files is not evidence by itself.
+
+### When separate agents help
+
+For a larger change, different agents can investigate or implement narrow pieces independently. For example, one can inspect the existing tests, another can investigate the server behavior, and another can review the user interface.
+
+The main benefit is not simply speed. Each helper gets a smaller context window and a narrower responsibility. The main Codex session receives a concise report instead of every unrelated file and thought.
+
+Use this carefully. Separate agents can make conflicting assumptions. They need a shared plan, clear interfaces between their work, and a final integration check. More agents do not automatically mean better work.
+
+## 5. Test, verify, and go back when necessary
+
+Testing is not a ceremony at the end. It is feedback that tells Codex whether the implementation matches the plan.
+
+Ask Codex to use the checks that fit the claim:
+
+<ul class="observation-checklist">
+<li>the TypeScript or other code checker for code-level mismatches;</li>
+<li>unit tests for small rules;</li>
+<li>end-to-end tests for complete user journeys;</li>
+<li>focused checks for the milestone just implemented;</li>
+<li>all regression checks from earlier milestones; and</li>
+<li>manual browser checks for visual behavior and details automated checks cannot observe well.</li>
+</ul>
+
+Do not accept “the tests passed” without asking whether the tests are meaningful. A test can pass for the wrong reason, skip the important path, or check only the happy case.
+
+Ask Codex to think critically about:
+
+<ul class="question-list">
+<li>What happens with empty, invalid, repeated, or unusually large input?</li>
+<li>What happens when the request fails halfway through?</li>
+<li>What happens after refresh or when the user returns later?</li>
+<li>Could one user see or change another user’s data?</li>
+<li>What previously working behavior could this change have broken?</li>
+<li>Which required behavior has no meaningful test or check yet?</li>
+</ul>
+
+### A verification prompt
+
+```text
+Now verify the milestone critically.
+
+Run:
+- the focused checks for this milestone;
+- every regression check required by the project so far; and
+- the planned manual browser check.
+
+Then review the checks themselves:
+- Which acceptance criterion does each check prove?
+- Could any check pass for the wrong reason?
+- Which happy cases are covered?
+- Which edge cases are covered?
+- What unintended regression did you try to find?
+- What passed, failed, was not run, or remains unverified?
+
+If something fails, show the evidence before diagnosing it. Fix only issues connected to this milestone, then rerun the relevant checks.
+Do not claim success when a required check was not run.
+```
+
+Verification may send the work back to implementation. That loop is normal:
+
+<img src={`${import.meta.env.BASE_URL}/images/agent-workflow-feedback.svg`} alt="Diagram showing Codex implementing a small change, testing it, reviewing evidence, and either moving on or making a focused fix before testing again." />
+<p class="image-caption"><strong>Failures are feedback.</strong> A failed check is useful when it gives Codex a specific problem to investigate and fix.</p>
+
+The goal is not to avoid all mistakes. The goal is to find them while the change is still small and understandable.
+
+<Response id="agent-workflow-verification" prompt="Ask Codex to audit one milestone. Record which acceptance criteria were checked, which edge case was tried, which regression check ran, what evidence supports the result, and what remains unverified." rows={12} />
+
+## Save the verified milestone
+
+Once the checks pass and you understand the result, create a Git commit. A commit is a local save point containing a small group of related changes.
+
+Use a message that explains what changed and why. For example:
+
+```text
+git add .
+git commit -m "Add first export workflow milestone"
+```
+
+Do not commit work you know is broken just to make the process look complete. If a milestone is intentionally incomplete, say so in the commit message and documentation. The next Codex session should be able to tell what is working and what is not.
+
+Small, meaningful commits help you:
+
+<ul class="observation-checklist">
+<li>return to the last known working version;</li>
+<li>understand when a behavior changed;</li>
+<li>compare the project before and after a milestone; and</li>
+<li>give Codex useful history when investigating a regression later.</li>
+</ul>
+
+## Keep the project context useful
+
+Codex can work more consistently when the project contains a small amount of durable guidance. Useful files might include:
+
+<dl>
+<dt><code>AGENTS.md</code></dt>
+<dd>Short instructions that apply to work in this repository.</dd>
+<dt><code>docs/product-requirements.md</code></dt>
+<dd>The user problem, intended user, scope, and observable product requirements.</dd>
+<dt><code>docs/high-level-design.md</code></dt>
+<dd>The main parts of the system and how they communicate.</dd>
+<dt><code>docs/implementation-plan.md</code></dt>
+<dd>The reviewed milestones and their checks.</dd>
+<dt><code>docs/architecture-decisions/</code></dt>
+<dd>Short records explaining important technical choices and why they were made.</dd>
+</dl>
+
+Keep these files concise. A giant instruction file can fill the context window with information that is irrelevant to the current task. Add a decision when it will prevent a future agent from repeating a mistake or unknowingly changing an important design choice.
+
+If Codex repeatedly makes the same mistake, record the lesson in the appropriate project guidance. Do not keep adding instructions automatically. First ask whether an existing instruction can be clarified or whether the design itself is confusing.
+
+## The reusable prompt
+
+For a complex change, this is the complete shape of the workflow:
+
+```text
+In ChatGPT, explore the project context without editing. Find the relevant instructions, product context, current behavior, existing checks, and recent decisions.
+
+In ChatGPT, create a small implementation plan with visible milestones, acceptance criteria, focused checks, regression checks, manual checks, edge cases, and remaining uncertainty. Do not implement until I review the plan.
+
+After I approve the plan, save it in the project and give it to Codex. Ask Codex to inspect the relevant files, confirm that the plan matches the repository, and implement only the next milestone. Run its checks, run all regression checks so far, perform the relevant manual check, and report evidence.
+
+Review whether the checks are meaningful. Distinguish happy cases from edge cases. Fix connected failures and verify again.
+
+When the milestone is verified, summarize what changed and what remains unverified so I can create a clear Git save point.
+```
+
+You can shorten this for a tiny change. You should expand the exploration, planning, and verification when the change affects more users, more data, more systems, or more decisions.
+
+## Explain it back
+
+The workflow is not a ritual to memorize. Explain it in your own words:
+
+<ul class="question-list">
+<li>Why should Codex explore before editing?</li>
+<li>Why should you review the plan before implementation?</li>
+<li>Why is one visible milestone easier to trust than a huge invisible change?</li>
+<li>What kind of feedback can the compiler, tests, and browser each provide?</li>
+<li>Why should verified work be saved in Git?</li>
+</ul>
+
+<details>
+  <summary>Mentor pause</summary>
+
+  Explain one complex feature you might build. Tell your mentor what Codex would explore, what the first milestone would show, how you would check it, what failure you would deliberately try, and what would remain unknown.
+</details>
+
+<Checkpoint id="agent-workflow-mentor-pause">I explained the Explore → Plan → Implement → Test cycle using a real feature, showed how Codex would receive feedback, and named what would remain unverified.</Checkpoint>
+
+<Checkpoint id="agent-workflow-complete">I can choose when a change needs the full workflow, require a reviewed plan before implementation, ask Codex for evidence after each milestone, and save only verified work as a clear Git commit.</Checkpoint>

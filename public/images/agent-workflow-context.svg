@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 400" role="img" aria-labelledby="title desc">
+  <title id="title">Keep the agent's working context focused</title>
+  <desc id="desc">A large project is narrowed to the relevant instructions, files, tests, and decisions before the focused context is given to Codex for one task.</desc>
+  <g font-family="Arial, sans-serif" fill="#172033">
+    <rect width="1100" height="400" fill="#fff"/>
+    <text x="550" y="40" text-anchor="middle" font-size="24" font-weight="700">Find the small context that matters</text>
+    <g stroke="#334155" stroke-width="3">
+      <rect x="55" y="95" width="350" height="240" rx="16" fill="#f8fafc"/>
+      <rect x="695" y="95" width="350" height="240" rx="16" fill="#eff6ff"/>
+      <path d="M430 215H680" marker-end="url(#arrow)" fill="none"/>
+    </g>
+    <defs><marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12z" fill="#334155"/></marker></defs>
+    <g text-anchor="middle">
+      <text x="230" y="132" font-size="22" font-weight="700">The whole project</text>
+      <text x="230" y="175" font-size="17">many files</text>
+      <text x="230" y="204" font-size="17">old decisions</text>
+      <text x="230" y="233" font-size="17">unrelated features</text>
+      <text x="230" y="262" font-size="17">existing checks</text>
+      <text x="230" y="291" font-size="17">project instructions</text>
+      <text x="870" y="132" font-size="22" font-weight="700">Focused context</text>
+      <text x="870" y="175" font-size="17">relevant instructions</text>
+      <text x="870" y="204" font-size="17">files for this change</text>
+      <text x="870" y="233" font-size="17">related tests</text>
+      <text x="870" y="262" font-size="17">important decisions</text>
+      <text x="870" y="291" font-size="17">one clear question</text>
+    </g>
+    <text x="550" y="370" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#172033">Less unrelated information makes important details easier for Codex to use.</text>
+  </g>
+</svg>
