@@ -7,7 +7,13 @@ mentalModel: "A project is a folder of files; the browser opens a page file; Git
 description: "Make your first page file and save a project checkpoint."
 ---
 
+import PreamblePageDemo from '../../../components/PreamblePageDemo.astro';
+
 Imagine writing a note and wanting to find both the note and an earlier version tomorrow. A project folder and Git solve those two needs. Today you will create a page file, open it, and save a checkpoint. The page will be plain text on a white background; styling comes next hour.
+
+This is what the first browser result should look like. Your Git checkpoint saves the file that produces it.
+
+<PreamblePageDemo stage={1} />
 
 ## Make a folder and a page
 
@@ -36,6 +42,13 @@ git commit -m "Add first page"
 ```
 
 `git init` starts history for this folder. `git add` chooses the file to save. `git commit` records that version with a short description. If Git asks for your name and email, follow its message to set them, then rerun the commit. `git status` should say the working tree is clean when the file has been saved.
+
+<figure class="preamble-git-demo">
+<pre>{`$ git status
+On branch main
+nothing to commit, working tree clean`}</pre>
+<figcaption>Example after your first commit. Your branch may have a different name; look for “working tree clean.”</figcaption>
+</figure>
 
 Change the heading to your own words and refresh the browser. You should see your new heading. `git status` should now show a changed file: your saved version still exists, and your newest edit has not been committed yet.
 

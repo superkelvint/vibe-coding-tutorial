@@ -11,6 +11,20 @@ This is a reference page, not a command-memorization test. You can return here w
 
 Git works locally on your computer. In this course, we use it to inspect changes and create understandable save points. These commands do not upload your project anywhere.
 
+Here is what a successful save point can look like in the terminal. The first `git status` says the page changed; the last one says those changes are saved. The exact commit code and branch name on your computer may differ.
+
+<figure class="preamble-git-demo">
+<pre>{`$ git status --short
+ M index.html
+$ git add index.html
+$ git commit -m "Improve event page"
+[main abc1234] Improve event page
+ 1 file changed, 3 insertions(+)
+$ git status --short
+(no output: nothing left to save)`}</pre>
+<figcaption>A sample terminal result after editing, selecting, and committing <code>index.html</code>. The final parenthetical line explains the empty output; Git does not print it.</figcaption>
+</figure>
+
 Before using a command, ask:
 
 1. What do I expect this command to do?

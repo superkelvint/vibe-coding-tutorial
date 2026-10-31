@@ -1,0 +1,50 @@
+---
+interface Props {
+  stage: 1 | 2 | 3 | 4;
+}
+
+const { stage } = Astro.props;
+const captions = {
+  1: 'Hour 1 result: a plain heading in the browser. Your own words can be different.',
+  2: 'Hour 2 result: a readable event page. The button is visible, but it does not act yet.',
+  3: 'Hour 3 result: click the button to see the message change.',
+  4: 'Hour 4 result: click the button to see a message that is easier to notice.',
+};
+---
+
+<figure class="preamble-demo" data-preamble-stage={stage}>
+  <div class="preamble-demo-bar" aria-hidden="true"><span></span><span></span><span></span><strong>index.html</strong></div>
+  <div class:list={["preamble-demo-page", { "preamble-demo-plain": stage === 1 }]}>
+    {stage === 1 ? (
+      <h3>Hello from my page</h3>
+    ) : (
+      <div class="preamble-demo-event">
+        <p class="preamble-demo-kicker">A little local event</p>
+        <h3>Saturday sketch walk</h3>
+        <p>Bring a pencil and explore the neighborhood together.</p>
+        <ul>
+          <li>Saturday at 10 am</li>
+          <li>Meet at the library entrance</li>
+          <li>Free to join</li>
+        </ul>
+        <button type="button" data-preamble-button>Count me in</button>
+        {stage >= 3 && <p class="preamble-demo-message" aria-live="polite" data-preamble-message>Ready to start.</p>}
+      </div>
+    )}
+  </div>
+  <figcaption>{captions[stage]} This is an example; your page can use different words and colors.</figcaption>
+</figure>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-preamble-stage]').forEach((demo) => {
+    const stage = Number(demo.dataset.preambleStage);
+    if (stage < 3) return;
+    const button = demo.querySelector<HTMLButtonElement>('[data-preamble-button]');
+    const message = demo.querySelector<HTMLElement>('[data-preamble-message]');
+    button?.addEventListener('click', () => {
+      if (!message) return;
+      message.textContent = 'Thanks for clicking.';
+      if (stage === 4) message.classList.add('preamble-demo-message-noticed');
+    });
+  });
+</script>

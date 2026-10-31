@@ -7,7 +7,13 @@ mentalModel: "A click is an action; JavaScript notices it and changes what the p
 description: "Connect one button to one visible change."
 ---
 
+import PreamblePageDemo from '../../../components/PreamblePageDemo.astro';
+
 Your page has a button, but a click currently changes nothing. Today you will give it one job: change a message beneath it. This is the smallest version of an app interaction.
+
+Try this example before changing your file. Look at the message, click the button, and compare the two states. Your page should make the same kind of change.
+
+<PreamblePageDemo stage={3} />
 
 **JavaScript** is code that can react to an action in the browser. The page needs a way to find the button and the message, so each can have an `id`, a short name used by the code.
 

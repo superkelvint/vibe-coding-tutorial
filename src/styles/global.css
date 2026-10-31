@@ -29,5 +29,23 @@ h1, h2 { line-height: 1.15; letter-spacing: -.025em; } h1 { font-size: clamp(2.5
 .explain-summary { max-width: 45rem; margin: 1.25rem 0; padding: .8rem 1rem; border: 2px solid #8da7a2; border-radius: .6rem; background: white; color: #29413e; }.explain-summary p { margin: 0; padding: .35rem 0; }.explain-summary p + p { border-top: 1px solid #b9cbc7; }
 .lesson-content table { width: 100%; max-width: 45rem; margin: 1.25rem 0; border-collapse: separate; border-spacing: 0; overflow: hidden; border: 2px solid #8da7a2; border-radius: .6rem; background: white; }.lesson-content th, .lesson-content td { padding: .7rem .85rem; text-align: left; border-bottom: 1px solid #b9cbc7; }.lesson-content th { color: var(--ink); background: white; font-weight: 800; }.lesson-content tr:last-child td { border-bottom: 0; }.lesson-content td + td, .lesson-content th + th { border-left: 1px solid #b9cbc7; }
 .response-card { margin: 1.35rem 0; padding: 1rem; border: 1px solid var(--line); border-radius: .5rem; background: #fcfdfc; }.response-card label { display: block; margin-bottom: .6rem; font-weight: 700; }.response-card textarea { display: block; width: 100%; resize: vertical; padding: .75rem; border: 1px solid #aebcba; border-radius: .35rem; color: var(--ink); background: white; font: inherit; }.response-card textarea:focus, .checkpoint input:focus { outline: 3px solid #b9ddd6; outline-offset: 2px; }.saved-note, .checkpoint-note { margin: .45rem 0 0; color: var(--muted); font-size: .8rem; }.checkpoint { display: grid; grid-template-columns: auto 1fr; column-gap: .75rem; margin: 1.35rem 0; padding: 1rem; border-radius: .5rem; background: var(--accent-soft); }.checkpoint input { width: 1.2rem; height: 1.2rem; margin-top: .25rem; accent-color: var(--accent); }.checkpoint label { font-weight: 700; }.checkpoint-note { grid-column: 2; }
+.preamble-demo, .preamble-git-demo { max-width: 45rem; margin: 1.5rem 0; border: 2px solid #8da7a2; border-radius: .7rem; overflow: hidden; background: white; }
+.preamble-demo-bar { display: flex; align-items: center; gap: .35rem; padding: .65rem .9rem; border-bottom: 1px solid #b9cbc7; background: #f5f7f6; }
+.preamble-demo-bar span { width: .6rem; height: .6rem; border-radius: 50%; background: #a8b9b5; }
+.preamble-demo-bar strong { margin-left: .5rem; font-size: .8rem; color: #526460; }
+.preamble-demo-page { min-height: 13rem; padding: 1.5rem; background: white; }
+.preamble-demo-page h3 { margin: 0 0 .5rem; font-size: 1.7rem; line-height: 1.2; }
+.preamble-demo-plain { min-height: 7rem; padding: .6rem; font-family: serif; color: black; }
+.preamble-demo-plain h3 { margin: .5em 0; font-size: 2em; }
+.preamble-demo-event { max-width: 27rem; }
+.preamble-demo-event p { margin: .5rem 0 1rem; }
+.preamble-demo-event .preamble-demo-kicker { margin: 0 0 .35rem; color: #286c67; font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.preamble-demo-event ul { margin: .75rem 0 1.25rem; padding-left: 1.3rem; }
+.preamble-demo-event button { padding: .6rem 1rem; border: 0; border-radius: .4rem; background: #286c67; color: white; font: inherit; font-weight: 700; cursor: pointer; }
+.preamble-demo-event button:focus-visible { outline: 3px solid #b9ddd6; outline-offset: 3px; }
+.preamble-demo-event .preamble-demo-message { margin: 1rem 0 0; }
+.preamble-demo-event .preamble-demo-message-noticed { display: inline-block; padding: .55rem .85rem; border-left: .3rem solid #286c67; border-radius: .25rem; background: #f2f8f6; color: #205854; font-weight: 800; }
+.preamble-demo figcaption, .preamble-git-demo figcaption { padding: .7rem .9rem; border-top: 1px solid #b9cbc7; color: #526460; font-size: .9rem; line-height: 1.5; }
+.preamble-git-demo pre { margin: 0; padding: 1rem; overflow-x: auto; color: #263238; background: white; font-size: .9rem; line-height: 1.5; }
 details { margin: 1.25rem 0; padding: .8rem 1rem; border: 1px solid var(--line); border-radius: .4rem; background: var(--paper); }summary { cursor: pointer; font-weight: 700; }.lesson-nav { display: flex; justify-content: space-between; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }.lesson-nav a { max-width: 48%; }
 @media (max-width: 600px) { .site-main { padding-top: 3rem; }.site-header span { display: none; }.lesson-meta { grid-template-columns: 1fr; }.lesson-card { grid-template-columns: 2.5rem 1fr auto; }.app-example p { grid-template-columns: 1fr; row-gap: .1rem; } }
