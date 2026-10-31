@@ -1,3 +1,5 @@
+> Historical build prompt. For new lesson work, follow `AGENTS.md` and the live MDX course instead of the older track and verification requirements below.
+
 # Codex Prompt: Final Course Audit
 
 Read the shared course files:
@@ -13,10 +15,10 @@ Do not substantially rewrite lessons unless needed to fix a clear problem.
 Audit every lesson for:
 
 - a clear primary mental model;
-- Product Judgment;
+- a single standalone product thinking lesson at the end;
 - Codex Prompting and Debugging;
 - Technical Build;
-- Verification Engineering integrated across all three tracks rather than isolated as a fourth track;
+- Verification Engineering integrated across the two recurring tracks;
 - substantial handholding appropriate to its place in the course;
 - observable success criteria before implementation;
 - inspection of available checks where appropriate;

@@ -1,249 +1,44 @@
 ---
-title: "Preamble Hour 1: Setup, files, browser, and Git"
+title: "Preamble Hour 1: Files, browser, and Git"
 section: "Preamble · Hour 1"
 order: 1
 estimatedTime: "60 minutes"
-mentalModel: "A project is a folder containing files; the browser reads some files; Git records understandable checkpoints."
-verificationFocus: "Predict what each command changes, then verify the file, browser, and Git state separately."
-description: "Build the first mental model: where code lives, how a browser reads it, and how Git saves understandable checkpoints."
+mentalModel: "A project is a folder of files; the browser opens a page file; Git records a version you can return to."
+description: "Make your first page file and save a project checkpoint."
 ---
 
-This is a learning task, not a production setup exercise. Move slowly and ask for an explanation whenever a word or command is unfamiliar.
+Imagine writing a note and wanting to find both the note and an earlier version tomorrow. A project folder and Git solve those two needs. Today you will create a page file, open it, and save a checkpoint. The page will be plain text on a white background; styling comes next hour.
 
-<Track type="product" title="Product Judgment">
+## Make a folder and a page
 
-The smallest useful result is not a polished app. It is a clear, observable save point.
+You need a browser, [VS Code](https://code.visualstudio.com/download), and [Git](https://git-scm.com/downloads). If either tool is already installed, keep using it. VS Code lets you edit files. A **terminal** is a window where you type commands. Git is the tool that records versions of files.
 
-Ask:
+Create a folder named `tiny-page` and open it in VS Code. Add `index.html` with this content:
 
-```text
-What are we learning?
-How a project folder, files, browser, and Git relate.
-
-What should happen?
-We create a file, change it, and save a checkpoint.
-
-How will we test it?
-The file exists, the browser can open it, and Git says the work is saved.
-
-What are we ignoring?
-Branches, React, servers, and deployment.
+```html
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><title>My first page</title></head>
+  <body><h1>Hello from my page</h1></body>
+</html>
 ```
 
-<Response id="preamble-hour1-learning-gate" prompt="Complete the learning gate in your own words: what are we learning, what should happen, how will we test it, and what are we deliberately ignoring?" rows={8} />
+The `.html` ending tells the browser this file describes a webpage. Open `index.html` in the browser. You should see “Hello from my page.” If you see the code itself, check that the file is named `index.html` and opened in the browser, rather than in a text preview.
 
-<Response id="preamble-hour1-success-criteria" prompt="Write observable success criteria. What would you be able to see in the folder, browser, and Git output if this lesson worked?" rows={7} />
+## Save a version with Git
 
-</Track>
-
-<Track type="codex" title="Codex Prompting and Debugging">
-
-Ask Codex for explanations, not setup magic. You are practicing keeping control of the mental model.
-
-Use this prompt:
-
-```text
-I am a complete beginner.
-
-Explain these in plain English:
-- project folder
-- file
-- browser
-- terminal
-- Git repository
-- commit
-
-Use one simple analogy.
-Do not give me a long history lesson.
-```
-
-Before asking, predict what a useful answer should contain. It should define each word, connect the words, and avoid asking you to run an unexplained command.
-
-<Response id="preamble-hour1-codex-prediction" prompt="Predict: what should Codex explain, and what would make its answer unhelpful for a complete beginner?" rows={6} />
-
-<details>
-  <summary>Hint: check whether the explanation preserves your control</summary>
-
-  A good explanation lets you say what a command or file is for before you run it. It does not replace understanding with a large setup script.
-</details>
-
-<Response id="preamble-hour1-codex-evidence" prompt="Record the evidence from the explanation and your first commands. Which words can you now explain, and which remain uncertain?" rows={7} />
-
-</Track>
-
-<Track type="technical" title="Technical Build">
-
-Install or confirm that you have:
-
-```text
-VS Code
-Git
-A browser
-```
-
-Use the official installation pages for your operating system:
-
-<table>
-<thead><tr><th>Operating system</th><th>VS Code</th><th>Git</th></tr></thead>
-<tbody>
-<tr><td>Windows</td><td><a href="https://code.visualstudio.com/download">Download VS Code</a></td><td><a href="https://git-scm.com/install/windows">Install Git for Windows</a></td></tr>
-<tr><td>macOS</td><td><a href="https://code.visualstudio.com/download">Download VS Code</a></td><td><a href="https://git-scm.com/install/mac">Install Git for macOS</a></td></tr>
-<tr><td>Linux</td><td><a href="https://code.visualstudio.com/download">Download VS Code</a></td><td><a href="https://git-scm.com/install/linux">Install Git for Linux</a></td></tr>
-</tbody>
-</table>
-
-On the VS Code download page, choose the installer for your operating system. On Linux, choose the package format your distribution uses, such as `.deb` or `.rpm`. If Git is already installed, you do not need to install it again.
-
-After installing, open a terminal and check Git with:
-
-```bash
-git --version
-```
-
-You should see a version number. You do not need to understand the version number yet; it simply confirms that the command is available.
-
-Git is a tool that keeps a history of the changes you make to a project.
-We will use it to create clear local save points after work that we have checked.
-You do not need an online account for this lesson; everything happens on your own computer.
-
-Keep this nearby while you practice: <a href={`${import.meta.env.BASE_URL}/lessons/preamble/05-preamble-git-cheatsheet/`}>Git cheat sheet: 10 commands to know</a>.
-
-This hour stays local on purpose. GitHub is a separate online service, not part of Git itself. When you later want to upload a checked project or connect it to Vercel, use the standalone <a href={`${import.meta.env.BASE_URL}/lessons/git-and-github-guide/`}>Git and GitHub guide</a>.
-
-Create a folder called:
-
-```text
-vibe-prework
-```
-
-Inside it, create:
-
-```text
-notes.txt
-```
-
-Write this exact line:
-
-```text
-My first Git save point.
-```
-
-Run each command one at a time:
+In the terminal inside the `tiny-page` folder, run:
 
 ```bash
 git init
-git status
-git add notes.txt
-git commit -m "Add first notes file"
-git status
+git add index.html
+git commit -m "Add first page"
 ```
 
-### Pause and predict
+`git init` starts history for this folder. `git add` chooses the file to save. `git commit` records that version with a short description. If Git asks for your name and email, follow its message to set them, then rerun the commit. `git status` should say the working tree is clean when the file has been saved.
 
-Before each command, ask:
+Change the heading to your own words and refresh the browser. You should see your new heading. `git status` should now show a changed file: your saved version still exists, and your newest edit has not been committed yet.
 
-```text
-What do you think this command will change?
+<Response id="preamble-hour1-explain-back" prompt="Where is the page file, what did the browser show, and what changed in Git status after you edited the heading?" rows={5} />
 
-Does it change the file, Git's memory, or neither?
-```
-
-<Response id="preamble-hour1-command-predictions" prompt="For git init, git status, git add, commit, and the final git status, predict what changes and what evidence you expect from each command." rows={12} />
-
-### Verify the result
-
-Check these separately:
-
-1. Open `notes.txt` and confirm the sentence is present.
-2. Open the folder in the browser only if you have a suitable local file view; the browser is not Git and does not create commits.
-3. Read the final `git status` and confirm it reports a clean working tree.
-
-<Checkpoint id="preamble-hour1-file-check">I opened `notes.txt` and confirmed that the intended sentence is present.</Checkpoint>
-
-<Checkpoint id="preamble-hour1-git-check">I ran the Git commands and confirmed that the final status shows the work is saved and clean.</Checkpoint>
-
-### Make a second change
-
-Git becomes more useful when there is more than one save point to compare. Add this second line to `notes.txt`:
-
-```text
-I can compare my changes.
-```
-
-Before saving it, predict what Git should notice. Then run:
-
-```bash
-git status
-git diff
-```
-
-The `git diff` output should show the new line as a change that is not saved yet. The file is still ordinary text; Git is showing you the difference between the last commit and the file as it looks now.
-
-Now create the second save point:
-
-```bash
-git add notes.txt
-git diff --staged
-git commit -m "Add comparison note"
-git status
-```
-
-`git diff --staged` lets you inspect what will be included before committing. The final `git status` should again show a clean working tree.
-
-<Checkpoint id="preamble-hour1-second-change">I added the second line, used `git diff` to see the unsaved change, and confirmed that the file contained the line I intended.</Checkpoint>
-
-### View the history and compare save points
-
-Now ask Git to show the two save points:
-
-```bash
-git log --oneline
-```
-
-You should see two commits, with the newest one first. The messages are the descriptions you wrote when you created the save points.
-
-To compare the newest commit with the one immediately before it, run:
-
-```bash
-git diff HEAD~1 HEAD
-```
-
-This should show the second line that was added. In plain English, you just asked Git: “What changed between my first save point and my second save point?”
-
-<Response id="preamble-hour1-history-prediction" prompt="Before running git log --oneline and git diff HEAD~1 HEAD, predict how many save points you will see and what line the comparison should show." rows={8} />
-
-<Checkpoint id="preamble-hour1-history-check">I viewed the two commits in the history and compared them, confirming that the difference matched my second change.</Checkpoint>
-
-### Explain back
-
-You should be able to say:
-
-```text
-The file is the work.
-
-Git noticed the file.
-
-I chose the file for the save point.
-
-The commit created the save point.
-
-The history shows my save points.
-
-The diff shows how one save point differs from another.
-```
-
-<Response id="preamble-hour1-explain-back" prompt="Explain back the relationship between the folder, file, browser, Git repository, staging, commit, history, and diff. Mention one thing you verified and one thing you did not build." rows={11} />
-
-### Regression or unchanged-behavior check
-
-Open `notes.txt` again after the second commit. Both lines should still be present, and the two-commit history should still be visible. If the file changed unexpectedly, inspect the diff before continuing.
-
-<Checkpoint id="preamble-hour1-regression-check">I re-opened the file after the second commit and confirmed both intended lines remained present.</Checkpoint>
-
-<p><strong>Mentor pause:</strong> Explain out loud what Git remembers, what `git log` shows, and what `git diff` compares. Ask your mentor to name one command you can explain before running.</p>
-
-<Checkpoint id="preamble-hour1-mentor-pause">I explained the two save points, history, and diff to a mentor and answered a question about the evidence.</Checkpoint>
-
-</Track>
-
-<Checkpoint id="preamble-hour1-complete">I completed Hour 1 and can distinguish the file, the browser, and Git's saved checkpoint.</Checkpoint>
+<Checkpoint id="preamble-hour1-complete">I opened my page and made one Git checkpoint.</Checkpoint>

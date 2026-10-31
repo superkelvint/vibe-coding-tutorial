@@ -1,0 +1,30 @@
+---
+title: "Optional: Try a ready-made React calendar"
+section: "Course Reference · React Components"
+order: 95
+estimatedTime: "30 minutes"
+mentalModel: "A reusable component handles its own interface details and reports a choice back to your app."
+description: "Explore React DayPicker without adding a calendar to the Chore Board."
+---
+
+The Chore Board already has components for a form, list, and chore row. A calendar is another example of a component, but it has more interaction details: moving between months, choosing dates, handling unavailable days, and keyboard use. You do not need a calendar to understand the Chore Board. This is an optional experiment after Day 5.
+
+[React DayPicker](https://react-day-picker.js.org/) is an open-source calendar component. It draws and manages the calendar interaction. Your app receives the selected date and decides what that date means.
+
+<img src={`${import.meta.env.BASE_URL}/images/day5-react-daypicker.png`} alt="A fictional date-picker with month navigation, date selection, and unavailable dates." />
+<p class="image-caption">The calendar handles the interface; the surrounding app still decides what to do with a selected date.</p>
+
+If you want to try it, ask Codex to inspect your React project and the current DayPicker installation instructions. Have it add a separate small demo that shows the chosen date beneath the calendar. Keep this demo separate from the chore workflow.
+
+```text
+In a separate React demo, use the current React DayPicker package to show
+a calendar and display the selected date below it. Inspect the project's
+existing setup and the library's current documentation before installing.
+Do not add dates to the Family Chore Board. Tell me how to open the demo.
+```
+
+Open the demo, choose a date, and watch the text change. If the calendar does not appear, check the terminal build error and browser Console. If the date changes in the calendar but not in your text, ask Codex how the component reports the selected value.
+
+<Response id="react-daypicker-guide-explain-back" prompt="What did the calendar component handle, and what did your own app do with the selected date?" rows={5} />
+
+<Checkpoint id="react-daypicker-guide-complete">I can describe how a ready-made component reports a choice to my React app.</Checkpoint>

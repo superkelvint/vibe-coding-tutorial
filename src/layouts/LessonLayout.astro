@@ -9,7 +9,7 @@ const { lesson, previous, next } = Astro.props;
       <p class="eyebrow">{lesson.data.section} · {lesson.data.estimatedTime}</p>
       <h1>{lesson.data.title}</h1>
       <p class="lede">{lesson.data.description}</p>
-      <dl class="lesson-meta"><div><dt>Mental model</dt><dd>{lesson.data.mentalModel}</dd></div><div><dt>Verification focus</dt><dd>{lesson.data.verificationFocus}</dd></div></dl>
+      <p class="lesson-idea"><strong>The idea:</strong> {lesson.data.mentalModel}</p>
     </header>
     <div class="lesson-content"><slot /></div>
     <nav class="lesson-nav" aria-label="Lesson navigation">

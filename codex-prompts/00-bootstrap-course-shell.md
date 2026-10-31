@@ -1,3 +1,5 @@
+> Historical build prompt. For new lesson work, follow `AGENTS.md` and the live MDX course instead of the older track and verification requirements below.
+
 # Codex Prompt: Bootstrap the Course Shell
 
 Read these files before making changes:
@@ -33,7 +35,7 @@ Implement:
 
 Also create one small demonstration MDX lesson that includes:
 
-- all three tracks;
+- the two recurring tracks;
 - Verification Engineering integrated inside the tracks;
 - a prediction response;
 - observable acceptance criteria;

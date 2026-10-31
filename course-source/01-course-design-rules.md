@@ -1,8 +1,10 @@
+> Historical source draft. The live MDX lessons and `AGENTS.md` define the current course; do not copy older daily tracks or Verification Engineering exercises into new lessons.
+
 # Course-Wide Teaching and Design Rules
 
 These rules apply to the preamble, every day of the build week, and the final readiness exercise.
 
-Verification Engineering is a horizontal discipline across Product Judgment, Codex Prompting and Debugging, and Technical Build. Do not render it as a fourth daily track.
+The published lessons have two recurring tracks: Codex Prompting and Debugging and Technical Build. Product thinking has one standalone lesson at the end. Verification runs through both daily tracks; do not render it as another daily track.
 
 # The Difference Between a Learning Task and a Product Task
 

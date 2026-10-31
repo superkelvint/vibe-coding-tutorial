@@ -1,6 +1,10 @@
+> Historical source draft. The live MDX lessons and `AGENTS.md` define the current course; do not copy older daily tracks or Verification Engineering exercises into new lessons.
+
 # Course Goals and Educational North Star
 
 This file contains the stable educational goals shared by every lesson. It should be read before converting any lesson source into MDX.
+
+**Current course structure:** The published lessons use two recurring tracks, Codex Prompting and Debugging and Technical Build. Product thinking is one standalone lesson at the end of the course. Older three-track examples below are retained as source history and should not be copied into new MDX lessons.
 
 # Vibe Coding Foundations + 7-Day Build Week
 

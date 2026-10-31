@@ -2,8 +2,25 @@
 import { getCollection } from 'astro:content';
 import CourseLayout from '../layouts/CourseLayout.astro';
 const lessons = (await getCollection('lessons')).sort((a, b) => a.data.order - b.data.order);
+const sections = [
+  { title: 'Start here', description: 'Four short hours to get comfortable with files, a page, a click, and Codex.', lessons: lessons.filter((lesson) => lesson.data.order <= 4) },
+  { title: 'Week 1 · Build it on your laptop', description: 'Understand the pieces, then make a Family Chore Board that saves chores locally.', lessons: lessons.filter((lesson) => lesson.data.order >= 6 && lesson.data.order <= 12) },
+  { title: 'Week 2 · Put it online', description: 'Move the page, server, and saved chores online one step at a time.', lessons: lessons.filter((lesson) => lesson.data.order >= 13 && lesson.data.order <= 20) },
+  { title: 'Keep nearby when needed', description: 'These guides are references. You do not need to read them before starting.', lessons: lessons.filter((lesson) => lesson.data.order === 5 || lesson.data.order >= 96) },
+];
 ---
 <CourseLayout>
-  <section class="home-hero"><p class="eyebrow">A guided MDX workbook</p><h1>Vibe Coding Foundations</h1><p class="lede">Build a reliable mental map of webapps—and a reliable way to work with Codex without surrendering judgment.</p></section>
-  <section class="home-section" aria-labelledby="course-map"><p class="eyebrow">Course map</p><h2 id="course-map">Start small. Check your work. Explain what changed.</h2><div class="lesson-list">{lessons.map((lesson) => <a class="lesson-card" href={`${import.meta.env.BASE_URL}/lessons/${lesson.id}/`}><span class="lesson-number">{String(lesson.data.order).padStart(2, '0')}</span><span><strong>{lesson.data.title}</strong><small>{lesson.data.section} · {lesson.data.estimatedTime}</small></span><span aria-hidden="true">→</span></a>)}</div></section>
+  <section class="home-hero">
+    <p class="eyebrow">A guided course</p>
+    <h1>Vibe Coding Foundations</h1>
+    <p class="lede">Make one small web app, understand what its parts do, and use Codex without losing the thread.</p>
+    <a class="start-link" href={`${import.meta.env.BASE_URL}/lessons/preamble/00-preamble-overview/`}>Start the course →</a>
+  </section>
+  {sections.map((section) => (
+    <section class="home-section" aria-label={section.title}>
+      <h2>{section.title}</h2>
+      <p>{section.description}</p>
+      <div class="lesson-list">{section.lessons.map((lesson) => <a class="lesson-card" href={`${import.meta.env.BASE_URL}/lessons/${lesson.id}/`}><span class="lesson-number">{String(lesson.data.order).padStart(2, '0')}</span><span><strong>{lesson.data.title}</strong><small>{lesson.data.estimatedTime}</small></span><span aria-hidden="true">→</span></a>)}</div>
+    </section>
+  ))}
 </CourseLayout>

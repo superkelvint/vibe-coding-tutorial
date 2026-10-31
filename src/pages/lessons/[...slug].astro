@@ -1,18 +1,24 @@
 ---
 import { getCollection, render } from 'astro:content';
 import LessonLayout from '../../layouts/LessonLayout.astro';
-import Track from '../../components/Track.astro';
 import Response from '../../components/ResponseIsland.astro';
 import Checkpoint from '../../components/CheckpointIsland.astro';
 
 export async function getStaticPaths() {
   const lessons = (await getCollection('lessons')).sort((a, b) => a.data.order - b.data.order);
-  return lessons.map((lesson, index) => ({ params: { slug: lesson.id }, props: { lesson, previous: lessons[index - 1], next: lessons[index + 1] } }));
+  const required = lessons.filter((lesson) => lesson.data.order <= 4 || (lesson.data.order >= 6 && lesson.data.order <= 20));
+  return lessons.map((lesson) => {
+    const index = required.findIndex((item) => item.id === lesson.id);
+    return {
+      params: { slug: lesson.id },
+      props: { lesson, previous: index > 0 ? required[index - 1] : undefined, next: index >= 0 ? required[index + 1] : undefined },
+    };
+  });
 }
 
 const { lesson, previous, next } = Astro.props;
 const { Content } = await render(lesson);
 ---
 <LessonLayout lesson={lesson} previous={previous} next={next}>
-  <Content components={{ Track, Response, Checkpoint }} />
+  <Content components={{ Response, Checkpoint }} />
 </LessonLayout>

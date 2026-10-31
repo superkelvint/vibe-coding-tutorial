@@ -1,3 +1,5 @@
+> Historical build prompt. For new lesson work, follow `AGENTS.md` and the live MDX course instead of the older track and verification requirements below.
+
 # Codex Prompt: Implement the Minimal Interactive Components
 
 Read:

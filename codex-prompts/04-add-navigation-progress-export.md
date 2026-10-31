@@ -1,3 +1,5 @@
+> Historical build prompt. For new lesson work, follow `AGENTS.md` and the live MDX course instead of the older track and verification requirements below.
+
 # Codex Prompt: Add Navigation, Progress, Export, and Reset
 
 Read:
@@ -29,7 +31,7 @@ The home page should show each lesson's:
 
 The exported Markdown should group learner work by lesson and use human-readable categories where present, including:
 
-- Product Judgment;
+- Product Thinking (in the standalone end lesson);
 - Acceptance Criteria;
 - Verification Plan;
 - Codex Prompt;

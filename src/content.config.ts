@@ -9,7 +9,6 @@ const lessons = defineCollection({
     order: z.number().int().nonnegative(),
     estimatedTime: z.string(),
     mentalModel: z.string(),
-    verificationFocus: z.string(),
     description: z.string(),
   }),
 });

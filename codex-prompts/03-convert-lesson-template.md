@@ -1,3 +1,5 @@
+> Historical build prompt. For new lesson work, follow `AGENTS.md` and the live MDX course instead of the older track and verification requirements below.
+
 # Codex Prompt: Convert One Curriculum Source File
 
 Read the shared course rules first:
@@ -18,10 +20,10 @@ Preserve the source lesson's:
 
 - detailed handholding;
 - plain-language mental models;
-- Product Judgment track;
+- a link to the standalone product thinking lesson when relevant;
 - Codex Prompting and Debugging track;
 - Technical Build track;
-- Verification Engineering across all three tracks;
+- Verification Engineering across both recurring tracks;
 - concrete prompts and prompt scaffolds;
 - acceptance criteria;
 - inspection of existing verification where appropriate;

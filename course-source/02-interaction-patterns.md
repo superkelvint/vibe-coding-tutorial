@@ -1,3 +1,5 @@
+> Historical source draft. The live MDX lessons and `AGENTS.md` define the current course; do not copy older daily tracks or Verification Engineering exercises into new lessons.
+
 # Interaction-Lite MDX Patterns
 
 This file defines how to turn the curriculum into a guided MDX workbook without building a miniature LMS.
@@ -21,13 +23,9 @@ The course should still be understandable if the custom interactive components a
 
 ### `Track`
 
-Use `Track` to distinguish the three daily tracks.
+Use `Track` to distinguish the two daily tracks.
 
 ```mdx
-<Track type="product" title="Product Judgment">
-  ...lesson content...
-</Track>
-
 <Track type="codex" title="Codex Prompting and Debugging">
   ...lesson content...
 </Track>
@@ -37,7 +35,7 @@ Use `Track` to distinguish the three daily tracks.
 </Track>
 ```
 
-Do not create a fourth Verification Engineering track. Put verification activities inside all three tracks.
+Put verification activities inside both tracks. Product thinking is taught in one standalone lesson at the end.
 
 ### `Response`
 
@@ -112,11 +110,9 @@ Express these with ordinary MDX, `Response`, `Checkpoint`, blockquotes, and nati
 />
 ```
 
-### Product Judgment
+### Standalone Product Thinking
 
 ```mdx
-<Track type="product" title="Product Judgment">
-
 A user asks for a feature. Before agreeing, identify:
 
 - the real user;
@@ -128,8 +124,6 @@ A user asks for a feature. Before agreeing, identify:
 - what is not being built yet.
 
 <Response id="lesson-product-judgment" prompt="Write your product judgment." rows={8} />
-
-</Track>
 ```
 
 ### Acceptance Criteria and Verification Plan

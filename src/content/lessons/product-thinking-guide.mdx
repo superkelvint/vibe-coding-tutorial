@@ -1,0 +1,83 @@
+---
+title: "Product thinking: one day to understand the real problem"
+section: "Course Reference · Product Thinking"
+order: 100
+estimatedTime: "60 minutes"
+mentalModel: "A feature request is one possible answer. First understand the person's situation and pain."
+description: "A standalone product thinking day to use after the build course or whenever a feature request needs a closer look."
+---
+
+A person says, “Add a button that reminds me every morning to take out the rubbish.” You could build that button. But first, picture what happens at home: the rubbish is still inside when the collection truck arrives. Maybe nobody knows whose job it is. Maybe a morning reminder arrives after the useful moment. Maybe reminders already get ignored.
+
+**You are not here to create software. You are here to solve user problems.** Today you will practice finding the problem beneath a request and choosing the smallest useful thing to try. You will not build a feature today. Success is a short, concrete explanation of whose problem this is, what happens now, what one change might help, and what you would observe if it did.
+
+## Start with the last real occurrence
+
+Ask one person about a recent responsibility they forgot or found hard to coordinate. You can use a household chore, a missed message, a confusing form, or a delivery that was hard to track. Ask about a particular occasion rather than what they think a future app should do.
+
+<ul class="question-list">
+<li>What were you trying to do?</li>
+<li>When did it become difficult?</li>
+<li>What did you do instead?</li>
+<li>What was frustrating, costly, or risky?</li>
+<li>How did you know the task was finished, or that it was missed?</li>
+</ul>
+
+Write down what the person actually said before interpreting it. Their suggested feature is useful evidence about their experience, but it is still an idea to test.
+
+<Response id="product-thinking-day-observation" prompt="Describe one recent situation: who was involved, what they tried to do, what happened, what they did instead, and what hurt. Include any feature they requested as a separate idea." rows={10} />
+
+## Separate the request from the problem
+
+<table>
+<thead><tr><th>What you heard</th><th>What to find out</th></tr></thead>
+<tbody>
+<tr><td>“Send me a reminder every morning.”</td><td>When is the task forgotten, who owns it, and would a reminder arrive soon enough?</td></tr>
+<tr><td>“Add a Done button.”</td><td>Does the person need to finish the task, show someone else it is finished, or both?</td></tr>
+<tr><td>“Make a dashboard.”</td><td>Which decision is hard with the information they can see today?</td></tr>
+</tbody>
+</table>
+
+Use this small map for your own example:
+
+<table>
+<thead><tr><th>Question</th><th>Your answer</th></tr></thead>
+<tbody>
+<tr><td>Who has the problem?</td><td>Name the person or group.</td></tr>
+<tr><td>When does it happen?</td><td>Describe the moment, place, or trigger.</td></tr>
+<tr><td>What do they do today?</td><td>Name the current workaround.</td></tr>
+<tr><td>What is painful?</td><td>Describe the missed outcome or repeated frustration.</td></tr>
+<tr><td>What might help first?</td><td>Choose one small change to try.</td></tr>
+<tr><td>What would you observe?</td><td>Describe a signal that the pain became smaller.</td></tr>
+<tr><td>What can wait?</td><td>Name tempting extras outside this first test.</td></tr>
+</tbody>
+</table>
+
+For the rubbish example, the first useful change might be a visible owner and due time on a shared list. A morning notification can wait until you know that timing is the problem.
+
+<Response id="product-thinking-day-problem-map" prompt="Fill in the seven questions for your situation. State the person's request and your current problem hypothesis separately." rows={12} />
+
+## Try one small intervention
+
+Before doing anything, predict what should change. If you make ownership visible, perhaps both people can name who will take the rubbish out before collection day. If you try a reminder, perhaps the task is completed before the truck arrives. Pick a signal you can actually observe, then ask what else could explain it.
+
+A safe first test can be simple: write the owner's name and due time on paper for one week, or show a rough screen to the person and ask what they would do next. You do not need a built app to learn whether the idea makes sense.
+
+<ol class="mental-model-steps">
+<li>Predict what the person will do with the small change.</li>
+<li>Let them try it without explaining every step.</li>
+<li>Record what they did and where they hesitated.</li>
+<li>Try an edge case: an unassigned task or a missed due time.</li>
+<li>Repeat the ordinary case to see whether it still works.</li>
+<li>Say what this one test cannot prove.</li>
+</ol>
+
+<Response id="product-thinking-day-test" prompt="What is the smallest change you would test? Predict the result, name the normal check and one safe edge case, then say what evidence would show less pain and what would remain uncertain." rows={11} />
+
+## Explain your decision
+
+Tell a mentor or teammate the story in plain language: “This person was trying to ___. Today they ___. The hard part was ___. We tried ___. We saw ___. We still do not know ___.” If the evidence does not support your first idea, change the idea. A smaller, clearer problem is progress.
+
+<Response id="product-thinking-day-explain-back" prompt="Explain the user's situation, the requested feature, the problem you think sits underneath it, what you tested or would test first, and what you still do not know." rows={8} />
+
+<Checkpoint id="product-thinking-day-complete">I separated a feature request from a person's observed problem, chose one small test, and explained the evidence and remaining uncertainty.</Checkpoint>

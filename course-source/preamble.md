@@ -1,3 +1,5 @@
+> Historical source draft. The live MDX lessons and `AGENTS.md` define the current course; do not copy older daily tracks or Verification Engineering exercises into new lessons.
+
 # Four-Hour Preamble
 
 The preamble teaches isolated fundamentals so the seven-day week can focus on connecting them.

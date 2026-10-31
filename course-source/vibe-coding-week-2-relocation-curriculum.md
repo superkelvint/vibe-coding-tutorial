@@ -1,3 +1,5 @@
+> Historical source draft. The live MDX lessons and `AGENTS.md` define the current course; do not copy older daily tracks or Verification Engineering exercises into new lessons.
+
 # Vibe Coding Week 2: From One Laptop to a Reachable System
 
 ## What This Week Is For
